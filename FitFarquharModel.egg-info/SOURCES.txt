@@ -6,3 +6,4 @@ FitFarquharModel.egg-info/dependency_links.txt
 FitFarquharModel.egg-info/top_level.txt
 src/farquhar_model.py
 src/fit_vcmax_jmax_and_rd.py
+src/normalise.py

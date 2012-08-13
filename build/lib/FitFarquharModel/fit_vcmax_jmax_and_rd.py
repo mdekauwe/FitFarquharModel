@@ -24,11 +24,9 @@ from lmfit import minimize, Parameters, printfuncs, conf_interval
 from scipy import stats
 import matplotlib.pyplot as plt
 
-from FitFarquharModel import farquhar_model as fm
-
 class FitMe(object):
     
-    def __init__(self, ofname=None, ofname25=None, results_dir=None, 
+    def __init__(self, model=None, ofname=None, ofname25=None, results_dir=None, 
                  data_dir=None, plot_dir=None, nstartpos=30):
         
         self.results_dir = results_dir
@@ -36,7 +34,6 @@ class FitMe(object):
         self.ofname25 = os.path.join(self.results_dir, ofname25)
         self.data_dir = data_dir 
         self.plot_dir = plot_dir    
-        model = fm.FarquharC3(peaked_Jmax=True, peaked_Vcmax=False)
         self.call_model = model.calc_photosynthesis
         self.succes_count = 0
         self.nfiles = 0
@@ -153,7 +150,6 @@ class FitMe(object):
         row.append("%s" % (curve_data["Plant"][0]))
         row.append("%s" % (curve_data["Curve"][0]))
         row.append("%s" % (fname))
-        print row
         f.writerow(row)
        
     def forward_run(self, result, data):
