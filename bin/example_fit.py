@@ -17,7 +17,6 @@ import numpy as np
 
 from FitFarquharModel import fit_vcmax_jmax_and_rd as fitvjr
 
-
 ofname = "fitting_results.txt"
 ofname25 = "params_at_25.txt"
 results_dir = "results"

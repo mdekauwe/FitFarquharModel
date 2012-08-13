@@ -29,11 +29,11 @@ All of these packages are widely used scientific packages which build easily on 
 
 Once you have downloaded the source code, or clone the repository (go on...) there is a simple makefile, e.g. ::
 
-    sudo make install
+    make install
 
 or the standard python approach ::
 
-    sudo python setup.py install
+    python setup.py install
 
 Running the code
 =================
