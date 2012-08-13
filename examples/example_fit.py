@@ -15,15 +15,16 @@ import sys
 import glob
 import numpy as np
 
-from FitFarquharModel import fit_vcmax_jmax_and_rd as fitvjr
-from FitFarquharModel import farquhar_model as fm
+from FitFarquharModel import fit_vcmax_jmax_and_rd
+from FitFarquharModel import farquhar_model
 
 ofname = "fitting_results.txt"
 ofname25 = "params_at_25.txt"
 results_dir = "results"
 data_dir = "data"
 plot_dir = "plots"
-model = fm.FarquharC3(peaked_Jmax=True, peaked_Vcmax=False)
+model = farquhar_model.FarquharC3(peaked_Jmax=True, peaked_Vcmax=False)
 
-F = fitvjr.FitMe(model, ofname, ofname25, results_dir, data_dir, plot_dir)
+F = fit_vcmax_jmax_and_rd.FitMe(model, ofname, ofname25, results_dir, data_dir, 
+                                plot_dir)
 F.main(print_to_screen=False)     
