@@ -19,11 +19,11 @@ Installation
 
 They code depends on:
 
-* `numpy <http://numpy.scipy.org/>`_.  :
-* `scipy <http://www.scipy.org/>`_.  :
-* `scipy <http://www.scipy.org/>`_.  :
-* `matplotlib <http://matplotlib.sourceforge.net/>`_.  :
-* `lmfit <http://newville.github.com/lmfit-py/>`_.  :
+* `numpy <http://numpy.scipy.org/>`_.  
+* `scipy <http://www.scipy.org/>`_.  
+* `scipy <http://www.scipy.org/>`_.  
+* `matplotlib <http://matplotlib.sourceforge.net/>`_.  
+* `lmfit <http://newville.github.com/lmfit-py/>`_.  
 
 All of these packages are widely used scientific packages which build easily on multiple platforms. For window users the Enthought python package is perhaps your simplest avenue (http://www.enthought.com/).
 
