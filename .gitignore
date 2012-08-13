@@ -3,3 +3,4 @@
 *.bak
 *.dat
 *.png
+.DS_STORE
