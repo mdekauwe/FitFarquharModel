@@ -1,4 +1,5 @@
 *.pyo
 *.pyc
 *.bak
-*.dat*.dat*.dat*.dat*.dat*.dat*.dat*.dat
+*.dat
+*.png
