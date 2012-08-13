@@ -1,0 +1,8 @@
+README.rst
+setup.py
+FitFarquharModel.egg-info/PKG-INFO
+FitFarquharModel.egg-info/SOURCES.txt
+FitFarquharModel.egg-info/dependency_links.txt
+FitFarquharModel.egg-info/top_level.txt
+src/farquhar_model.py
+src/fit_vcmax_jmax_and_rd.py

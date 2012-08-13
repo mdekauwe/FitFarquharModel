@@ -6,6 +6,6 @@ setup(
     author_email='mdekauwe@gmail.com',
     platforms = ['any'],
     description='Fit farquhar model parameters to A-Ci observations.',
-    package_dir = {'ffm': 'src'},
-    packages = ['ffm']
+    package_dir = {'FitFarquharModel': 'src'},
+    packages = ['FitFarquharModel']
 )
