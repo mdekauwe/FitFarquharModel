@@ -45,7 +45,7 @@ Eaj = 30000.0
 Eav = 60000.0
 deltaSj = 620.0
 deltaSv = 620.0
-
+  
 
 fit = read_data("results/ea_results.txt")
 print "Truth - Jmax", Eaj, deltaSj
