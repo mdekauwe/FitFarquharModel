@@ -225,7 +225,7 @@ class FitJmaxVcmaxRd(FitMe):
                        "R2", "n", "Species", "Season", "Plant", "Curve", \
                        "Filename"]
                        
-    def main(self, print_to_screen):   
+    def main(self, print_to_screen, 25deg_range=[26.0, 29.0]):   
         """ Loop over all our A-Ci measured curves and fit the Farquhar model
         parameters to this data """
         
@@ -278,7 +278,7 @@ class FitJmaxVcmaxRd(FitMe):
                 # Figure out which of our curves (if any) were measured at
                 # 25 degrees C
                 Tavg = np.mean(curve_data["Tleaf"]) - self.deg2kelvin
-                if Tavg > 26.0 and Tavg < 29.0:
+                if Tavg > 25deg_range[0] and Tavg < 25deg_range[1]:
                     self.report_fits(wr25, result, os.path.basename(fname), 
                                      curve_data, An)  
                 
@@ -297,22 +297,91 @@ class FitEaDels(FitMe):
         self.header = ["Param", "Ea", "SE", "delS", "delSSE", "R2", "n"]
         self.call_model = model.peaked_arrh
         
-    def main(self, print_to_screen):   
+    def main(self, print_to_screen, species_loop=True):   
         """ Loop over all our A-Ci measured curves and fit the Farquhar model
         parameters to this data """
         all_data = self.get_data(self.infname)
         fp = self.open_output_files(self.ofname)
         wr = self.write_file_hdr(fp, self.header)
+        
         # Loop over all the measured data and fit the model params.
-        for spp in np.unique(all_data["Species"]):
-            data = all_data[np.where(all_data["Species"] == spp)]
+        if species_loop:
+            for spp in np.unique(all_data["Species"]):
+                data = all_data[np.where(all_data["Species"] == spp)]
+                
+                # Fit Jmax vs T first  
+                params = self.setup_model_params(hd_guess=200000.0, 
+                                                 ea_guess=60000.0, 
+                                                 dels_guess=650.0)
+                result = minimize(self.residual, params, engine="leastsq", 
+                                  args=(data, data["Jnorm"]))
+                if print_to_screen:
+                    self.print_fit_to_screen(result)
+                
+                # Did we resolve the error bars during the fit? If yes then
+                # move onto the next A-Ci curve
+                if result.errorbars:
+                    self.succes_count += 1
+            
+                # Otherwise we did not fit the data. Is it because of our 
+                # starting position?? Lets vary this a little and redo the fits
+                else:
+                    for i in xrange(self.nstartpos):
+                        params = self.try_new_params(hd=200000.0, ea=True, 
+                                                     dels=True)
+                        result = minimize(self.residual, params, 
+                                          engine="leastsq", 
+                                          args=(data, data["Jnorm"]))
+            
+                        if print_to_screen:
+                            self.print_fit_to_screen(result)
+                        if result.errorbars:
+                            succes_count += 1
+                            break
+                (peak_fit) = self.forward_run(result, data)
+                self.report_fits(wr, result, data, data["Jnorm"], peak_fit, 
+                                 "Jmax")
+                
+                # Fit Vcmax vs T next 
+                params = self.setup_model_params(hd_guess=200000.0, 
+                                                 ea_guess=60000.0, 
+                                                 dels_guess=650.0)
+                result = minimize(self.residual, params, engine="leastsq", 
+                                  args=(data, data["Vnorm"]))
+                if print_to_screen:
+                    self.print_fit_to_screen(result)
+                
+                # Did we resolve the error bars during the fit? If yes then
+                # move onto the next A-Ci curve
+                if result.errorbars:
+                    self.succes_count += 1
+            
+                # Otherwise we did not fit the data. Is it because of our 
+                # starting position?? Lets vary this a little and redo the fits
+                else:
+                    for i in xrange(self.nstartpos):
+                        params = self.try_new_params(hd=200000.0, ea=True, 
+                                                     dels=True)
+                        result = minimize(self.residual, params, 
+                                          engine="leastsq", 
+                                          args=(data, data["Vnorm"]))
+            
+                        if print_to_screen:
+                            self.print_fit_to_screen(result)
+                        if result.errorbars:
+                            succes_count += 1
+                            break
+                (peak_fit) = self.forward_run(result, data)
+                self.report_fits(wr, result, data, data["Vnorm"], peak_fit, 
+                                 "Vcmax")
+        else:
             
             # Fit Jmax vs T first  
             params = self.setup_model_params(hd_guess=200000.0, 
                                              ea_guess=60000.0, 
                                              dels_guess=650.0)
             result = minimize(self.residual, params, engine="leastsq", 
-                              args=(data, data["Jnorm"]))
+                              args=(all_data, all_data["Jnorm"]))
             if print_to_screen:
                 self.print_fit_to_screen(result)
             
@@ -328,15 +397,16 @@ class FitEaDels(FitMe):
                     params = self.try_new_params(hd=200000.0, ea=True, 
                                                  dels=True)
                     result = minimize(self.residual, params, engine="leastsq", 
-                                      args=(data, data["Jnorm"]))
+                                      args=(all_data, all_data["Jnorm"]))
         
                     if print_to_screen:
                         self.print_fit_to_screen(result)
                     if result.errorbars:
                         succes_count += 1
                         break
-            (peak_fit) = self.forward_run(result, data)
-            self.report_fits(wr, result, data, data["Jnorm"], peak_fit, "Jmax")
+            (peak_fit) = self.forward_run(result, all_data)
+            self.report_fits(wr, result, all_data, all_data["Jnorm"], peak_fit, 
+                             "Jmax")
             
             
             # Fit Vcmax vs T next 
@@ -344,7 +414,7 @@ class FitEaDels(FitMe):
                                              ea_guess=60000.0, 
                                              dels_guess=650.0)
             result = minimize(self.residual, params, engine="leastsq", 
-                              args=(data, data["Vnorm"]))
+                              args=(all_data, all_data["Vnorm"]))
             if print_to_screen:
                 self.print_fit_to_screen(result)
             
@@ -360,15 +430,15 @@ class FitEaDels(FitMe):
                     params = self.try_new_params(hd=200000.0, ea=True, 
                                                  dels=True)
                     result = minimize(self.residual, params, engine="leastsq", 
-                                      args=(data, data["Vnorm"]))
+                                      args=(all_data, all_data["Vnorm"]))
         
                     if print_to_screen:
                         self.print_fit_to_screen(result)
                     if result.errorbars:
                         succes_count += 1
                         break
-            (peak_fit) = self.forward_run(result, data)
-            self.report_fits(wr, result, data, data["Vnorm"], peak_fit, "Vcmax")
+            (peak_fit) = self.forward_run(result, all_data)
+            self.report_fits(wr, result, all_data, all_data["Vnorm"], peak_fit, "Vcmax")
         fp.close()  
     
     def get_data(self, infname):

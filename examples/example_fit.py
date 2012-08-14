@@ -27,9 +27,10 @@ results_dir = "results"
 data_dir = "data"
 plot_dir = "plots"
 model = FarquharC3(peaked_Jmax=True, peaked_Vcmax=True)
+25deg_range = [24.0, 26.0]
 ##############################
 F = FitJmaxVcmaxRd(model, ofname, ofname25, results_dir, data_dir, plot_dir)
-F.main(print_to_screen=False)     
+F.main(print_to_screen=False, 25deg_range)     
 
 ##############################
 # Fit Eaj, Eav, delSj + delSv
@@ -41,5 +42,5 @@ data_dir = "data"
 model = FarquharC3()
 ############################
 F2 = FitEaDels(model, infname, ofname, results_dir, data_dir)
-F2.main(print_to_screen=False)
+F2.main(print_to_screen=False, species_loop=False)
 
