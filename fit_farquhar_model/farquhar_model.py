@@ -190,8 +190,8 @@ class FarquharC3(object):
         
          # actual rate of electron transport, a function of absorbed PAR
         if par is not None:
-            J = self.quadratic(a=self.theta, b=-(self.alpha * par + Jmax), 
-                               c=self.alpha_J * par * Jmax)
+            J = self.quadratic(a=self.theta_J, b=-(self.alpha * par + Jmax), 
+                               c=self.alpha * par * Jmax)
         # All measurements are calculated under saturated light!!
         else:
             J = Jmax
@@ -325,4 +325,18 @@ class FarquharC3(object):
         Tjoelker et al (2001) GCB, 7, 223-230.
         """
         return r25 * Q10**(((Tleaf - self.deg2kelvin) - Tref) / 10.0)
+    
+    def quadratic(self, a, b, c):
+        """ minimilist quadratic solution as root for J solution should always
+        be positive, so I have excluded other quadratic solution steps. If 
+        roots for J are negative or equal to zero then the data is bogus """
+       
+        # solve quadratic and return smallest root...
+        root = b**2 - 4.0 * a * c    
+        x = np.where(root > 0.0, (-b + np.sqrt(root)) / (2.0 * a), -9999.9)
+        y = np.where(root > 0.0, (-b - np.sqrt(root)) / (2.0 * a), -9999.9)
+        x = np.ma.masked_where(y < -9000.0, y)
+        y = np.ma.masked_where(y < -9000.0, y)
+        
+        return np.minimum(x, y)
         
