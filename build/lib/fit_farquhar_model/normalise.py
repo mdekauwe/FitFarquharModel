@@ -19,8 +19,9 @@ import matplotlib.pyplot as plt
 
 
 def find_nearest(array, value):
-    index = (np.abs(array-value)).argmin()
-    print array
+    """ find nearest value + index in an array that matches a given value """
+    index = (np.abs(array - value)).argmin()
+    
     return array[index], index
 
 class Normalise(object):
@@ -59,10 +60,14 @@ class Normalise(object):
             subset = data_all[np.where(data_all["Leaf"] == leaf)]
            
             val, idx = find_nearest(subset["Tav"], self.tnorm)
-            print val, idx
+            print val, idx, subset["Tav"][idx-1]
             
+            # Interpolate to obtain values of Jmax and Vcmax at normalising temp    
+            (vnorm, jnorm) = self.interpolate_temp(subset, idx, idx-1)
             
-            
+            print jnorm, vnorm
+            print
+            print
             diff1 = 100.0
             diff2 = -100.0
             index1 = 0
@@ -78,7 +83,6 @@ class Normalise(object):
                     index2 = j
                 print leaf, j, subset["Tav"][j], diff1, diff2, index1, index2  
             
-            sys.exit()
             
             if diff1 > 10.0 or diff2 > 10.0:
                 print "Missing value", i
@@ -108,10 +112,13 @@ class Normalise(object):
             v1 = np.log(subset["Vcmax"][index1])
             v2 = np.log(subset["Vcmax"][index2])
             vnorm = np.exp(v1 - x1 * (v2 - v1) / (x2 - x1))  
-            print x1,x2,v1,v2,vnorm
+            print x1,x2,v1,v2,vnorm, subset["Tav"][index1], subset["Tav"][index2]
             j1 = np.log(subset["Jmax"][index1])
             j2 = np.log(subset["Jmax"][index2])
             jnorm = np.exp(j1 - x1 * (j2 - j1) / (x2 - x1)) 
+            
+            print jnorm,vnorm
+            sys.exit()
             
             """
             # Print out values at normalising temperature
@@ -166,6 +173,23 @@ class Normalise(object):
         wr.writerow(header)
         
         return wr
+
+    def interpolate_temp(self, data, index1, index2):
+        """ 
+        Interpolate to obtain values of Jmax and Vcmax at normalising temp
+        """    
+        x1 = (1.0 / (self.tnorm + self.deg2kelvin) - 1.0 / 
+             (data["Tav"][index1] + self.deg2kelvin)) 
+        x2 = (1.0 / (self.tnorm + self.deg2kelvin) - 1.0 / 
+             (data["Tav"][index2] + self.deg2kelvin))  
+        v1 = np.log(data["Vcmax"][index1])
+        v2 = np.log(data["Vcmax"][index2])
+        vnorm = np.exp(v1 - x1 * (v2 - v1) / (x2 - x1))  
+        j1 = np.log(data["Jmax"][index1])
+        j2 = np.log(data["Jmax"][index2])
+        jnorm = np.exp(j1 - x1 * (j2 - j1) / (x2 - x1))
+        
+        return vnorm, jnorm
         
 """
 
