@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 class Normalise(object):
     def __init__(self, fname=None, results_dir=None, plot_dir=None):
         self.results_dir = results_dir
-        self.fname = os.path.join(self.results_dir, ofname)
+        self.fname = os.path.join(self.results_dir, fname)
         self.plot_dir = plot_dir    
         self.tnorm = 25.0 # Temperature we are normalising to
         self.deg2kelvin = 273.15

@@ -494,4 +494,3 @@ class FitEaDels(FitMe):
         """ calculate the temperature optimum """
         return Hd / (delS - RGAS * np.log(Ha / (Hd - Ha)))
     
-    return Topt
