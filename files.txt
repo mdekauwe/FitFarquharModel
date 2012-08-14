@@ -12,8 +12,8 @@
 /opt/local/Library/Frameworks/Python.framework/Versions/2.6/lib/python2.6/site-packages/FitFarquharModel-1.0-py2.6.egg/fit_farquhar_model/farquhar_model.py
 /opt/local/Library/Frameworks/Python.framework/Versions/2.6/lib/python2.6/site-packages/FitFarquharModel-1.0-py2.6.egg/fit_farquhar_model/farquhar_model.pyc
 /opt/local/Library/Frameworks/Python.framework/Versions/2.6/lib/python2.6/site-packages/FitFarquharModel-1.0-py2.6.egg/fit_farquhar_model/fit_model.py
-/opt/local/Library/Frameworks/Python.framework/Versions/2.6/lib/python2.6/site-packages/FitFarquharModel-1.0-py2.6.egg/fit_farquhar_model/fit_model.pyc
 /opt/local/Library/Frameworks/Python.framework/Versions/2.6/lib/python2.6/site-packages/FitFarquharModel-1.0-py2.6.egg/fit_farquhar_model/normalise.py
+/opt/local/Library/Frameworks/Python.framework/Versions/2.6/lib/python2.6/site-packages/FitFarquharModel-1.0-py2.6.egg/fit_farquhar_model/normalise.pyc
 /opt/local/Library/Frameworks/Python.framework/Versions/2.6/lib/python2.6/site-packages/FitFarquharModel-1.0-py2.6.egg/FitFarquharModel/__init__.py
 /opt/local/Library/Frameworks/Python.framework/Versions/2.6/lib/python2.6/site-packages/FitFarquharModel-1.0-py2.6.egg/FitFarquharModel/__init__.pyc
 /opt/local/Library/Frameworks/Python.framework/Versions/2.6/lib/python2.6/site-packages/FitFarquharModel-1.0-py2.6.egg/FitFarquharModel/farquhar_model.py

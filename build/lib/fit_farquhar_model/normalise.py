@@ -26,9 +26,20 @@ class Normalise(object):
         self.deg2kelvin = 273.15
         
     def main(self):
+        data_all = self.read_data(self.fname)
     
+    def read_data(self, fname, delimiter=","):
+        """ Read the fitted data into an array 
+        
+        Expects a format of:
+        -> Jmax,JSE,Vcmax,VSE,Rd,RSE,Tav,R2,n,Species,Season,Plant,Curve,
+           Filename
+        """
+        data = np.recfromcsv(fname, delimiter=delimiter, names=True, 
+                             case_sensitive=True)
+        return data
     
-
+"""
 fname = "results/fitting_results.csv"
 data_all = np.recfromcsv(fname, delimiter=",", names=True, case_sensitive=True)
 # Files to write to
@@ -175,6 +186,6 @@ ax1.set_xlabel("1/Tk - 1/298")
 ax1.set_ylabel("Normalised Vcmax")
 ax1.legend(numpoints=1, loc='best', shadow=False).draw_frame(True)
 fig.savefig("plots/VArrh.png", dpi=100)  
-               
+"""               
  
 

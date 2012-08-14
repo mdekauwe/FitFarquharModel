@@ -26,7 +26,7 @@ class Normalise(object):
         self.deg2kelvin = 273.15
         
     def main(self):
-        self.read_data()
+        data_all = self.read_data(self.fname)
     
     def read_data(self, fname, delimiter=","):
         """ Read the fitted data into an array 
