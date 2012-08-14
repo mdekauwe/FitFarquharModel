@@ -18,6 +18,15 @@ import numpy as np
 from fit_farquhar_model.farquhar_model import FarquharC3
 from fit_farquhar_model.fit_model import FitEaDels
 
+def read_data(fname, delimiter=","):
+    """ Read the A-Ci data. 
+    
+    Expects a format of:
+    -> Curve, Tleaf, Ci, Photo, Species, Season, Leaf
+    """
+    data = np.recfromcsv(fname, delimiter=delimiter, names=True, 
+                         case_sensitive=True)
+    return data
 
 ##############################
 # Fit Eaj, Eav, delSj + delSv
@@ -30,4 +39,18 @@ model = FarquharC3()
 ############################
 F2 = FitEaDels(model, infname, ofname, results_dir, data_dir)
 F2.main(print_to_screen=False, species_loop=False)
+
+# OK what are the real values??
+Eaj = 30000.0
+Eav = 60000.0
+deltaSj = 620.0
+deltaSv = 620.0
+
+
+fit = read_data("results/ea_results.txt")
+print "Truth - Jmax", Eaj, deltaSj
+print "Fit - Jmax", fit["Ea"][0], fit["delS"][0]
+print
+print "Truth - Vcmax", Eav, deltaSv
+print "Fit - Vcmax", fit["Ea"][1], fit["delS"][1]
 
