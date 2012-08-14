@@ -17,7 +17,9 @@ import numpy as np
 
 from fit_farquhar_model.farquhar_model import FarquharC3
 from fit_farquhar_model.fit_model import FitJmaxVcmaxRd, FitEaDels
+from fit_farquhar_model.normalise import Normalise
 
+"""
 ##############################
 # Fit Jmax, Vcmax + Rd
 ##############################
@@ -31,14 +33,18 @@ deg25_range = [24.0, 26.0]
 ##############################
 F = FitJmaxVcmaxRd(model, ofname, ofname25, results_dir, data_dir, plot_dir)
 F.main(print_to_screen=False, deg25_range=deg25_range)     
-
+"""
 ###############################
 #Normalise data
 #############################
-#fname = "results/fitting_results.csv"
-
+fname = "fitting_results.csv"
+results_dir = "results"
+plot_dir = "plots"
 #############################
+N = Normalise(fname, results_dir, plot_dir)
+N.main()
 
+"""
 ##############################
 # Fit Eaj, Eav, delSj + delSv
 ##############################
@@ -50,4 +56,4 @@ model = FarquharC3()
 ############################
 F2 = FitEaDels(model, infname, ofname, results_dir, data_dir)
 F2.main(print_to_screen=False, species_loop=False)
-
+"""

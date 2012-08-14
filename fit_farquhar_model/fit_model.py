@@ -294,7 +294,7 @@ class FitEaDels(FitMe):
         self.infname = infname
         FitMe.__init__(self, model=model, ofname=ofname, 
                        results_dir=results_dir, data_dir=data_dir)
-        self.header = ["Param", "Ea", "SE", "delS", "delSSE", "R2", "n"]
+        self.header = ["Param", "Ea", "SE", "delS", "delSSE", "R2", "n", "Topt"]
         self.call_model = model.peaked_arrh
         
     def main(self, print_to_screen, species_loop=True):   
@@ -405,8 +405,12 @@ class FitEaDels(FitMe):
                         succes_count += 1
                         break
             (peak_fit) = self.forward_run(result, all_data)
+            Topt = (self.calc_Topt(result.params["Hd"].value, 
+                                   result.params["Ea"].value, 
+                                   result.params["delS"].value) - 
+                                   self.deg2kelvin)
             self.report_fits(wr, result, all_data, all_data["Jnorm"], peak_fit, 
-                             "Jmax")
+                             "Jmax", Topt)
             
             
             # Fit Vcmax vs T next 
@@ -438,7 +442,12 @@ class FitEaDels(FitMe):
                         succes_count += 1
                         break
             (peak_fit) = self.forward_run(result, all_data)
-            self.report_fits(wr, result, all_data, all_data["Vnorm"], peak_fit, "Vcmax")
+            Topt = (self.calc_Topt(result.params["Hd"].value, 
+                                   result.params["Ea"].value, 
+                                   result.params["delS"].value) - 
+                                   self.deg2kelvin)
+            self.report_fits(wr, result, all_data, all_data["Vnorm"], peak_fit, 
+                             "Vcmax", Topt)
         fp.close()  
     
     def get_data(self, infname):
@@ -459,7 +468,7 @@ class FitEaDels(FitMe):
         
         return model_fit
     
-    def report_fits(self, f, result, data, obs, fit, pname):
+    def report_fits(self, f, result, data, obs, fit, pname, Topt):
         """ Save fitting results to a file... """
         pearsons_r = stats.pearsonr(obs, fit)[0]
         row = [pname]
@@ -468,6 +477,7 @@ class FitEaDels(FitMe):
             row.append("%s" % (par.stderr))
         row.append("%s" % (pearsons_r**2))
         row.append("%s" % (len(fit)))
+        row.append("%s" % (Topt))
         f.writerow(row)
    
     def residual(self, parameters, data, obs):
@@ -479,3 +489,9 @@ class FitEaDels(FitMe):
         model = self.call_model(1.0, Ea, data["Tav"], delS, Hd)
         
         return (obs - model)
+    
+    def calc_Topt(self, Hd, Ha, delS, RGAS=8.314):
+        """ calculate the temperature optimum """
+        return Hd / (delS - RGAS * np.log(Ha / (Hd - Ha)))
+    
+    return Topt
