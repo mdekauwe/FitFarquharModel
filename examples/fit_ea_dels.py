@@ -38,7 +38,7 @@ data_dir = "data"
 model = FarquharC3()
 ############################
 F2 = FitEaDels(model, infname, ofname, results_dir, data_dir)
-F2.main(print_to_screen=False, species_loop=False)
+F2.main(print_to_screen=False, loop_id="Leaf")
 
 # OK what are the real values??
 Eaj = 30000.0

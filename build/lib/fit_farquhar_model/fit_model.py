@@ -287,7 +287,7 @@ class FitEaDels(FitMe):
                        "R2", "n", "Topt"]
         self.call_model = model.peaked_arrh
         
-    def main(self, print_to_screen, species_loop=True):   
+    def main(self, print_to_screen, loop_id=None):   
         """ Loop over all our A-Ci measured curves and fit the Farquhar model
         parameters to this data """
         all_data = self.get_data(self.infname)
@@ -295,9 +295,9 @@ class FitEaDels(FitMe):
         wr = self.write_file_hdr(fp, self.header)
         
         # Loop over all the measured data and fit the model params.
-        if species_loop:
-            for spp in np.unique(all_data["Species"]):
-                data = all_data[np.where(all_data["Species"] == spp)]
+        if loop_id is not None:
+            for id in np.unique(all_data[loop_id]):
+                data = all_data[np.where(all_data[loop_id] == id)]
                 
                 # Fit Jmax vs T first  
                 params = self.setup_model_params(hd_guess=200000.0, 
@@ -329,8 +329,12 @@ class FitEaDels(FitMe):
                             self.succes_count += 1
                             break
                 (peak_fit) = self.forward_run(result, data)
+                Topt = (self.calc_Topt(result.params["Hd"].value, 
+                                   result.params["Ea"].value, 
+                                   result.params["delS"].value) - 
+                                   self.deg2kelvin)
                 self.report_fits(wr, result, data, data["Jnorm"], peak_fit, 
-                                 "Jmax")
+                                 "Jmax", Topt)
                 
                 # Fit Vcmax vs T next 
                 params = self.setup_model_params(hd_guess=200000.0, 
@@ -362,8 +366,12 @@ class FitEaDels(FitMe):
                             self.succes_count += 1
                             break
                 (peak_fit) = self.forward_run(result, data)
+                Topt = (self.calc_Topt(result.params["Hd"].value, 
+                                   result.params["Ea"].value, 
+                                   result.params["delS"].value) - 
+                                   self.deg2kelvin)
                 self.report_fits(wr, result, data, data["Vnorm"], peak_fit, 
-                                 "Vcmax")
+                                 "Vcmax", Topt)
         else:
             
             # Fit Jmax vs T first  
