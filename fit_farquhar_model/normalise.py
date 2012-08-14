@@ -53,29 +53,12 @@ class Normalise(object):
             if index == 0:
                 print "Missing value below Tnorm, so interpolating with \
                        data points above"
-                (vnorm, jnorm) = self.interpolate_temp(subset, index+1, index)
+                vnorm = self.interpolate_temp(subset, index+1, index, "Vcmax")
+                jnorm = self.interpolate_temp(subset, index+1, index, "Jmax")
             else:
-                
-                (vnorm, jnorm) = self.interpolate_temp(subset, index, index-1) 
-            
-            # Print out values at normalising temperature
-            wr1.writerow([jnorm,vnorm, subset["Species"][0], leaf,
-                       subset["Filename"][0]])
-            
-            # Normalise each point by value at the normalising temperature
-            vcmax_norm = np.log(subset["Vcmax"] / vnorm)
-            jmax_norm = np.log(subset["Jmax"] / jnorm)
-            Tarrh = self.calc_Tarrh(subset)
-            for j in xrange(len(subset)):          
-                row = [subset["Jmax"][j], subset["Vcmax"][j],\
-                       jmax_norm[j], vcmax_norm[j], \
-                       subset["Rd"][j], subset["Tav"][j], Tarrh[j], \
-                       subset["R2"][j], subset["n"][j], \
-                       subset["Species"][j], subset["Leaf"][j], \
-                       subset["Curve"][j], \
-                       subset["Filename"][j]]
-                wr2.writerow(row)
-                
+                vnorm = self.interpolate_temp(subset, index, index-1, "Vcmax")
+                jnorm = self.interpolate_temp(subset, index, index-1, "Jmax")  
+            self.write_outputs(jnorm, vnorm, subset, leaf, wr1, wr2)
         fp1.close()
         fp2.close()
         
@@ -112,24 +95,22 @@ class Normalise(object):
         wr.writerow(header)
         
         return wr
-
-    def interpolate_temp(self, data, index1, index2):
+    
+    def interpolate_temp(self, data, index1, index2, var):
         """ 
         Interpolate to obtain values of Jmax and Vcmax at normalising temp
-        """    
-        x1 = (1.0 / (self.tnorm + self.deg2kelvin) - 1.0 / 
-             (data["Tav"][index1] + self.deg2kelvin)) 
-        x2 = (1.0 / (self.tnorm + self.deg2kelvin) - 1.0 / 
-             (data["Tav"][index2] + self.deg2kelvin))  
-        v1 = np.log(data["Vcmax"][index1])
-        v2 = np.log(data["Vcmax"][index2])
-        vnorm = np.exp(v1 - x1 * (v2 - v1) / (x2 - x1))  
-        j1 = np.log(data["Jmax"][index1])
-        j2 = np.log(data["Jmax"][index2])
-        jnorm = np.exp(j1 - x1 * (j2 - j1) / (x2 - x1))
+        """ 
+        # get relevant data, build dict for consistancy
+        d = {}
+        d["Tav"] = data["Tav"][index1] 
+        x1 = self.calc_Tarrh(d)
+        d["Tav"] = data["Tav"][index2]
+        x2 = self.calc_Tarrh(d)  
+        y1 = np.log(data[var][index1])
+        y2 = np.log(data[var][index2])
         
-        return vnorm, jnorm
-    
+        return np.exp(y1 - x1 * (y2 - y1) / (x2 - x1))  
+        
     def find_nearest_highest_index(self, array):
         """ find nearest index in an array that is > a given value """
         index = (np.abs(array - self.tnorm)).argmin()
@@ -138,6 +119,25 @@ class Normalise(object):
             index += 1
         
         return index
+    
+    def write_outputs(self, jnorm, vnorm, subset, leaf, fp1, fp2):
+        """ Print out values at normalising temperature """
+        fp1.writerow([jnorm, vnorm, subset["Species"][0], leaf,
+                   subset["Filename"][0]])
+        
+        # Normalise each point by value at the normalising temperature
+        vcmax_norm = np.log(subset["Vcmax"] / vnorm)
+        jmax_norm = np.log(subset["Jmax"] / jnorm)
+        Tarrh = self.calc_Tarrh(subset)
+        for j in xrange(len(subset)):          
+            row = [subset["Jmax"][j], subset["Vcmax"][j],\
+                   jmax_norm[j], vcmax_norm[j], \
+                   subset["Rd"][j], subset["Tav"][j], Tarrh[j], \
+                   subset["R2"][j], subset["n"][j], \
+                   subset["Species"][j], subset["Leaf"][j], \
+                   subset["Curve"][j], \
+                   subset["Filename"][j]]
+            fp2.writerow(row)
     
     def make_plots(self, prov, i, spp):
         colour_list=['red', 'blue', 'green', 'yellow', 'orange', 'blueviolet',\
@@ -190,7 +190,8 @@ class Normalise(object):
         fig.savefig(os.path.join(self.plot_dir, "VArrh.png"), dpi=100)
 
     def calc_Tarrh(self, data):
-         arg1 = 1.0 / (self.tnorm + self.deg2kelvin)
-         arg2 = 1.0 / (data["Tav"] + self.deg2kelvin)
-         return arg1 - arg2
+        arg1 = 1.0 / (self.tnorm + self.deg2kelvin)
+        arg2 = 1.0 / (data["Tav"] + self.deg2kelvin)
+         
+        return arg1 - arg2
     
