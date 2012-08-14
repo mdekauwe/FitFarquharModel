@@ -283,7 +283,8 @@ class FitEaDels(FitMe):
         self.infname = infname
         FitMe.__init__(self, model=model, ofname=ofname, 
                        results_dir=results_dir, data_dir=data_dir)
-        self.header = ["Param", "Hd", "SE", "Ea", "SE", "delS", "delSSE", "R2", "n", "Topt"]
+        self.header = ["Param", "Hd", "SE", "Ea", "SE", "delS", "delSSE", \
+                       "R2", "n", "Topt"]
         self.call_model = model.peaked_arrh
         
     def main(self, print_to_screen, species_loop=True):   

@@ -31,7 +31,7 @@ def read_data(fname, delimiter=","):
 ##############################
 # Fit Eaj, Eav, delSj + delSv
 ##############################
-infname = "test_ea_fit.csv"
+infname = "results/normalised_results.txt"
 ofname = "ea_results.txt"
 results_dir = "results"
 data_dir = "data"

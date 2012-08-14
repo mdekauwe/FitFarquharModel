@@ -1,2 +1,2 @@
 Jmax,Vcmax,Species,Leaf,Filename
-150.000000236,93.7500001208,Potatoes,1,example.csv
+149.999999895,93.7499998836,Potatoes,1,example.csv
