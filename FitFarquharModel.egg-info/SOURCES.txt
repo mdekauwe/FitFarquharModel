@@ -4,6 +4,7 @@ FitFarquharModel.egg-info/PKG-INFO
 FitFarquharModel.egg-info/SOURCES.txt
 FitFarquharModel.egg-info/dependency_links.txt
 FitFarquharModel.egg-info/top_level.txt
-src/farquhar_model.py
-src/fit_vcmax_jmax_and_rd.py
-src/normalise.py
+fit_farquhar_model/__init__.py
+fit_farquhar_model/farquhar_model.py
+fit_farquhar_model/fit_model.py
+fit_farquhar_model/normalise.py
