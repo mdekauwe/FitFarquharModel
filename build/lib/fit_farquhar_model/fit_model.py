@@ -263,7 +263,7 @@ class FitJmaxVcmaxRd(FitMe):
                         if print_to_screen:
                             self.print_fit_to_screen(result)
                         if result.errorbars:
-                            succes_count += 1
+                            self.succes_count += 1
                             break
                 # Need to run the Farquhar model with the fitted params for
                 # plotting...
@@ -325,7 +325,7 @@ class FitEaDels(FitMe):
                         if print_to_screen:
                             self.print_fit_to_screen(result)
                         if result.errorbars:
-                            succes_count += 1
+                            self.succes_count += 1
                             break
                 (peak_fit) = self.forward_run(result, data)
                 self.report_fits(wr, result, data, data["Jnorm"], peak_fit, 
@@ -358,7 +358,7 @@ class FitEaDels(FitMe):
                         if print_to_screen:
                             self.print_fit_to_screen(result)
                         if result.errorbars:
-                            succes_count += 1
+                            self.succes_count += 1
                             break
                 (peak_fit) = self.forward_run(result, data)
                 self.report_fits(wr, result, data, data["Vnorm"], peak_fit, 
@@ -391,7 +391,7 @@ class FitEaDels(FitMe):
                     if print_to_screen:
                         self.print_fit_to_screen(result)
                     if result.errorbars:
-                        succes_count += 1
+                        self.succes_count += 1
                         break
             (peak_fit) = self.forward_run(result, all_data)
             Topt = (self.calc_Topt(result.params["Hd"].value, 
@@ -428,7 +428,7 @@ class FitEaDels(FitMe):
                     if print_to_screen:
                         self.print_fit_to_screen(result)
                     if result.errorbars:
-                        succes_count += 1
+                        self.succes_count += 1
                         break
             (peak_fit) = self.forward_run(result, all_data)
             Topt = (self.calc_Topt(result.params["Hd"].value, 

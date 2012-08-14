@@ -18,6 +18,17 @@ import numpy as np
 from fit_farquhar_model.farquhar_model import FarquharC3
 from fit_farquhar_model.fit_model import FitJmaxVcmaxRd
 
+def read_data(fname, delimiter=","):
+    """ Read the A-Ci data. 
+    
+    Expects a format of:
+    -> Curve, Tleaf, Ci, Photo, Species, Season, Leaf
+    """
+    data = np.recfromcsv(fname, delimiter=delimiter, names=True, 
+                         case_sensitive=True)
+    return data
+
+
 ##############################
 # Fit Jmax, Vcmax + Rd
 ##############################
@@ -29,3 +40,28 @@ model = FarquharC3(peaked_Jmax=True, peaked_Vcmax=True)
 ##############################
 F = FitJmaxVcmaxRd(model, ofname, results_dir, data_dir, plot_dir)
 F.main(print_to_screen=False)     
+
+
+# OK what are the real values??
+fit = read_data("results/fitting_results.csv")
+deg2kelvin = 273.15
+index = 0
+for Tleaf in np.arange(15.0, 35.0, 5.0):
+    Tleaf += deg2kelvin
+    Jmax25 = 150.0
+    Vcmax25 = Jmax25 / 1.6
+    Eaj = 30000.0
+    Eav = 60000.0
+    deltaSj = 620.0
+    deltaSv = 620.0
+    Hdv = 200000.0
+    Hdj = 200000.0
+
+    Vcmax = model.peaked_arrh(Vcmax25, Eav, Tleaf, deltaSv, Hdv)
+    Jmax = model.peaked_arrh(Jmax25, Eaj, Tleaf, deltaSj, Hdj)
+    
+    print "Truth", Tleaf-deg2kelvin, Jmax, Vcmax
+    print "Fit", fit["Tav"][index], fit["Jmax"][index], fit["Vcmax"][index]
+    print
+    
+    index +=1

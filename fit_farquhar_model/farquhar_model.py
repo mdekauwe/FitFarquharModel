@@ -53,8 +53,7 @@ class FarquharC3(object):
     def __init__(self, peaked_Jmax=False, peaked_Vcmax=False, Oi=205.0, 
                  gamstar25=42.75, Kc25=404.9, Ko25=278.4, Ec=79430.0,
                  Eo=36380.0, Egamma=37830.0, theta_hyperbol=0.9995, 
-                 theta_J=0.7, alpha=None, quantum_yield=0.3, absorptance=0.8,
-                 ):
+                 theta_J=0.7, alpha=None, quantum_yield=0.3, absorptance=0.8):
         """
         Parameters
         ----------
