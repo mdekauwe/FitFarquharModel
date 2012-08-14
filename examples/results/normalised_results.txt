@@ -1,0 +1,1 @@
+Jmax,Vcmax,Jnorm,Vnorm,Rd,Tav,Tarrh,R2,n,Species,Leaf,CurveFilename

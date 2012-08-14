@@ -50,7 +50,11 @@ class FarquharC3(object):
       A review of experimental data. Plant, Cell and Enviroment 25, 1167-1179.
     """
     
-    def __init__(self, peaked_Jmax=False, peaked_Vcmax=False):
+    def __init__(self, peaked_Jmax=False, peaked_Vcmax=False, Oi=205.0, 
+                 gamstar25=42.75, Kc25=404.9, Ko25=278.4, Ec=79430.0,
+                 Eo=36380.0, Egamma=37830.0, theta_hyperbol=0.9995, 
+                 theta_J=0.7, alpha=None, quantum_yield=0.3, absorptance=0.8,
+                 ):
         """
         Parameters
         ----------
@@ -75,35 +79,41 @@ class FarquharC3(object):
             Activation energy at CO2 compensation point [J mol-1]
         R : float
             Universal gas constant [J mol-1 K-1]
-        theta : float
-            Curvature of the light response
+        theta_hyperbol : float
+            Curvature of the light response. 
+            See Peltoniemi et al. 2012 Tree Phys, 32, 510-519
+        theta_J : float
+            Curvature of the light response 
         alpha : float
             Leaf quantum yield (initial slope of the A-light response curve)
+            [mol mol-1]
         peaked_Jmax : logical
             Use the peaked Arrhenius function (if true)
         peaked_Vcmax : logical
             Use the peaked Arrhenius function (if true)
         """
-        self.Oi = 205.0     
-        self.gamstar25 = 42.75 
-        self.Kc25 = 404.9      
-        self.Ko25 = 278.4   
-        self.Ec = 79430.0      
-        self.Eo = 36380.0      # Note there is a typo in the R mate code here...  
-        self.Egamma = 37830.0  
-        self.RGAS = 8.314      
-        self.theta = 0.9995 # was 0.9 - is too low for the hyperbolic minimum     
-        self.alpha = 0.3 * 0.8 # quantum yield x absorptance (Medlyn et al 2002)     
-        self.edj = 200000.0
-        self.edv = 200000.0
-        self.deg2kelvin = 273.15
         self.peaked_Jmax = peaked_Jmax
         self.peaked_Vcmax = peaked_Vcmax
+        self.deg2kelvin = 273.15
+        self.RGAS = 8.314 
+        self.Oi = Oi    
+        self.gamstar25 = gamstar25
+        self.Kc25 = Kc25    
+        self.Ko25 = Ko25
+        self.Ec = Ec   
+        self.Eo = Eo  
+        self.Egamma = Egamma
+        self.theta_hyperbol = theta_hyperbol
+        self.theta_J = theta_J    
+        if alpha is not None:
+            self.alpha = alpha
+        else:
+            self.alpha = quantum_yield * absorptance # (Medlyn et al 2002)     
         
-    def calc_photosynthesis(self, Ci, Tleaf, Jmax=None, Vcmax=None, 
+    def calc_photosynthesis(self, Ci, Tleaf, par=None, Jmax=None, Vcmax=None, 
                             Jmax25=None, Vcmax25=None, Rd=None, Q10=None, 
                             Eaj=None, Eav=None, deltaSj=None, deltaSv=None, 
-                            r25=None):
+                            r25=None, Hdv=200000.0, Hdj=200000.0):
         """
         Parameters
         ----------
@@ -133,10 +143,16 @@ class FarquharC3(object):
             entropy factor [J mol-1 K-1)
         deltaSv : float
             entropy factor [J mol-1 K-1)
+        HdV : float
+            Deactivation energy for Vcmax [J mol-1]
+        Hdj : float
+            Deactivation energy for Jmax [J mol-1]
         r25 : float
             Estimate of respiration rate at the reference temperature 25 deg C
              or 298 K [deg K]
-        
+        par : float
+            PAR [umol m-2 time unit-1]. Default is not to supply PAR, with 
+            measurements taken under light saturation.
         
         Returns:
         --------
@@ -163,19 +179,23 @@ class FarquharC3(object):
         
             # Effect of temperature on Vcmax and Jamx
             if self.peaked_Vcmax:
-                Vcmax = self.peaked_arrh(Vcmax25, Eav, Tleaf, deltaSv, self.edv)
+                Vcmax = self.peaked_arrh(Vcmax25, Eav, Tleaf, deltaSv, Hdv)
             else:
                 Vcmax = self.arrh(Vcmax25, Eav, Tleaf)
             
             if self.peaked_Jmax:
-                Jmax = self.peaked_arrh(Jmax25, Eaj, Tleaf, deltaSj, self.edj)
+                Jmax = self.peaked_arrh(Jmax25, Eaj, Tleaf, deltaSj, Hdj)
             else:
                 Jmax = self.arrh(Jmax25, Eaj, Tleaf)
         
-        # actual rate of electron transport, a function of absorbed PAR
+         # actual rate of electron transport, a function of absorbed PAR
+        if par is not None:
+            J = self.quadratic(a=self.theta, b=-(self.alpha * par + Jmax), 
+                               c=self.alpha_J * par * Jmax)
         # All measurements are calculated under saturated light!!
-        J = Jmax
-                           
+        else:
+            J = Jmax
+                        
         # Rubisco-limited photosynthesis
         Ac = (Vcmax * (Ci - gamma_star)) / (Ci + Km)
         
@@ -186,8 +206,9 @@ class FarquharC3(object):
         # effectively smooth over discontinuity when moving from light/electron 
         # transport limited to rubisco limited photosynthesis
         # except if Ci < 150 in which case it is always Rubisco limited
-        arg = ((Ac + Aj - np.sqrt((Ac + Aj)**2 - 4.0 * self.theta * Ac * Aj)) / 
-              (2.0 * self.theta))
+        arg = ((Ac + Aj - \
+               np.sqrt((Ac + Aj)**2 - 4.0 * self.theta_hyperbol * Ac * Aj)) / 
+              (2.0 * self.theta_hyperbol))
         A = np.where(Ci < 150, Ac, arg)
         A = np.where(Ci > np.max(Ci) - 10.0, Aj, A)
        

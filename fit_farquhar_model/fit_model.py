@@ -29,14 +29,12 @@ import matplotlib.pyplot as plt
 
 class FitMe(object):
     
-    def __init__(self, model=None, ofname=None, ofname25=None, results_dir=None, 
+    def __init__(self, model=None, ofname=None, results_dir=None, 
                  data_dir=None, plot_dir=None, nstartpos=30):
         
         self.results_dir = results_dir
         if ofname is not None:
             self.ofname = os.path.join(self.results_dir, ofname)
-        if ofname25 is not None:
-            self.ofname25 = os.path.join(self.results_dir, ofname25)
         self.data_dir = data_dir 
         self.plot_dir = plot_dir    
         self.call_model = model.calc_photosynthesis
@@ -60,7 +58,7 @@ class FitMe(object):
         """ Read the A-Ci data. 
         
         Expects a format of:
-        -> Curve, Tleaf, Ci, A, Species, Season, Plant
+        -> Curve, Tleaf, Ci, Photo, Species, Season, Leaf
         """
         data = np.recfromcsv(fname, delimiter=delimiter, names=True, 
                              case_sensitive=True)
@@ -79,7 +77,7 @@ class FitMe(object):
     
     def report_fits(self, f, result, fname, curve_data, An_fit):
         """ Save fitting results to a file... """
-        pearsons_r = stats.pearsonr(curve_data["A"], An_fit)[0]
+        pearsons_r = stats.pearsonr(curve_data["Photo"], An_fit)[0]
         row = []
         for name, par in result.params.items():
             row.append("%s" % (par.value))
@@ -89,7 +87,7 @@ class FitMe(object):
         row.append("%s" % (len(An_fit)))
         row.append("%s" % (curve_data["Species"][0]))
         row.append("%s" % (curve_data["Season"][0]))
-        row.append("%s" % (curve_data["Plant"][0]))
+        row.append("%s" % (curve_data["Leaf"][0]))
         row.append("%s" % (curve_data["Curve"][0]))
         row.append("%s" % (fname))
         f.writerow(row)
@@ -105,8 +103,8 @@ class FitMe(object):
         return (An_fit, Anc_fit, Anj_fit)
                 
     def setup_model_params(self, jmax_guess=None, vcmax_guess=None, 
-                          rd_guess=None, hd_guess=None, ea_guess=None, 
-                          dels_guess=None):
+                           rd_guess=None, hd_guess=None, ea_guess=None, 
+                           dels_guess=None):
         """ Setup parameters """
         params = Parameters()
         if jmax_guess is not None:
@@ -156,10 +154,10 @@ class FitMe(object):
         species = curve_data["Species"][0]
         season = curve_data["Season"][0]
         season = "all"
-        plant = curve_data["Plant"][0]
+        leaf = curve_data["Leaf"][0]
         ofname = "%s/%s_%s_%s_%s_fit_and_residual.png" % \
-                 (self.plot_dir, species, season, plant, curve_num)
-        residuals = curve_data["A"] - An_fit  
+                 (self.plot_dir, species, season, leaf, curve_num)
+        residuals = curve_data["Photo"] - An_fit  
         
         colour_list=['red', 'blue', 'green', 'yellow', 'orange', 'blueviolet',\
                      'darkmagenta', 'cyan', 'indigo', 'palegreen', 'salmon',\
@@ -178,7 +176,7 @@ class FitMe(object):
         ax = fig.add_subplot(211)
         ax2 = fig.add_subplot(212)
         
-        ax.plot(curve_data["Ci"], curve_data["A"], 
+        ax.plot(curve_data["Ci"], curve_data["Photo"], 
                 ls="", lw=1.5, marker="o", c="black")
         ax.plot(curve_data["Ci"], An_fit, '-', c="black", linewidth=1, 
                 label="An-Rd")
@@ -208,21 +206,21 @@ class FitMe(object):
         
         return wr
         
-    def tidy_up(self, fp=None, fp25=None):
+    def tidy_up(self, fp=None):
         total_fits = float(self.succes_count) / self.nfiles * 100.0
         print "\nOverall fitted %.1f%% of the data\n" % (total_fits)
         fp.close()
-        fp25.close() 
+         
     
 
 class FitJmaxVcmaxRd(FitMe):
     """ Fit the model parameters Jmax, Vcmax and Rd to the measured A-Ci data"""
-    def __init__(self, model=None, ofname=None, ofname25=None, results_dir=None, 
+    def __init__(self, model=None, ofname=None, results_dir=None, 
                  data_dir=None, plot_dir=None, nstartpos=30):
-        FitMe.__init__(self, model, ofname, ofname25, results_dir, 
+        FitMe.__init__(self, model, ofname, results_dir, 
                  data_dir, plot_dir, nstartpos)
         self.header = ["Jmax", "JSE", "Vcmax", "VSE", "Rd", "RSE", "Tav", \
-                       "R2", "n", "Species", "Season", "Plant", "Curve", \
+                       "R2", "n", "Species", "Season", "Leaf", "Curve", \
                        "Filename"]
                        
     def main(self, print_to_screen, deg25_range=[None, None]):   
@@ -232,9 +230,7 @@ class FitJmaxVcmaxRd(FitMe):
         # open files and write header information
         fp = self.open_output_files(self.ofname)
         wr = self.write_file_hdr(fp, self.header)
-        fp25 = self.open_output_files(self.ofname25)
-        wr25 = self.write_file_hdr(fp25, self.header)
-        
+    
         # Loop over all the measured data and fit the model params.
         for fname in glob.glob(os.path.join(self.data_dir, "*.csv")):
             data = self.read_data(fname)
@@ -243,9 +239,8 @@ class FitJmaxVcmaxRd(FitMe):
                 curve_data = data[np.where(data["Curve"]==curve_num)]
                 params = self.setup_model_params(jmax_guess=180.0, 
                                                  vcmax_guess=50.0, rd_guess=2.0)
-                result = minimize(self.residual, params, 
-                                          engine="leastsq", 
-                                          args=(curve_data, curve_data["A"]))
+                result = minimize(self.residual, params, engine="leastsq", 
+                                  args=(curve_data, curve_data["Photo"]))
                 
                 if print_to_screen:
                     self.print_fit_to_screen(result)
@@ -262,8 +257,8 @@ class FitJmaxVcmaxRd(FitMe):
                         params = self.try_new_params(jmax=True, vcmax=True, 
                                                      rd=True)
                         result = minimize(self.residual, params, 
-                                          engine="leastsq", 
-                                          args=(curve_data, curve_data["A"]))
+                                         engine="leastsq", 
+                                         args=(curve_data, curve_data["Photo"]))
                          
                         if print_to_screen:
                             self.print_fit_to_screen(result)
@@ -275,16 +270,10 @@ class FitJmaxVcmaxRd(FitMe):
                 (An, Anc, Anj) = self.forward_run(result, curve_data)
                 self.report_fits(wr, result, os.path.basename(fname), 
                                  curve_data, An)
-                # Figure out which of our curves (if any) were measured at
-                # 25 degrees C
-                Tavg = np.mean(curve_data["Tleaf"]) - self.deg2kelvin
-                if Tavg > deg25_range[0] and Tavg < deg25_range[1]:
-                    self.report_fits(wr25, result, os.path.basename(fname), 
-                                     curve_data, An)  
                 
                 self.make_plot(curve_data, curve_num, An, Anc, Anj)
                 self.nfiles += 1       
-        self.tidy_up(fp, fp25)    
+        self.tidy_up(fp)    
     
 
 class FitEaDels(FitMe):
