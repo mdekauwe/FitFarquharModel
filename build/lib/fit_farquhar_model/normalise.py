@@ -1,13 +1,34 @@
-import os
+#!/usr/bin/env python
+
+"""
+Normalise the data...write something sensible
+
+That's all folks.
+"""
+__author__ = "Martin De Kauwe"
+__version__ = "1.0 (14.08.2012)"
+__email__ = "mdekauwe@gmail.com"
+
 import sys
-import glob
 import numpy as np
+import os
+import glob
 import matplotlib.mlab as mlab  # library to write structured array to file.
 import matplotlib.pyplot as plt
 
-Tnorm = 25.0 # This is the temperature to normalise to 
-deg2kelvin = 273.15
-# File to read from
+
+class Normalise(object):
+    def __init__(self, fname=None, results_dir=None, plot_dir=None):
+        self.results_dir = results_dir
+        self.fname = os.path.join(self.results_dir, ofname)
+        self.plot_dir = plot_dir    
+        self.tnorm = 25.0 # Temperature we are normalising to
+        self.deg2kelvin = 273.15
+        
+    def main(self):
+    
+    
+
 fname = "results/fitting_results.csv"
 data_all = np.recfromcsv(fname, delimiter=",", names=True, case_sensitive=True)
 # Files to write to

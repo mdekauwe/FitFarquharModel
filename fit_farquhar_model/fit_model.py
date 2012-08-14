@@ -225,7 +225,7 @@ class FitJmaxVcmaxRd(FitMe):
                        "R2", "n", "Species", "Season", "Plant", "Curve", \
                        "Filename"]
                        
-    def main(self, print_to_screen, 25deg_range=[26.0, 29.0]):   
+    def main(self, print_to_screen, deg25_range=[None, None]):   
         """ Loop over all our A-Ci measured curves and fit the Farquhar model
         parameters to this data """
         
@@ -278,7 +278,7 @@ class FitJmaxVcmaxRd(FitMe):
                 # Figure out which of our curves (if any) were measured at
                 # 25 degrees C
                 Tavg = np.mean(curve_data["Tleaf"]) - self.deg2kelvin
-                if Tavg > 25deg_range[0] and Tavg < 25deg_range[1]:
+                if Tavg > deg25_range[0] and Tavg < deg25_range[1]:
                     self.report_fits(wr25, result, os.path.basename(fname), 
                                      curve_data, An)  
                 

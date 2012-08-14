@@ -27,10 +27,17 @@ results_dir = "results"
 data_dir = "data"
 plot_dir = "plots"
 model = FarquharC3(peaked_Jmax=True, peaked_Vcmax=True)
-25deg_range = [24.0, 26.0]
+deg25_range = [24.0, 26.0]
 ##############################
 F = FitJmaxVcmaxRd(model, ofname, ofname25, results_dir, data_dir, plot_dir)
-F.main(print_to_screen=False, 25deg_range)     
+F.main(print_to_screen=False, deg25_range=deg25_range)     
+
+###############################
+#Normalise data
+#############################
+#fname = "results/fitting_results.csv"
+
+#############################
 
 ##############################
 # Fit Eaj, Eav, delSj + delSv
