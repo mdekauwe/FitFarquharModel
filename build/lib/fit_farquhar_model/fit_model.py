@@ -121,32 +121,10 @@ class FitMe(object):
         if ea_guess is not None:
             params.add('Ea', value=ea_guess, min=0.0)
         if dels_guess is not None:
-            params.add('delS', value=dels_guess, min=0.0, max=680.0)
+            params.add('delS', value=dels_guess, min=0.0, max=700.0)
         
         return params
     
-    def try_new_params(self, jmax=None, vcmax=None, rd=None, hd=None, ea=None, 
-                       dels=None):
-        """ Fitting routine can be sensitive to the starting guess, so randomly
-        alter the initial guess """
-        params = Parameters()
-        
-        if jmax is not None:
-            params.add('Jmax', value=np.random.uniform(1.0, 250.0), min=0.0)
-        if vcmax is not None:
-            params.add('Vcmax', value= np.random.uniform(1.0, 250.0), min=0.0)
-        if rd is not None:
-            params.add('Rd', value=np.random.uniform(0.1, 6.0))
-        if hd is not None:
-            params.add('Hd', value=hd, vary=False)
-        if ea is not None:
-            params.add('Ea', value=np.random.uniform(20000.0, 80000.0), min=0.0)
-        if dels is not None:
-            params.add('delS', value=np.random.uniform(550.0, 680.0), min=0.0, 
-                       max=680.0)
-        
-        return params
-
     def print_fit_to_screen(self, result):
         for name, par in result.params.items():
             print '%s = %.8f +/- %.8f ' % (name, par.value, par.stderr)
@@ -214,8 +192,32 @@ class FitMe(object):
         total_fits = float(self.succes_count) / self.nfiles * 100.0
         print "\nOverall fitted %.1f%% of the data\n" % (total_fits)
         fp.close()
-         
     
+    def pick_starting_point(self, data, grid_size=500):
+        """ High-density grid search to overcome issues with ending up in a 
+        local minima. Values that yield the lowest SSE (without minimisation)
+        are used as the starting point for the minimisation.
+        """
+        
+        # Shuffle arrays so that our combination of parameters is random
+        Vcmax = np.linspace(5.0, 350, grid_size) 
+        np.random.shuffle(Vcmax)
+        Jmax = np.linspace(5.0, 550, grid_size) 
+        np.random.shuffle(Jmax)
+        Rd = np.linspace(1E-8, 10.5, grid_size)
+        np.random.shuffle(Rd)
+        
+        fits = np.zeros(0)
+        for i in xrange(len(Vcmax)):
+            (An, Anc, Anj) = self.call_model(data["Ci"], data["Tleaf"], 
+                                             Jmax=Jmax[i], Vcmax=Vcmax[i], 
+                                             Rd=Rd[i])     
+            # Save SSE
+            fits = np.append(fits, np.sum((data["Photo"] - An)**2))
+        index = np.argmin(fits, 0) # smalles SSE
+        return Vcmax[index], Jmax[index], Rd[index]
+       
+        
 
 class FitJmaxVcmaxRd(FitMe):
     """ Fit the model parameters Jmax, Vcmax and Rd to the measured A-Ci data"""
@@ -241,8 +243,12 @@ class FitJmaxVcmaxRd(FitMe):
             data["Tleaf"] += self.deg2kelvin
             for curve_num in np.unique(data["Curve"]):
                 curve_data = data[np.where(data["Curve"]==curve_num)]
-                params = self.setup_model_params(jmax_guess=180.0, 
-                                                 vcmax_guess=50.0, rd_guess=2.0)
+                (vcmax_guess, jmax_guess, 
+                    rd_guess) = self.pick_starting_point(curve_data)
+                
+                params = self.setup_model_params(jmax_guess=jmax_guess, 
+                                                 vcmax_guess=vcmax_guess, 
+                                                 rd_guess=rd_guess)
                 result = minimize(self.residual, params, engine="leastsq", 
                                   args=(curve_data, curve_data["Photo"]))
                 
@@ -254,21 +260,6 @@ class FitJmaxVcmaxRd(FitMe):
                 if result.errorbars:
                     self.succes_count += 1
                 
-                # Otherwise we did not fit the data. Is it because of our 
-                # starting position?? Lets vary this a little and redo the fits
-                else:
-                    for i in xrange(self.nstartpos):
-                        params = self.try_new_params(jmax=True, vcmax=True, 
-                                                     rd=True)
-                        result = minimize(self.residual, params, 
-                                         engine="leastsq", 
-                                         args=(curve_data, curve_data["Photo"]))
-                         
-                        if print_to_screen:
-                            self.print_fit_to_screen(result)
-                        if result.errorbars:
-                            self.succes_count += 1
-                            break
                 # Need to run the Farquhar model with the fitted params for
                 # plotting...
                 (An, Anc, Anj) = self.forward_run(result, curve_data)
@@ -303,10 +294,12 @@ class FitEaDels(FitMe):
         for id in np.unique(all_data["fitgroup"]):
             data = all_data[np.where(all_data["fitgroup"] == id)]
             
-            # Fit Jmax vs T first  
+            # Fit Jmax vs T first
+            (ea_guess, 
+                dels_guess) = self.pick_starting_point(data, data["Jnorm"])  
             params = self.setup_model_params(hd_guess=200000.0, 
-                                             ea_guess=60000.0, 
-                                             dels_guess=650.0)
+                                             ea_guess=ea_guess, 
+                                             dels_guess=dels_guess)
             result = minimize(self.residual, params, engine="leastsq", 
                               args=(data, data["Jnorm"]))
             if print_to_screen:
@@ -317,21 +310,6 @@ class FitEaDels(FitMe):
             if result.errorbars:
                 self.succes_count += 1
         
-            # Otherwise we did not fit the data. Is it because of our 
-            # starting position?? Lets vary this a little and redo the fits
-            else:
-                for i in xrange(self.nstartpos):
-                    params = self.try_new_params(hd=200000.0, ea=True, 
-                                                 dels=True)
-                    result = minimize(self.residual, params, 
-                                      engine="leastsq", 
-                                      args=(data, data["Jnorm"]))
-        
-                    if print_to_screen:
-                        self.print_fit_to_screen(result)
-                    if result.errorbars:
-                        self.succes_count += 1
-                        break
             (peak_fit) = self.forward_run(result, data)
             Topt = (self.calc_Topt(result.params["Hd"].value, 
                                result.params["Ea"].value, 
@@ -341,9 +319,11 @@ class FitEaDels(FitMe):
                              "Jmax", Topt)
             
             # Fit Vcmax vs T next 
+            (ea_guess, 
+                dels_guess) = self.pick_starting_point(data, data["Vnorm"])
             params = self.setup_model_params(hd_guess=200000.0, 
-                                             ea_guess=60000.0, 
-                                             dels_guess=650.0)
+                                             ea_guess=ea_guess, 
+                                             dels_guess=dels_guess)
             result = minimize(self.residual, params, engine="leastsq", 
                               args=(data, data["Vnorm"]))
             if print_to_screen:
@@ -354,21 +334,6 @@ class FitEaDels(FitMe):
             if result.errorbars:
                 self.succes_count += 1
         
-            # Otherwise we did not fit the data. Is it because of our 
-            # starting position?? Lets vary this a little and redo the fits
-            else:
-                for i in xrange(self.nstartpos):
-                    params = self.try_new_params(hd=200000.0, ea=True, 
-                                                 dels=True)
-                    result = minimize(self.residual, params, 
-                                      engine="leastsq", 
-                                      args=(data, data["Vnorm"]))
-        
-                    if print_to_screen:
-                        self.print_fit_to_screen(result)
-                    if result.errorbars:
-                        self.succes_count += 1
-                        break
             (peak_fit) = self.forward_run(result, data)
             Topt = (self.calc_Topt(result.params["Hd"].value, 
                                result.params["Ea"].value, 
@@ -424,4 +389,26 @@ class FitEaDels(FitMe):
         
         #print Ha, Hd, delS
         return Hd / (delS - RGAS * np.log(Ha / (Hd - Ha)))
+        
+    def pick_starting_point(self, data, obs, grid_size=500):
+        """ High-density grid search to overcome issues with ending up in a 
+        local minima. Values that yield the lowest SSE (without minimisation)
+        are used as the starting point for the minimisation.
+        """
+        # Shuffle arrays so that our combination of parameters is random
+        Hd = 200000.0
+        Ea = np.linspace(20000.0, 80000.0, grid_size) 
+        np.random.shuffle(Ea)
+        delS = np.linspace(550.0, 700.0, grid_size)
+        np.random.shuffle(delS)
+        
+        fits = np.zeros(0)
+        for i in xrange(len(Ea)):
+            model = self.call_model(1.0, Ea[i], data["Tav"], delS[i], Hd)
+            
+            # Save SSE
+            fits = np.append(fits, np.sum((obs - model)**2))
+        index = np.argmin(fits, 0) # smalles SSE
+        
+        return Ea[index], delS[index]
     
