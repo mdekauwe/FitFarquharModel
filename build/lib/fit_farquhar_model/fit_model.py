@@ -121,7 +121,7 @@ class FitMe(object):
         if ea_guess is not None:
             params.add('Ea', value=ea_guess, min=0.0)
         if dels_guess is not None:
-            params.add('delS', value=dels_guess, min=0.0)
+            params.add('delS', value=dels_guess, min=0.0, max=680.0)
         
         return params
     
@@ -142,7 +142,8 @@ class FitMe(object):
         if ea is not None:
             params.add('Ea', value=np.random.uniform(20000.0, 80000.0), min=0.0)
         if dels is not None:
-            params.add('delS', value=np.random.uniform(550.0, 680.0), min=0.0)
+            params.add('delS', value=np.random.uniform(550.0, 680.0), min=0.0, 
+                       max=680.0)
         
         return params
 
@@ -420,5 +421,7 @@ class FitEaDels(FitMe):
     
     def calc_Topt(self, Hd, Ha, delS, RGAS=8.314):
         """ calculate the temperature optimum """
+        
+        #print Ha, Hd, delS
         return Hd / (delS - RGAS * np.log(Ha / (Hd - Ha)))
     
