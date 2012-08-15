@@ -5,11 +5,10 @@ Using the Levenberg-Marquardt algorithm  to fit Jmax, Vcmax, Rd, Eaj, Eav,
 deltaSj and deltaSv.
 
 The steps here are:
-    1. try and fit the parameters but if this fails...
-    2. assess whether it is because the Levenberg-Marquardt scheme is sensitive 
-       to the initial starting point, so try a few more fits from different 
-       points.
-
+    1. Define a search grid to pick the starting point of the minimiser, in an
+       attempt to avoid issues relating to falling into a local minima. 
+    2. Try and fit the parameters 
+    
 That's all folks.
 """
 
