@@ -22,11 +22,11 @@ Installation
 
 They code depends on:
 
-* `numpy <http://numpy.scipy.org/>`_.  
-* `scipy <http://www.scipy.org/>`_.  
-* `scipy <http://www.scipy.org/>`_.  
-* `matplotlib <http://matplotlib.sourceforge.net/>`_.  
-* `lmfit <http://newville.github.com/lmfit-py/>`_.  
+* `numpy <http://numpy.scipy.org/>`_ 
+* `scipy <http://www.scipy.org/>`_ 
+* `scipy <http://www.scipy.org/>`_  
+* `matplotlib <http://matplotlib.sourceforge.net/>`_ 
+* `lmfit <http://newville.github.com/lmfit-py/>`_  
 
 All of these packages are widely used scientific packages which build easily on multiple platforms. For window users the Enthought python package is perhaps your simplest avenue (http://www.enthought.com/).
 
@@ -41,5 +41,11 @@ or the standard python approach ::
 Running the code
 =================
 
-Adds some examples in the bin directory...
+The example directory contains a series of self contained example scripts. Names should be obvious, but the typical order of running them would be... ::
+
+    create_example_data.py
+    fit_jmax_vcmax_rd.py
+    normalise_data.py
+    fit_ea_dels.py
+
     
