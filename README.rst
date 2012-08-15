@@ -2,7 +2,12 @@
 FitFarquharModel
 ====================
 
-Fitting routine for the Farquhar model parameters to a series of measured A-Ci curve data. Fitting is carried out in a series of separate steps: (i) fitting Jmax, Vcmax and Rd at the measurement temperature, (ii) normalising the data to 25 degrees (iii) a series of stats tests to explore differences in the data (not part of the package), e.g. differences between season, species etc, and (iv) finally, based on (iii) fit the model parameters Eaj, Eav, deltaSj and deltaSv.
+Fitting routine for the Farquhar model parameters to a series of measured A-Ci curve data. Fitting is carried out in a series of separate steps: 
+
+(i) fitting Jmax, Vcmax and Rd at the measurement temperature, 
+(ii) normalising the data to 25 degrees,
+(iii) a series of stats tests to explore differences in the data (not part of the package), e.g. differences between season, species etc,
+(iv) finally, based on (iii) fit the model parameters Eaj, Eav, deltaSj and deltaSv.
 
 The Levenberg-Marquardt minimization algorithm is used to fit the non-linear
 A-Ci curve data, using the lmfit package (see below).
