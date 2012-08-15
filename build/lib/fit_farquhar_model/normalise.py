@@ -27,7 +27,7 @@ class Normalise(object):
         self.plot_dir = plot_dir    
         self.tnorm = tnorm # Temperature we are normalising to
         self.deg2kelvin = 273.15
-        self.header1 = ["Jmax", "Vcmax", "Species", "Leaf", "Filename"]
+        self.header1 = ["Jmax", "Vcmax", "Species", "id", "Filename"]
         self.header2 = ["Jmax", "Vcmax", "Jnorm", "Vnorm", "Rd", "Tav", \
                         "Tarrh", "R2", "n", "Species", "Leaf", "Curve",\
                         "Filename"]
@@ -44,10 +44,10 @@ class Normalise(object):
         # Find the points above and below normalising temperature. 
         # Failing that, find the two points closest to normalising T, and 
         # flag a warning
-        for i, leaf in enumerate(np.unique(data_all["Leaf"])): 
+        for i, id in enumerate(np.unique(data_all["id"])): 
             # For each unique leaf, find the values above and below the 
             # normalising Temperature, note sorting the data!!
-            subset = data_all[np.where(data_all["Leaf"] == leaf)]
+            subset = data_all[np.where(data_all["id"] == id)]
             subset.sort(order="Tav") # not all data is in order!!!
             (index, flag25) = self.find_nearest_highest_index(subset["Tav"])
             
@@ -64,7 +64,7 @@ class Normalise(object):
                 vnorm = self.interpolate_temp(subset, index, index-1, "Vcmax")
                 jnorm = self.interpolate_temp(subset, index, index-1, "Jmax")
                 
-            self.write_outputs(jnorm, vnorm, subset, leaf, wr1, wr2)
+            self.write_outputs(jnorm, vnorm, subset, id, wr1, wr2)
         fp1.close()
         fp2.close()
         
@@ -77,7 +77,7 @@ class Normalise(object):
     def read_data(self, fname, delimiter=","):
         """ Read the fitted data into an array 
         Expects a format of:
-        -> Jmax,JSE,Vcmax,VSE,Rd,RSE,Tav,R2,n,Species,Season,Plant,Curve,
+        -> Jmax,JSE,Vcmax,VSE,Rd,RSE,Tav,R2,n,Species,Season,Leaf,Curve,
            Filename
         """
         data = np.recfromcsv(fname, delimiter=delimiter, names=True, 
