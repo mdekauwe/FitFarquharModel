@@ -41,11 +41,13 @@ or the standard python approach ::
 Running the code
 =================
 
-The example directory contains a series of self contained example scripts. Names should be obvious, but the typical order of running them would be... ::
+The examples directory contains a series of self contained example scripts. Names should be obvious, but the typical order of running them would be... ::
 
     create_example_data.py
     fit_jmax_vcmax_rd.py
     normalise_data.py
     fit_ea_dels.py
 
+Of course with real data a series of stats test should be carried out before
+fitting the final Eav, Eaj, deltaSv and deltaSj parameters. This is left up to the individual user.
     
