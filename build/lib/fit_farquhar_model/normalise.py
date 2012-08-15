@@ -49,15 +49,21 @@ class Normalise(object):
             # normalising Temperature, note sorting the data!!
             subset = data_all[np.where(data_all["Leaf"] == leaf)]
             subset.sort(order="Tav") # not all data is in order!!!
-            index = self.find_nearest_highest_index(subset["Tav"])
-            if index == 0:
+            (index, flag25) = self.find_nearest_highest_index(subset["Tav"])
+            
+            # In the unlikely event we have measured data at exactly 25 degC
+            # use it!! Otherwise interpolate...
+            if flag25:
+                (jnorm, vnorm) = subset["Jmax"][index], subset["Vcmax"][index]
+            elif index == 0:
                 print "Missing value below Tnorm, so interpolating with \
                        data points above"
                 vnorm = self.interpolate_temp(subset, index+1, index, "Vcmax")
                 jnorm = self.interpolate_temp(subset, index+1, index, "Jmax")
             else:
                 vnorm = self.interpolate_temp(subset, index, index-1, "Vcmax")
-                jnorm = self.interpolate_temp(subset, index, index-1, "Jmax")  
+                jnorm = self.interpolate_temp(subset, index, index-1, "Jmax")
+                
             self.write_outputs(jnorm, vnorm, subset, leaf, wr1, wr2)
         fp1.close()
         fp2.close()
@@ -100,7 +106,7 @@ class Normalise(object):
         """ 
         Interpolate to obtain values of Jmax and Vcmax at normalising temp
         """ 
-        # get relevant data, build dict for consistancy
+        # get relevant data, build dict for consistancy so we can use Tarrh func
         d = {}
         d["Tav"] = data["Tav"][index1] 
         x1 = self.calc_Tarrh(d)
@@ -111,14 +117,18 @@ class Normalise(object):
         
         return np.exp(y1 - x1 * (y2 - y1) / (x2 - x1))  
         
-    def find_nearest_highest_index(self, array):
+    def find_nearest_highest_index(self, array, flag25=False):
         """ find nearest index in an array that is > a given value """
         index = (np.abs(array - self.tnorm)).argmin()
+        # Check to see if in the unlikely event we measured data at exactly
+        # 25 degC
+        if np.abs(array[index] - self.tnorm) < 1E-08:
+            flag25 = True
         # We always want the value > tnorm.
-        if array[index] < self.tnorm:
+        elif array[index] < self.tnorm:
             index += 1
         
-        return index
+        return index, flag25
     
     def write_outputs(self, jnorm, vnorm, subset, leaf, fp1, fp2):
         """ Print out values at normalising temperature """

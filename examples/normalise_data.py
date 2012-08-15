@@ -22,8 +22,8 @@ from fit_farquhar_model.normalise import Normalise
 #Normalise data
 #############################
 fname = "fitting_results.csv"
-ofname1 = "values_at_Tnorm.txt"
-ofname2 = "normalised_results.txt"
+ofname1 = "values_at_Tnorm.csv"
+ofname2 = "normalised_results.csv"
 results_dir = "results"
 plot_dir = "plots"
 tnorm = 25.0

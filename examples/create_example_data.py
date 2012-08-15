@@ -2,6 +2,7 @@
 
 """
 Generate some synthetic data to test against...
+(note adding a little bit of noise)
 
 That's all folks.
 """
@@ -28,15 +29,15 @@ model = FarquharC3(peaked_Jmax=True, peaked_Vcmax=True)
 Ci = np.arange(0, 1500, 150)
 
 curve = 1
-for Tleaf in np.arange(15.0, 35.0, 5.0):
+for Tleaf in np.arange(15.0, 40.0, 5.0):
     Tleaf += deg2kelvin
     Jmax25 = 150.0
     Vcmax25 = Jmax25 / 1.6
     r25 = 0.5
     Eaj = 30000.0
     Eav = 60000.0
-    deltaSj = 620.0
-    deltaSv = 620.0
+    deltaSj = 650.0
+    deltaSv = 650.0
     Hdv = 200000.0
     Hdj = 200000.0
     Q10 = 1.5
@@ -48,7 +49,16 @@ for Tleaf in np.arange(15.0, 35.0, 5.0):
                                            r25=r25, Q10=Q10, Hdv=Hdv, Hdj=Hdj)
     
     for i in xrange(len(An)):
-        row = [curve, Tleaf-deg2kelvin, Ci[i], An[i]+Rd, "Potatoes", "Summer", 1]
+        row = [curve, Tleaf-deg2kelvin, Ci[i], \
+               An[i] + Rd + np.random.normal(0.0, 1.0), "Potatoes",\
+               "Summer", 1]
+        wr.writerow(row) 
+    curve += 1    
+    
+    for i in xrange(len(An)):
+        row = [curve, Tleaf-deg2kelvin, Ci[i], \
+               An[i] + Rd + np.random.normal(0.0, 1.0), "Potatoes",\
+               "Summer", 2]
         wr.writerow(row) 
     curve += 1     
 fp.close()

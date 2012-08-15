@@ -46,7 +46,7 @@ F.main(print_to_screen=False)
 fit = read_data("results/fitting_results.csv")
 deg2kelvin = 273.15
 index = 0
-for Tleaf in np.arange(15.0, 35.0, 5.0):
+for Tleaf in np.arange(15.0, 40.0, 5.0):
     Tleaf += deg2kelvin
     Jmax25 = 150.0
     Vcmax25 = Jmax25 / 1.6
@@ -61,7 +61,8 @@ for Tleaf in np.arange(15.0, 35.0, 5.0):
     Jmax = model.peaked_arrh(Jmax25, Eaj, Tleaf, deltaSj, Hdj)
     
     print "Truth", Tleaf-deg2kelvin, Jmax, Vcmax
-    print "Fit", fit["Tav"][index], fit["Jmax"][index], fit["Vcmax"][index]
+    print "Fit - curve 1", fit["Tav"][index], fit["Jmax"][index], fit["Vcmax"][index]
+    print "Fit - curve 2", fit["Tav"][index+1], fit["Jmax"][index+1], fit["Vcmax"][index+1]
     print
     
-    index +=1
+    index +=2
