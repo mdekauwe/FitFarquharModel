@@ -2,7 +2,10 @@
 FitFarquharModel
 ====================
 
-blah, blah...
+Fitting routine for the Farquhar model parameters to a series of measured A-Ci curve data. Fitting is carried out in a series of separate steps: (i) fitting Jmax, Vcmax and Rd at the measurement temperature, (ii) normalising the data to 25 degrees (iii) a series of stats tests to explore differences in the data (not part of the package), e.g. differences between season, species etc, and (iv) finally, based on (iii) fit the model parameters Eaj, Eav, deltaSj and deltaSv.
+
+The Levenberg-Marquardt minimization algorithm is used to fit the non-linear
+A-Ci curve data, using the lmfit package (see below).
 
 The model is coded entirely in `Python 
 <http://www.python.org/>`_.
@@ -10,7 +13,11 @@ The model is coded entirely in `Python
 
 Key Reference
 =============
-1). 
+1). Medlyn, B. E., Dreyer, E., Ellsworth, D., Forstreuter, M., Harley, P.C., 
+    Kirschbaum, M.U.F., Leroux, X., Montpied, P., Strassemeyer, J., 
+    Walcroft, A., Wang, K. and Loustau, D. (2002) Temperature response of 
+    parameters of a biochemically based model of photosynthesis. II. 
+    A review of experimental data. Plant, Cell and Enviroment 25, 1167-1179.
 
 .. contents:: :local:
 
