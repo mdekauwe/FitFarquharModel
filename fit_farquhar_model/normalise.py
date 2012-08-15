@@ -44,10 +44,10 @@ class Normalise(object):
         # Find the points above and below normalising temperature. 
         # Failing that, find the two points closest to normalising T, and 
         # flag a warning
-        for i, leaf in enumerate(np.unique(data_all["Leaf"])): 
+        for i, id in enumerate(np.unique(data_all["id"])): 
             # For each unique leaf, find the values above and below the 
             # normalising Temperature, note sorting the data!!
-            subset = data_all[np.where(data_all["Leaf"] == leaf)]
+            subset = data_all[np.where(data_all["id"] == id)]
             subset.sort(order="Tav") # not all data is in order!!!
             (index, flag25) = self.find_nearest_highest_index(subset["Tav"])
             

@@ -90,6 +90,9 @@ class FitMe(object):
         row.append("%s" % (curve_data["Leaf"][0]))
         row.append("%s" % (curve_data["Curve"][0]))
         row.append("%s" % (fname))
+        row.append("%s%s%s" % (str(curve_data["Species"][0]), \
+                               str(curve_data["Season"][0]), \
+                               str(curve_data["Leaf"][0])))
         f.writerow(row)
        
     def forward_run(self, result, data):
@@ -221,7 +224,7 @@ class FitJmaxVcmaxRd(FitMe):
                  data_dir, plot_dir, nstartpos)
         self.header = ["Jmax", "JSE", "Vcmax", "VSE", "Rd", "RSE", "Tav", \
                        "R2", "n", "Species", "Season", "Leaf", "Curve", \
-                       "Filename"]
+                       "Filename", "id"]
                        
     def main(self, print_to_screen, deg25_range=[None, None]):   
         """ Loop over all our A-Ci measured curves and fit the Farquhar model
