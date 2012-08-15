@@ -296,8 +296,8 @@ class FitEaDels(FitMe):
         
         # Loop over all the measured data and fit the model params.
         
-        for id in np.unique(all_data["fit_group"]):
-            data = all_data[np.where(all_data["fit_group"] == id)]
+        for id in np.unique(all_data["fitgroup"]):
+            data = all_data[np.where(all_data["fitgroup"] == id)]
             
             # Fit Jmax vs T first  
             params = self.setup_model_params(hd_guess=200000.0, 
