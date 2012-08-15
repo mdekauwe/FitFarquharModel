@@ -287,7 +287,7 @@ class FitEaDels(FitMe):
                        "R2", "n", "Topt"]
         self.call_model = model.peaked_arrh
         
-    def main(self, print_to_screen, loop_id=None):   
+    def main(self, print_to_screen):   
         """ Loop over all our A-Ci measured curves and fit the Farquhar model
         parameters to this data """
         all_data = self.get_data(self.infname)
@@ -295,91 +295,16 @@ class FitEaDels(FitMe):
         wr = self.write_file_hdr(fp, self.header)
         
         # Loop over all the measured data and fit the model params.
-        if loop_id is not None:
-            for id in np.unique(all_data[loop_id]):
-                data = all_data[np.where(all_data[loop_id] == id)]
-                
-                # Fit Jmax vs T first  
-                params = self.setup_model_params(hd_guess=200000.0, 
-                                                 ea_guess=60000.0, 
-                                                 dels_guess=650.0)
-                result = minimize(self.residual, params, engine="leastsq", 
-                                  args=(data, data["Jnorm"]))
-                if print_to_screen:
-                    self.print_fit_to_screen(result)
-                
-                # Did we resolve the error bars during the fit? If yes then
-                # move onto the next A-Ci curve
-                if result.errorbars:
-                    self.succes_count += 1
-            
-                # Otherwise we did not fit the data. Is it because of our 
-                # starting position?? Lets vary this a little and redo the fits
-                else:
-                    for i in xrange(self.nstartpos):
-                        params = self.try_new_params(hd=200000.0, ea=True, 
-                                                     dels=True)
-                        result = minimize(self.residual, params, 
-                                          engine="leastsq", 
-                                          args=(data, data["Jnorm"]))
-            
-                        if print_to_screen:
-                            self.print_fit_to_screen(result)
-                        if result.errorbars:
-                            self.succes_count += 1
-                            break
-                (peak_fit) = self.forward_run(result, data)
-                Topt = (self.calc_Topt(result.params["Hd"].value, 
-                                   result.params["Ea"].value, 
-                                   result.params["delS"].value) - 
-                                   self.deg2kelvin)
-                self.report_fits(wr, result, data, data["Jnorm"], peak_fit, 
-                                 "Jmax", Topt)
-                
-                # Fit Vcmax vs T next 
-                params = self.setup_model_params(hd_guess=200000.0, 
-                                                 ea_guess=60000.0, 
-                                                 dels_guess=650.0)
-                result = minimize(self.residual, params, engine="leastsq", 
-                                  args=(data, data["Vnorm"]))
-                if print_to_screen:
-                    self.print_fit_to_screen(result)
-                
-                # Did we resolve the error bars during the fit? If yes then
-                # move onto the next A-Ci curve
-                if result.errorbars:
-                    self.succes_count += 1
-            
-                # Otherwise we did not fit the data. Is it because of our 
-                # starting position?? Lets vary this a little and redo the fits
-                else:
-                    for i in xrange(self.nstartpos):
-                        params = self.try_new_params(hd=200000.0, ea=True, 
-                                                     dels=True)
-                        result = minimize(self.residual, params, 
-                                          engine="leastsq", 
-                                          args=(data, data["Vnorm"]))
-            
-                        if print_to_screen:
-                            self.print_fit_to_screen(result)
-                        if result.errorbars:
-                            self.succes_count += 1
-                            break
-                (peak_fit) = self.forward_run(result, data)
-                Topt = (self.calc_Topt(result.params["Hd"].value, 
-                                   result.params["Ea"].value, 
-                                   result.params["delS"].value) - 
-                                   self.deg2kelvin)
-                self.report_fits(wr, result, data, data["Vnorm"], peak_fit, 
-                                 "Vcmax", Topt)
-        else:
+        
+        for id in np.unique(all_data["fit_group"]):
+            data = all_data[np.where(all_data["fit_group"] == id)]
             
             # Fit Jmax vs T first  
             params = self.setup_model_params(hd_guess=200000.0, 
                                              ea_guess=60000.0, 
                                              dels_guess=650.0)
             result = minimize(self.residual, params, engine="leastsq", 
-                              args=(all_data, all_data["Jnorm"]))
+                              args=(data, data["Jnorm"]))
             if print_to_screen:
                 self.print_fit_to_screen(result)
             
@@ -394,29 +319,29 @@ class FitEaDels(FitMe):
                 for i in xrange(self.nstartpos):
                     params = self.try_new_params(hd=200000.0, ea=True, 
                                                  dels=True)
-                    result = minimize(self.residual, params, engine="leastsq", 
-                                      args=(all_data, all_data["Jnorm"]))
+                    result = minimize(self.residual, params, 
+                                      engine="leastsq", 
+                                      args=(data, data["Jnorm"]))
         
                     if print_to_screen:
                         self.print_fit_to_screen(result)
                     if result.errorbars:
                         self.succes_count += 1
                         break
-            (peak_fit) = self.forward_run(result, all_data)
+            (peak_fit) = self.forward_run(result, data)
             Topt = (self.calc_Topt(result.params["Hd"].value, 
-                                   result.params["Ea"].value, 
-                                   result.params["delS"].value) - 
-                                   self.deg2kelvin)
-            self.report_fits(wr, result, all_data, all_data["Jnorm"], peak_fit, 
+                               result.params["Ea"].value, 
+                               result.params["delS"].value) - 
+                               self.deg2kelvin)
+            self.report_fits(wr, result, data, data["Jnorm"], peak_fit, 
                              "Jmax", Topt)
-            
             
             # Fit Vcmax vs T next 
             params = self.setup_model_params(hd_guess=200000.0, 
                                              ea_guess=60000.0, 
                                              dels_guess=650.0)
             result = minimize(self.residual, params, engine="leastsq", 
-                              args=(all_data, all_data["Vnorm"]))
+                              args=(data, data["Vnorm"]))
             if print_to_screen:
                 self.print_fit_to_screen(result)
             
@@ -431,21 +356,23 @@ class FitEaDels(FitMe):
                 for i in xrange(self.nstartpos):
                     params = self.try_new_params(hd=200000.0, ea=True, 
                                                  dels=True)
-                    result = minimize(self.residual, params, engine="leastsq", 
-                                      args=(all_data, all_data["Vnorm"]))
+                    result = minimize(self.residual, params, 
+                                      engine="leastsq", 
+                                      args=(data, data["Vnorm"]))
         
                     if print_to_screen:
                         self.print_fit_to_screen(result)
                     if result.errorbars:
                         self.succes_count += 1
                         break
-            (peak_fit) = self.forward_run(result, all_data)
+            (peak_fit) = self.forward_run(result, data)
             Topt = (self.calc_Topt(result.params["Hd"].value, 
-                                   result.params["Ea"].value, 
-                                   result.params["delS"].value) - 
-                                   self.deg2kelvin)
-            self.report_fits(wr, result, all_data, all_data["Vnorm"], peak_fit, 
+                               result.params["Ea"].value, 
+                               result.params["delS"].value) - 
+                               self.deg2kelvin)
+            self.report_fits(wr, result, data, data["Vnorm"], peak_fit, 
                              "Vcmax", Topt)
+       
         fp.close()  
     
     def get_data(self, infname):
