@@ -4,3 +4,5 @@
 *.dat
 *.png
 .DS_STORE
+build/
+dist/
