@@ -254,7 +254,7 @@ class FitMe(object):
         print "\nOverall fitted %.1f%% of the data\n" % (total_fits)
         fp.close()
     
-    def pick_starting_point(self, data, grid_size=100):
+    def pick_starting_point(self, data, grid_size=500):
         """ High-density grid search to overcome issues with ending up in a 
         local minima. Values that yield the lowest SSE (without minimisation)
         are used as the starting point for the minimisation.
@@ -278,21 +278,17 @@ class FitMe(object):
                 # Save SSE
                 fits = np.append(fits, np.sum((data["Photo"] - An)**2))
         else:
-            # dense sampling, not selecting at random, this should be much 
-            # more memory intensive, but perhaps preferable to the above...
             Vcmax = np.linspace(5.0, 350, grid_size) 
             Jmax = np.linspace(5.0, 550, grid_size) 
             Rd = np.linspace(1E-8, 10.5, grid_size)
-            
-            import itertools
-            for (i,j,k) in itertools.product(Vcmax,Jmax,Rd)
-            retval = np.array([self.call_model(data["Ci"], data["Tleaf"], 
-                                              Jmax=j, Vcmax=i, Rd=k) 
-                               for (i,j,k) in itertools.product(Vcmax,Jmax,Rd)])
-            An = retval[:,0,:]
-               
-            # Save SSE
-            fits = np.append(fits, np.sum((data["Photo"][None,:] - An)**2))
+            # merge arrays, so we only have a single loop (speed!)
+            x = np.dstack((Vcmax,Jmax, Rd)).flatten()
+            for i in xrange(0,len(x), 3):
+                (An, Anc, Anj) = self.call_model(data["Ci"], data["Tleaf"], 
+                                                 Jmax=x[i+1], Vcmax=x[i], 
+                                                 Rd=x[i+2])     
+                # Save SSE
+                fits = np.append(fits, np.sum((data["Photo"] - An)**2))
         index = np.argmin(fits, 0) # smalles SSE
         
         return Vcmax[index], Jmax[index], Rd[index]
