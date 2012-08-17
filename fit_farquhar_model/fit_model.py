@@ -254,7 +254,7 @@ class FitMe(object):
         print "\nOverall fitted %.1f%% of the data\n" % (total_fits)
         fp.close()
     
-    def pick_starting_point(self, data, grid_size=5):
+    def pick_starting_point(self, data, grid_size=100):
         """ High-density grid search to overcome issues with ending up in a 
         local minima. Values that yield the lowest SSE (without minimisation)
         are used as the starting point for the minimisation.
@@ -280,85 +280,21 @@ class FitMe(object):
         else:
             # dense sampling, not selecting at random, this should be much 
             # more memory intensive, but perhaps preferable to the above...
-            Vcmax = np.zeros((grid_size, grid_size))[:,:,None] + np.linspace(5.0, 350, grid_size)
-            Jmax = np.zeros((grid_size, grid_size))[:,:,None] + np.linspace(5.0, 550, grid_size) 
-            Rd = np.zeros((grid_size, grid_size))[:,:,None] + np.linspace(1E-8, 10.5, grid_size)
-            out1 = np.zeros((grid_size, grid_size, grid_size))
-            out2 = np.zeros((grid_size, grid_size, grid_size))
-            out3 = np.zeros((grid_size, grid_size, grid_size))
-            out1, out2, out3 = self.call_model(data["Ci"][:,None,None], data["Tleaf"][:,None,None], 
-                                                 Jmax=Jmax, Vcmax=Vcmax, 
-                                                 Rd=Rd)     
-            
-            
-            print out1
-            sys.exit()
-            Jmax = np.zeros(grid_size)[:,None] + np.linspace(5.0, 550, grid_size) 
-            Rd = np.zeros(grid_size)[:,None] + np.linspace(1E-8, 10.5, grid_size)
-            
-            
-            out1 = np.zeros((grid_size, grid_size, grid_size))
-            i = np.arange(grid_size)
-            j = np.arange(grid_size)
-            k = np.arange(grid_size)
-            
-            out1[r[:,None],c[:,None],k] = Vcmax[r[:,None],c[:,None],k] * Jmax[r[:,None],c[:,None],k]
-            print out1.shape
-            
-            sys.exit()
-            
-            
-            
-            r = np.arange(grid_size)
-            c = np.arange(grid_size)
-            out1 = np.zeros((grid_size, grid_size, grid_size))
-            out2 = np.zeros((grid_size, grid_size, grid_size))
-            out3 = np.zeros((grid_size, grid_size, grid_size))
-            
-            for i in xrange(len(Vcmax)):
-                (out1[i[:,None],r,c], out2[i[:,None],r,c], out3[i[:,None],r,c]) = self.call_model(data["Ci"], data["Tleaf"], 
-                                                 Jmax=Jmax[i[:,None],r,c], Vcmax=Vcmax[i[:,None],r,c], 
-                                                 Rd=Rd[i[:,None],r,c])     
-            
-           
-                
-            print
-            
-            
-            sys.exit()
+            Vcmax = np.linspace(5.0, 350, grid_size) 
             Jmax = np.linspace(5.0, 550, grid_size) 
             Rd = np.linspace(1E-8, 10.5, grid_size)
             
-            
-            """
-            i = np.arange(len(Vcmax))
-            j = np.arange(len(Jmax))
-            k = np.arange(len(Rd))
-            out = np.zeros((grid_size, grid_size, grid_size))
-            
-            out[i,j] = tmp[i,j] * 3.0
-            out[i[:,None],j,k] = tmp[i[:,None],j,k]self.call_model(data["Ci"], 
-                                                         data["Tleaf"], 
-                                                         Jmax=Jmax[j], 
-                                                         Vcmax=Vcmax[i], 
-                                                         Rd=Rd[k]) 
-            
-            ssmi_snow[mths[:,np.newaxis],pts] = ssmi[mths[:,np.newaxis],0,r,c]
-            print r
-            sys.exit()
-            #c = np.arange(ncols)
-            """
-            for i in xrange(len(Vcmax)):
-                for j in xrange(len(Jmax)):
-                    for k in xrange(len(Rd)):
-                        (An, Anc, Anj) = self.call_model(data["Ci"], 
-                                                         data["Tleaf"], 
-                                                         Jmax=Jmax[j], 
-                                                         Vcmax=Vcmax[i], 
-                                                         Rd=Rd[k])     
-                # Save SSE
-                fits = np.append(fits, np.sum((data["Photo"] - An)**2))
+            import itertools
+            for (i,j,k) in itertools.product(Vcmax,Jmax,Rd)
+            retval = np.array([self.call_model(data["Ci"], data["Tleaf"], 
+                                              Jmax=j, Vcmax=i, Rd=k) 
+                               for (i,j,k) in itertools.product(Vcmax,Jmax,Rd)])
+            An = retval[:,0,:]
+               
+            # Save SSE
+            fits = np.append(fits, np.sum((data["Photo"][None,:] - An)**2))
         index = np.argmin(fits, 0) # smalles SSE
+        
         return Vcmax[index], Jmax[index], Rd[index]
        
         
