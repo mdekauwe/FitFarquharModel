@@ -255,9 +255,31 @@ class FitMe(object):
         fp.close()
     
     def pick_starting_point(self, data, grid_size=500):
-        """ High-density grid search to overcome issues with ending up in a 
+        """ Figure out a good starting parameter guess
+        
+        High-density grid search to overcome issues with ending up in a 
         local minima. Values that yield the lowest SSE (without minimisation)
-        are used as the starting point for the minimisation.
+        are used as the starting point for the minimisation. There is also the
+        option to randomly sample, I think I ought to remove this now.
+        
+        Parameters
+        ----------
+        data : array
+            model driving data
+        grid_size : int
+            hardwired, number of samples
+        
+        Returns: 
+        --------
+        retval * 3 : float
+            Three starting guesses for Jmax, Vcmax and Rd
+        
+        Reference:
+        ----------
+        Dubois et al (2007) Optimizing the statistical estimation of the 
+        parameters of the Farquhar-von Caemmerer-Berry model of photosynthesis. 
+        New Phytologist, 176, 402--414
+        
         """
         
         # Shuffle arrays so that our combination of parameters is random
@@ -278,10 +300,7 @@ class FitMe(object):
                 # Save SSE
                 fits = np.append(fits, np.sum((data["Photo"] - An)**2))
         else:
-            Vcmax = np.linspace(5.0, 350, grid_size) 
-            Jmax = np.linspace(5.0, 550, grid_size) 
-            Rd = np.linspace(1E-8, 10.5, grid_size)
-            # merge arrays, so we only have a single loop (speed!)
+            # merge arrays, so we only have a single loop (for speed!)
             x = np.dstack((Vcmax,Jmax, Rd)).flatten()
             for i in xrange(0,len(x), 3):
                 (An, Anc, Anj) = self.call_model(data["Ci"], data["Tleaf"], 
