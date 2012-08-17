@@ -27,9 +27,32 @@ import matplotlib.pyplot as plt
 
 
 class FitMe(object):
-    
+    """
+    Basic fitting class, contains some generic methods which are used by the
+    fitting routines, e.g. plotting, file reporting etc. This is intended
+    to be subclased.
+    """
     def __init__(self, model=None, ofname=None, results_dir=None, 
-                 data_dir=None, plot_dir=None, nstartpos=30):
+                 data_dir=None, plot_dir=None, random_sample_grid=None):
+        """
+        Parameters
+        ----------
+        model : object
+            model that we are fitting measurements against...
+        ofname : string
+            output filename for writing fitting result.
+        results_dir : string
+            output directory path for the result to be written
+        data_dir : string
+            input directory path where measured A-Ci files live
+        plot_dir : string
+            directory to save plots of various fitting routines
+        random_sample_grid : logical
+            If this is true we use a random sampling procedure to define the
+            best starting point for initial parameter guesses. If this is false
+            then we use a much denser sampling method. Note this will be 
+            considerably more computational expensive, up to you.
+        """
         
         self.results_dir = results_dir
         if ofname is not None:
@@ -39,10 +62,23 @@ class FitMe(object):
         self.call_model = model.calc_photosynthesis
         self.succes_count = 0
         self.nfiles = 0
-        self.nstartpos = nstartpos
         self.deg2kelvin = 273.15
+        self.random_sample_grid = random_sample_grid
     
     def open_output_files(self, ofname):
+        """
+        Opens output file for recording fit information
+        
+        Parameters
+        ----------
+        ofname : string
+            output file name
+        
+        Returns: 
+        --------
+        fp : object
+            file pointer
+        """
         if os.path.isfile(ofname):
             os.remove(ofname)
             
@@ -58,6 +94,16 @@ class FitMe(object):
         
         Expects a format of:
         -> Curve, Tleaf, Ci, Photo, Species, Season, Leaf
+        
+        Parameters
+        ----------
+        fname : string
+            input file name, expecting csv file.
+        
+        Returns: 
+        --------
+        data : array
+            numpy array containing the data
         """
         data = np.recfromcsv(fname, delimiter=delimiter, names=True, 
                              case_sensitive=True)
@@ -66,6 +112,22 @@ class FitMe(object):
     def residual(self, params, data, obs):
         """ simple function to quantify how good the fit was for the fitting
         routine. Could use something better? RMSE?
+        
+        Parameters
+        ----------
+        params : object
+            List of parameters to be fit, initial guess, ranges etc. This is
+            an lmfit object
+        data: array
+            data to run farquhar model with
+        obs : array
+            A-Ci data to fit model against
+        
+        Returns: 
+        --------
+        residual : array
+            residual of fit between model and obs, based on current parameter
+            set
         """
         Jmax = params['Jmax'].value
         Vcmax = params['Vcmax'].value
@@ -192,7 +254,7 @@ class FitMe(object):
         print "\nOverall fitted %.1f%% of the data\n" % (total_fits)
         fp.close()
     
-    def pick_starting_point(self, data, grid_size=500):
+    def pick_starting_point(self, data, grid_size=5):
         """ High-density grid search to overcome issues with ending up in a 
         local minima. Values that yield the lowest SSE (without minimisation)
         are used as the starting point for the minimisation.
@@ -200,19 +262,102 @@ class FitMe(object):
         
         # Shuffle arrays so that our combination of parameters is random
         Vcmax = np.linspace(5.0, 350, grid_size) 
-        np.random.shuffle(Vcmax)
         Jmax = np.linspace(5.0, 550, grid_size) 
-        np.random.shuffle(Jmax)
         Rd = np.linspace(1E-8, 10.5, grid_size)
-        np.random.shuffle(Rd)
-        
         fits = np.zeros(0)
-        for i in xrange(len(Vcmax)):
-            (An, Anc, Anj) = self.call_model(data["Ci"], data["Tleaf"], 
-                                             Jmax=Jmax[i], Vcmax=Vcmax[i], 
-                                             Rd=Rd[i])     
-            # Save SSE
-            fits = np.append(fits, np.sum((data["Photo"] - An)**2))
+        
+        if self.random_sample_grid:
+            np.random.shuffle(Vcmax)
+            np.random.shuffle(Jmax)
+            np.random.shuffle(Rd)
+        
+            for i in xrange(len(Vcmax)):
+                (An, Anc, Anj) = self.call_model(data["Ci"], data["Tleaf"], 
+                                                 Jmax=Jmax[i], Vcmax=Vcmax[i], 
+                                                 Rd=Rd[i])     
+                # Save SSE
+                fits = np.append(fits, np.sum((data["Photo"] - An)**2))
+        else:
+            # dense sampling, not selecting at random, this should be much 
+            # more memory intensive, but perhaps preferable to the above...
+            Vcmax = np.zeros((grid_size, grid_size))[:,:,None] + np.linspace(5.0, 350, grid_size)
+            Jmax = np.zeros((grid_size, grid_size))[:,:,None] + np.linspace(5.0, 550, grid_size) 
+            Rd = np.zeros((grid_size, grid_size))[:,:,None] + np.linspace(1E-8, 10.5, grid_size)
+            out1 = np.zeros((grid_size, grid_size, grid_size))
+            out2 = np.zeros((grid_size, grid_size, grid_size))
+            out3 = np.zeros((grid_size, grid_size, grid_size))
+            out1, out2, out3 = self.call_model(data["Ci"][:,None,None], data["Tleaf"][:,None,None], 
+                                                 Jmax=Jmax, Vcmax=Vcmax, 
+                                                 Rd=Rd)     
+            
+            
+            print out1
+            sys.exit()
+            Jmax = np.zeros(grid_size)[:,None] + np.linspace(5.0, 550, grid_size) 
+            Rd = np.zeros(grid_size)[:,None] + np.linspace(1E-8, 10.5, grid_size)
+            
+            
+            out1 = np.zeros((grid_size, grid_size, grid_size))
+            i = np.arange(grid_size)
+            j = np.arange(grid_size)
+            k = np.arange(grid_size)
+            
+            out1[r[:,None],c[:,None],k] = Vcmax[r[:,None],c[:,None],k] * Jmax[r[:,None],c[:,None],k]
+            print out1.shape
+            
+            sys.exit()
+            
+            
+            
+            r = np.arange(grid_size)
+            c = np.arange(grid_size)
+            out1 = np.zeros((grid_size, grid_size, grid_size))
+            out2 = np.zeros((grid_size, grid_size, grid_size))
+            out3 = np.zeros((grid_size, grid_size, grid_size))
+            
+            for i in xrange(len(Vcmax)):
+                (out1[i[:,None],r,c], out2[i[:,None],r,c], out3[i[:,None],r,c]) = self.call_model(data["Ci"], data["Tleaf"], 
+                                                 Jmax=Jmax[i[:,None],r,c], Vcmax=Vcmax[i[:,None],r,c], 
+                                                 Rd=Rd[i[:,None],r,c])     
+            
+           
+                
+            print
+            
+            
+            sys.exit()
+            Jmax = np.linspace(5.0, 550, grid_size) 
+            Rd = np.linspace(1E-8, 10.5, grid_size)
+            
+            
+            """
+            i = np.arange(len(Vcmax))
+            j = np.arange(len(Jmax))
+            k = np.arange(len(Rd))
+            out = np.zeros((grid_size, grid_size, grid_size))
+            
+            out[i,j] = tmp[i,j] * 3.0
+            out[i[:,None],j,k] = tmp[i[:,None],j,k]self.call_model(data["Ci"], 
+                                                         data["Tleaf"], 
+                                                         Jmax=Jmax[j], 
+                                                         Vcmax=Vcmax[i], 
+                                                         Rd=Rd[k]) 
+            
+            ssmi_snow[mths[:,np.newaxis],pts] = ssmi[mths[:,np.newaxis],0,r,c]
+            print r
+            sys.exit()
+            #c = np.arange(ncols)
+            """
+            for i in xrange(len(Vcmax)):
+                for j in xrange(len(Jmax)):
+                    for k in xrange(len(Rd)):
+                        (An, Anc, Anj) = self.call_model(data["Ci"], 
+                                                         data["Tleaf"], 
+                                                         Jmax=Jmax[j], 
+                                                         Vcmax=Vcmax[i], 
+                                                         Rd=Rd[k])     
+                # Save SSE
+                fits = np.append(fits, np.sum((data["Photo"] - An)**2))
         index = np.argmin(fits, 0) # smalles SSE
         return Vcmax[index], Jmax[index], Rd[index]
        
@@ -221,9 +366,9 @@ class FitMe(object):
 class FitJmaxVcmaxRd(FitMe):
     """ Fit the model parameters Jmax, Vcmax and Rd to the measured A-Ci data"""
     def __init__(self, model=None, ofname=None, results_dir=None, 
-                 data_dir=None, plot_dir=None, nstartpos=30):
-        FitMe.__init__(self, model, ofname, results_dir, 
-                 data_dir, plot_dir, nstartpos)
+                 data_dir=None, plot_dir=None, random_sample_grid=None):
+        FitMe.__init__(self, model, ofname, results_dir, data_dir, plot_dir, 
+                       random_sample_grid)
         self.header = ["Jmax", "JSE", "Vcmax", "VSE", "Rd", "RSE", "Tav", \
                        "R2", "n", "Species", "Season", "Leaf", "Curve", \
                        "Filename", "id"]
@@ -273,10 +418,11 @@ class FitJmaxVcmaxRd(FitMe):
 class FitEaDels(FitMe):
     """ Fit the model parameters Eaj, Eav, Dels to the measured A-Ci data"""
     def __init__(self, model=None, infname=None, ofname=None, results_dir=None, 
-                 data_dir=None):
+                 data_dir=None, random_sample_grid=None):
         self.infname = infname
         FitMe.__init__(self, model=model, ofname=ofname, 
-                       results_dir=results_dir, data_dir=data_dir)
+                       results_dir=results_dir, data_dir=data_dir, 
+                       random_sample_grid=random_sample_grid)
         self.header = ["Param", "Hd", "SE", "Ea", "SE", "delS", "delSSE", \
                        "R2", "n", "Topt"]
         self.call_model = model.peaked_arrh
@@ -389,24 +535,43 @@ class FitEaDels(FitMe):
         #print Ha, Hd, delS
         return Hd / (delS - RGAS * np.log(Ha / (Hd - Ha)))
         
-    def pick_starting_point(self, data, obs, grid_size=500):
+    def pick_starting_point(self, data, obs, grid_size=100):
         """ High-density grid search to overcome issues with ending up in a 
         local minima. Values that yield the lowest SSE (without minimisation)
         are used as the starting point for the minimisation.
+        
+        Reference:
+        ----------
+        Dubois et al (2007) Optimizing the statistical estimation of the 
+        parameters of the Farquhar-von Caemmerer-Berry model of photosynthesis. 
+        New Phytologist, 176, 402--414
+
+        
         """
         # Shuffle arrays so that our combination of parameters is random
         Hd = 200000.0
         Ea = np.linspace(20000.0, 80000.0, grid_size) 
-        np.random.shuffle(Ea)
         delS = np.linspace(550.0, 700.0, grid_size)
-        np.random.shuffle(delS)
-        
         fits = np.zeros(0)
-        for i in xrange(len(Ea)):
-            model = self.call_model(1.0, Ea[i], data["Tav"], delS[i], Hd)
-            
-            # Save SSE
-            fits = np.append(fits, np.sum((obs - model)**2))
+        
+        if self.random_sample_grid:
+            np.random.shuffle(Ea)
+            np.random.shuffle(delS)
+        
+            for i in xrange(len(Ea)):
+                model = self.call_model(1.0, Ea[i], data["Tav"], delS[i], Hd)
+                
+                # Save SSE
+                fits = np.append(fits, np.sum((obs - model)**2))
+        else:
+            # dense sampling, not selecting at random, this should be much 
+            # more memory intensive, but perhaps preferable to the above...
+            for i in xrange(len(Ea)):
+                for j in xrange(len(delS)):
+                    model = self.call_model(1.0, Ea[i], data["Tav"], delS[j],Hd)    
+                    
+                    # Save SSE
+                    fits = np.append(fits, np.sum((obs - model)**2))      
         index = np.argmin(fits, 0) # smalles SSE
         
         return Ea[index], delS[index]

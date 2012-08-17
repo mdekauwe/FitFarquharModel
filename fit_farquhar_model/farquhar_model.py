@@ -131,6 +131,8 @@ class FarquharC3(object):
             potential rate of electron transport at 25 deg or 298 K
         Vcmax25 : float
             max rate of rubisco activity at 25 deg or 298 K
+        Rd : float
+            Dark (mitochondrial) respiration [umol m-2 time unit-1]
         Q10 : float
             ratio of respiration at a given temperature divided by respiration 
             at a temperature 10 degrees lower
@@ -222,7 +224,29 @@ class FarquharC3(object):
         """ Check the user supplied arguments, either they supply the values
         at 25 deg C, or the supply Jmax and Vcmax at the measurement temp. It
         is of course possible they accidentally supply both or a random 
-        combination, so raise an exception if so """
+        combination, so raise an exception if so 
+        
+        Parameters
+        ----------
+        Jmax : float
+            potential rate of electron transport at measurement temperature 
+            [deg K]
+        Vcmax : float
+            max rate of rubisco activity at measurement temperature [deg K]
+        Rd : float
+            Dark (mitochondrial) respiration [umol m-2 time unit-1]
+        Jmax25 : float
+            potential rate of electron transport at 25 deg or 298 K
+        Vcmax25 : float
+            max rate of rubisco activity at 25 deg or 298 K    
+        r25 : float
+            Estimate of respiration rate at the reference temperature 25 deg C
+             or 298 K [deg K]
+        
+        Returns
+        -------
+        Nothing
+        """
         try:
             if (r25 is not None and 
                 Jmax25 is not None and 
@@ -328,7 +352,22 @@ class FarquharC3(object):
     def quadratic(self, a, b, c):
         """ minimilist quadratic solution as root for J solution should always
         be positive, so I have excluded other quadratic solution steps. If 
-        roots for J are negative or equal to zero then the data is bogus """
+        roots for J are negative or equal to zero then the data is bogus 
+        
+        Parameters:
+        ----------
+        a : float
+            co-efficient 
+        b : float
+            co-efficient
+        c : float
+            co-efficient
+        
+        Returns:
+        -------
+        val : float
+            positive root
+        """
        
         # solve quadratic and return smallest root...
         root = b**2 - 4.0 * a * c    

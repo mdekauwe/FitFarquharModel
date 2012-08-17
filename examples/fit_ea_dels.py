@@ -36,6 +36,7 @@ infname = "results/normalised_results.csv"
 ofname = "ea_results.csv"
 results_dir = "results"
 data_dir = "data"
+random_sample_grid = False
 model = FarquharC3()
 ############################
 
@@ -58,7 +59,8 @@ for row in data:
     wr.writerow(new_row)
 fp.close()
 
-F2 = FitEaDels(model, infname, ofname, results_dir, data_dir)
+F2 = FitEaDels(model, infname, ofname, results_dir, data_dir, 
+               random_sample_grid=random_sample_grid)
 F2.main(print_to_screen=False)
 
 # OK what are the real values??
