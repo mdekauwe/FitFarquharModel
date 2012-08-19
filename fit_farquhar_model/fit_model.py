@@ -254,7 +254,7 @@ class FitMe(object):
         print "\nOverall fitted %.1f%% of the data\n" % (total_fits)
         fp.close()
     
-    def pick_starting_point(self, data, grid_size=500):
+    def pick_starting_point(self, data, grid_size=50):
         """ Figure out a good starting parameter guess
         
         High-density grid search to overcome issues with ending up in a 
@@ -300,14 +300,16 @@ class FitMe(object):
                 # Save SSE
                 fits = np.append(fits, np.sum((data["Photo"] - An)**2))
         else:
-            # merge arrays, so we only have a single loop (for speed!)
-            x = np.dstack((Vcmax,Jmax, Rd)).flatten()
-            for i in xrange(0,len(x), 3):
-                (An, Anc, Anj) = self.call_model(data["Ci"], data["Tleaf"], 
-                                                 Jmax=x[i+1], Vcmax=x[i], 
-                                                 Rd=x[i+2])     
-                # Save SSE
-                fits = np.append(fits, np.sum((data["Photo"] - An)**2))
+            for i in Vcmax:
+                for j in Jmax:
+                    for k in Rd:
+                        (An, Anc, Anj) = self.call_model(data["Ci"], data["Tleaf"], 
+                                                 Jmax=j, Vcmax=i, 
+                                                 Rd=k) 
+        
+                        # Save SSE
+                        fits = np.append(fits, np.sum((data["Photo"] - An)**2))
+                        print np.sum((data["Photo"] - An)**2)
         index = np.argmin(fits, 0) # smalles SSE
         
         return Vcmax[index], Jmax[index], Rd[index]
