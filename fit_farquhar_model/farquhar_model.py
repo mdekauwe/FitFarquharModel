@@ -76,7 +76,7 @@ class FarquharC3(object):
             Activation energy for oxygenation [J mol-1]
         Egamma : float
             Activation energy at CO2 compensation point [J mol-1]
-        R : float
+        RGAS : float
             Universal gas constant [J mol-1 K-1]
         theta_hyperbol : float
             Curvature of the light response. 

@@ -18,8 +18,29 @@ import matplotlib.mlab as mlab  # library to write structured array to file.
 import matplotlib.pyplot as plt
 
 class Normalise(object):
+    """
+    Normalise the model fits of Vcmax and Jmax to 25 deg C
+    
+    """
     def __init__(self, fname=None, ofname1=None, ofname2=None, results_dir=None, 
                  plot_dir=None, tnorm=None):
+        """
+        Parameters
+        ----------
+        fname : string
+            input file name
+        ofname1 : string
+            output filename for writing fitting result -> e.g. values_at_Tnorm.csv
+        ofname2 : string
+            output filename for writing fitting result 
+            -> e.g. normalised_results.csv
+        results_dir : string
+            output directory path for the result to be written
+        plot_dir : string
+            directory to save plots of various fitting routines
+        tnorm : float
+            Temperature to normalise data at, e.g. 25 deg C
+        """
         self.results_dir = results_dir
         self.fname = os.path.join(self.results_dir, fname)
         self.ofname1 = os.path.join(self.results_dir, ofname1)
@@ -32,6 +53,7 @@ class Normalise(object):
                         "Tarrh", "R2", "n", "Species", "Leaf", "Curve",\
                         "Filename"]
     def main(self):
+        """ Main processing loop to normalise the data """
         data_all = self.read_data(self.fname)
        
         # open files and write header information
@@ -74,16 +96,36 @@ class Normalise(object):
             
          
     def read_data(self, fname, delimiter=","):
-        """ Read the fitted data into an array 
+        """ Read the fitted data into an array
+         
         Expects a format of:
         -> Jmax,JSE,Vcmax,VSE,Rd,RSE,Tav,R2,n,Species,Season,Leaf,Curve,
            Filename
+           
+        Parameters
+        ----------
+        fname : string
+            filename 
+        delimiter : string
+            what are file columns seperated by?
         """
         data = np.recfromcsv(fname, delimiter=delimiter, names=True, 
                              case_sensitive=True)
         return data
     
     def open_output_files(self, ofname):
+        """ Open the output files for writing 
+        
+        Parameters
+        ----------
+        ofname : string
+            output file name
+        
+        Returns
+        --------
+        fp : object
+            file pointer    
+        """
         if os.path.isfile(ofname):
             os.remove(ofname)
             
@@ -95,6 +137,20 @@ class Normalise(object):
         return fp
     
     def write_file_hdr(self, fname, header):  
+        """ Write the output file header information 
+        
+        Parameters
+        ----------
+        fname : string
+            output file name
+        header : list/array
+            List of output variable headers
+        
+        Returns
+        --------
+        wr : object
+            file pointer    
+        """
         wr = csv.writer(fname, delimiter=',', quoting=csv.QUOTE_NONE, 
                         escapechar=' ')
         wr.writerow(header)
@@ -102,8 +158,27 @@ class Normalise(object):
         return wr
     
     def interpolate_temp(self, data, index1, index2, var):
-        """ 
-        Interpolate to obtain values of Jmax and Vcmax at normalising temp
+        """ Interpolate to obtain values of Jmax and Vcmax at normalising temp
+        
+        From two given points interpolate between them to calculate the value
+        at 25 deg C
+        
+        Parameters
+        ----------
+        data : array
+            Contains input data
+        index1 : int
+            index for first interpolation point
+        index2 : int
+            index for second interpolation point    
+        var : string
+            variable to interpolate
+         
+        Returns
+        -------
+        retval : float
+            normalised temp at 25 deg C
+        
         """ 
         # get relevant data, build dict for consistancy so we can use Tarrh func
         d = {}
@@ -117,7 +192,23 @@ class Normalise(object):
         return np.exp(y1 - x1 * (y2 - y1) / (x2 - x1))  
         
     def find_nearest_highest_index(self, array, flag25=False):
-        """ find nearest index in an array that is > a given value """
+        """ find nearest index in an array that is > a given value 
+        
+        Parameters
+        ----------
+        array : array
+            array containing temp data
+        
+        Returns
+        -------
+        index : int
+            index in array containing value closest to, but above 25 degC. If
+            there is data at exactly 25 deg C, then return this index instead
+            and make the flag true
+        flag25 : logical
+            False by default, see comment above.
+        
+        """
         index = (np.abs(array - self.tnorm)).argmin()
         # Check to see if in the unlikely event we measured data at exactly
         # 25 degC
@@ -130,7 +221,22 @@ class Normalise(object):
         return index, flag25
     
     def write_outputs(self, jnorm, vnorm, subset, leaf, fp1, fp2):
-        """ Print out values at normalising temperature """
+        """ Print out values at normalising temperature 
+        
+        Parameters
+        ----------
+        jnorm : float
+            Jmax normalised to 25 deg c
+        vnorm : float
+            Vcmax normalised to 25 deg c
+        subset : array
+            subset of data
+        leaf : ?
+            ?
+        fp1 : object
+            file pointer1
+        fp2 : object
+        """
         fp1.writerow([jnorm, vnorm, subset["Species"][0], leaf,
                    subset["Filename"][0]])
         
@@ -149,6 +255,13 @@ class Normalise(object):
             fp2.writerow(row)
     
     def make_plots(self):
+        """ Make some plots to show our normalised data 
+        
+        * Jmax vs T   
+        * normalised Jmax in Arrhenius plot
+        * Vcmax vs T 
+        * normalised Vcmax in Arrhenius plot
+        """
         colour_list=['red', 'blue', 'green', 'yellow', 'orange', 'blueviolet',\
                      'darkmagenta', 'cyan', 'indigo', 'palegreen', 'salmon',\
                      'pink', 'darkgreen', 'darkblue',\
@@ -211,6 +324,19 @@ class Normalise(object):
         fig.savefig(os.path.join(self.plot_dir, "VArrh.png"), dpi=100)
 
     def calc_Tarrh(self, data):
+        """ Calculate Tarrh 
+        
+        Parameters 
+        ----------
+        data : array
+            input data array
+        
+        Returns
+        -------
+        retval : float
+            Tarrh
+        """
+        
         arg1 = 1.0 / (self.tnorm + self.deg2kelvin)
         arg2 = 1.0 / (data["Tav"] + self.deg2kelvin)
          

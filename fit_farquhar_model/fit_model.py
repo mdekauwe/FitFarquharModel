@@ -33,7 +33,7 @@ class FitMe(object):
     to be subclased.
     """
     def __init__(self, model=None, ofname=None, results_dir=None, 
-                 data_dir=None, plot_dir=None, random_sample_grid=None):
+                 data_dir=None, plot_dir=None):
         """
         Parameters
         ----------
@@ -47,11 +47,6 @@ class FitMe(object):
             input directory path where measured A-Ci files live
         plot_dir : string
             directory to save plots of various fitting routines
-        random_sample_grid : logical
-            If this is true we use a random sampling procedure to define the
-            best starting point for initial parameter guesses. If this is false
-            then we use a much denser sampling method. Note this will be 
-            considerably more computational expensive, up to you.
         """
         
         self.results_dir = results_dir
@@ -63,8 +58,12 @@ class FitMe(object):
         self.succes_count = 0
         self.nfiles = 0
         self.deg2kelvin = 273.15
-        self.random_sample_grid = random_sample_grid
-    
+        
+        # Ideally we don't want to use this, but till I can figure out how to
+        # improve the speed of nesting 3 for loops, the other method will be
+        # very slow for people
+        self.random_sample_grid = True
+        
     def open_output_files(self, ofname):
         """
         Opens output file for recording fit information
@@ -136,27 +135,62 @@ class FitMe(object):
                                          Vcmax=Vcmax, Rd=Rd)
         return (obs - An)
     
-    def report_fits(self, f, result, fname, curve_data, An_fit):
-        """ Save fitting results to a file... """
-        pearsons_r = stats.pearsonr(curve_data["Photo"], An_fit)[0]
+    def report_fits(self, f, result, fname, data, An_fit):
+        """ Save fitting results to a file... 
+        
+        Parameters
+        ----------
+        f : object
+            file pointer
+        result: object
+            fitting result, param, std. error etc.
+        obs : array
+            A-Ci data to fit model against
+        fname : string
+            filename to append to output file
+        data : object
+            input A-Ci curve information
+        An_fit : array
+            best model fit using optimised parameters, Net leaf assimilation 
+            rate [umol m-2 s-1]
+        """
+        pearsons_r = stats.pearsonr(data["Photo"], An_fit)[0]
         row = []
         for name, par in result.params.items():
             row.append("%s" % (par.value))
             row.append("%s" % (par.stderr))
-        row.append("%s" % (np.mean(curve_data["Tleaf"] - self.deg2kelvin)))
+        row.append("%s" % (np.mean(data["Tleaf"] - self.deg2kelvin)))
         row.append("%s" % (pearsons_r**2))
         row.append("%s" % (len(An_fit)))
-        row.append("%s" % (curve_data["Species"][0]))
-        row.append("%s" % (curve_data["Season"][0]))
-        row.append("%s" % (curve_data["Leaf"][0]))
-        row.append("%s" % (curve_data["Curve"][0]))
+        row.append("%s" % (data["Species"][0]))
+        row.append("%s" % (data["Season"][0]))
+        row.append("%s" % (data["Leaf"][0]))
+        row.append("%s" % (data["Curve"][0]))
         row.append("%s" % (fname))
-        row.append("%s%s%s" % (str(curve_data["Species"][0]), \
-                               str(curve_data["Season"][0]), \
-                               str(curve_data["Leaf"][0])))
+        row.append("%s%s%s" % (str(data["Species"][0]), \
+                               str(data["Season"][0]), \
+                               str(data["Leaf"][0])))
         f.writerow(row)
        
     def forward_run(self, result, data):
+        """ Run farquhar model with fitted parameters and return result 
+        
+        Parameters
+        ----------
+        result : object
+            fitting result, param, std. error etc.
+        data : object
+            input A-Ci curve information
+        
+        Returns
+        --------
+        An : float
+            Net leaf assimilation rate [umol m-2 s-1]
+        Acn : float
+            Net rubisco-limited leaf assimilation rate [umol m-2 s-1]
+        Ajn : float
+            Net RuBP-regeneration-limited leaf assimilation rate [umol m-2 s-1]
+        """
         Jmax = result.params['Jmax'].value
         Vcmax = result.params['Vcmax'].value
         Rd = result.params['Rd'].value  
@@ -169,7 +203,34 @@ class FitMe(object):
     def setup_model_params(self, jmax_guess=None, vcmax_guess=None, 
                            rd_guess=None, hd_guess=None, ea_guess=None, 
                            dels_guess=None):
-        """ Setup parameters """
+        """ Setup lmfit Parameters object
+        
+        Parameters
+        ----------
+        jmax_guess : value
+            initial parameter guess, if nothing is passed, i.e. it is None,
+            then parameter is not fitted
+        vcmax_guess : value
+            initial parameter guess, if nothing is passed, i.e. it is None,
+            then parameter is not fitted
+        rd_guess : value
+            initial parameter guess, if nothing is passed, i.e. it is None,
+            then parameter is not fitted
+        hd_guess : value
+            initial parameter guess, if nothing is passed, i.e. it is None,
+            then parameter is not fitted
+        ea_guess : value
+            initial parameter guess, if nothing is passed, i.e. it is None,
+            then parameter is not fitted
+        dels_guess : value
+            initial parameter guess, if nothing is passed, i.e. it is None,
+            then parameter is not fitted
+        
+        Returns
+        -------
+        params : object
+            lmfit object containing parameters to fit
+        """
         params = Parameters()
         if jmax_guess is not None:
             params.add('Jmax', value=jmax_guess, min=0.0)
@@ -187,20 +248,46 @@ class FitMe(object):
         return params
     
     def print_fit_to_screen(self, result):
+        """ Print the fitting result to the terminal 
+        
+        Parameters
+        ----------
+        result : object
+            fitting result, param, std. error etc.
+        """
         for name, par in result.params.items():
             print '%s = %.8f +/- %.8f ' % (name, par.value, par.stderr)
         print 
-  
     
-    def make_plot(self, curve_data, curve_num, An_fit, Anc_fit, Anj_fit):
-        """ Make some plots to show how good our fitted model is to the data """
-        species = curve_data["Species"][0]
-        season = curve_data["Season"][0]
+    def make_plot(self, data, curve_num, An_fit, Anc_fit, Anj_fit):
+        """ Make some plots to show how good our fitted model is to the data 
+        
+        * Plots A-Ci model fits vs. data
+        * Residuals between fit and measured A
+        
+        Parameters
+        ----------
+        data : object
+            input A-Ci curve information 
+        curve_num : int
+            unique identifier to distinguish A-Ci curve
+        An_fit : array
+            best model fit using optimised parameters, Net leaf assimilation 
+            rate [umol m-2 s-1]
+        Anc_fit : array
+            best model fit using optimised parameters, Net rubisco-limited leaf 
+            assimilation rate [umol m-2 s-1]
+        Anj_fit : array
+            best model fit using optimised parameters, Net 
+            RuBP-regeneration-limited leaf assimilation rate [umol m-2 s-1]
+        """
+        species = data["Species"][0]
+        season = data["Season"][0]
         season = "all"
-        leaf = curve_data["Leaf"][0]
+        leaf = data["Leaf"][0]
         ofname = "%s/%s_%s_%s_%s_fit_and_residual.png" % \
                  (self.plot_dir, species, season, leaf, curve_num)
-        residuals = curve_data["Photo"] - An_fit  
+        residuals = data["Photo"] - An_fit  
         
         colour_list=['red', 'blue', 'green', 'yellow', 'orange', 'blueviolet',\
                      'darkmagenta', 'cyan', 'indigo', 'palegreen', 'salmon',\
@@ -219,20 +306,20 @@ class FitMe(object):
         ax = fig.add_subplot(211)
         ax2 = fig.add_subplot(212)
         
-        ax.plot(curve_data["Ci"], curve_data["Photo"], 
+        ax.plot(data["Ci"], data["Photo"], 
                 ls="", lw=1.5, marker="o", c="black")
-        ax.plot(curve_data["Ci"], An_fit, '-', c="black", linewidth=1, 
+        ax.plot(data["Ci"], An_fit, '-', c="black", linewidth=1, 
                 label="An-Rd")
-        ax.plot(curve_data["Ci"], Anc_fit, '--', c="red", linewidth=3, 
+        ax.plot(data["Ci"], Anc_fit, '--', c="red", linewidth=3, 
                 label="Ac-Rd")
-        ax.plot(curve_data["Ci"], Anj_fit, '--', c="blue", linewidth=3, 
+        ax.plot(data["Ci"], Anj_fit, '--', c="blue", linewidth=3, 
                 label="Aj-Rd")
         ax.set_ylabel("A$_n$", weight="bold")
         ax.axes.get_xaxis().set_visible(False)
         ax.set_xlim(0, 1600)
         ax.legend(numpoints=1, loc="best")
 
-        ax2.plot(curve_data["Ci"], residuals, "ko")
+        ax2.plot(data["Ci"], residuals, "ko")
         ax2.axhline(y=0.0, ls="--", color='black')
         ax2.set_xlabel('Ci', weight="bold")
         ax2.set_ylabel("Residuals (Obs$-$Fit)", weight="bold")
@@ -243,6 +330,21 @@ class FitMe(object):
         plt.clf()    
 
     def write_file_hdr(self, fname, header):  
+        """ Write CSV file header 
+        
+        Parameters
+        ----------
+        fname : string
+            output filename
+        header : list/array
+            List/array containing information for header for output CSV file
+        
+        Returns
+        -------
+        wr : object
+            output file pointer
+        """
+        
         wr = csv.writer(fname, delimiter=',', quoting=csv.QUOTE_NONE, 
                         escapechar=' ')
         wr.writerow(header)
@@ -250,11 +352,18 @@ class FitMe(object):
         return wr
         
     def tidy_up(self, fp=None):
+        """ Clean up at the end of fitting 
+        
+        Parameters
+        ----------
+        fp : object
+            file pointer
+        """
         total_fits = float(self.succes_count) / self.nfiles * 100.0
         print "\nOverall fitted %.1f%% of the data\n" % (total_fits)
         fp.close()
     
-    def pick_starting_point(self, data, grid_size=50):
+    def pick_starting_point(self, data, grid_size=500):
         """ Figure out a good starting parameter guess
         
         High-density grid search to overcome issues with ending up in a 
@@ -303,10 +412,10 @@ class FitMe(object):
             for i in Vcmax:
                 for j in Jmax:
                     for k in Rd:
-                        (An, Anc, Anj) = self.call_model(data["Ci"], data["Tleaf"], 
-                                                 Jmax=j, Vcmax=i, 
-                                                 Rd=k) 
-        
+                        (An, Anc, Anj) = self.call_model(data["Ci"], 
+                                                         data["Tleaf"], 
+                                                         Jmax=j, Vcmax=i, Rd=k) 
+
                         # Save SSE
                         fits = np.append(fits, np.sum((data["Photo"] - An)**2))
                         print np.sum((data["Photo"] - An)**2)
@@ -317,19 +426,41 @@ class FitMe(object):
         
 
 class FitJmaxVcmaxRd(FitMe):
-    """ Fit the model parameters Jmax, Vcmax and Rd to the measured A-Ci data"""
+    """ Fit the model parameters Jmax, Vcmax and Rd to the measured A-Ci data
+    
+    This is a subclass of the FitMe class above, it uses most of the same 
+    methods
+    """
     def __init__(self, model=None, ofname=None, results_dir=None, 
-                 data_dir=None, plot_dir=None, random_sample_grid=None):
-        FitMe.__init__(self, model, ofname, results_dir, data_dir, plot_dir, 
-                       random_sample_grid)
+                 data_dir=None, plot_dir=None):
+        """
+        Parameters
+        ----------
+        model : object
+            model that we are fitting measurements against...
+        ofname : string
+            output filename for writing fitting result.
+        results_dir : string
+            output directory path for the result to be written
+        data_dir : string
+            input directory path where measured A-Ci files live
+        plot_dir : string
+            directory to save plots of various fitting routines
+        """        
+        FitMe.__init__(self, model, ofname, results_dir, data_dir, plot_dir)
         self.header = ["Jmax", "JSE", "Vcmax", "VSE", "Rd", "RSE", "Tav", \
                        "R2", "n", "Species", "Season", "Leaf", "Curve", \
                        "Filename", "id"]
                        
-    def main(self, print_to_screen, deg25_range=[None, None]):   
+    def main(self, print_to_screen):   
         """ Loop over all our A-Ci measured curves and fit the Farquhar model
-        parameters to this data """
+        parameters to this data 
         
+        Parameters
+        ----------
+        print_to_screen : logical
+            print fitting result to screen? Default is no!
+        """
         # open files and write header information
         fp = self.open_output_files(self.ofname)
         wr = self.write_file_hdr(fp, self.header)
@@ -371,18 +502,38 @@ class FitJmaxVcmaxRd(FitMe):
 class FitEaDels(FitMe):
     """ Fit the model parameters Eaj, Eav, Dels to the measured A-Ci data"""
     def __init__(self, model=None, infname=None, ofname=None, results_dir=None, 
-                 data_dir=None, random_sample_grid=None):
+                 data_dir=None):
+        """
+        Parameters
+        ----------
+        model : object
+            model that we are fitting measurements against...
+        ofname : string
+            output filename for writing fitting result.
+        results_dir : string
+            output directory path for the result to be written
+        data_dir : string
+            input directory path where measured A-Ci files live
+        plot_dir : string
+            directory to save plots of various fitting routines
+        """
+        
         self.infname = infname
         FitMe.__init__(self, model=model, ofname=ofname, 
-                       results_dir=results_dir, data_dir=data_dir, 
-                       random_sample_grid=random_sample_grid)
+                       results_dir=results_dir, data_dir=data_dir)
         self.header = ["Param", "Hd", "SE", "Ea", "SE", "delS", "delSSE", \
                        "R2", "n", "Topt"]
         self.call_model = model.peaked_arrh
         
     def main(self, print_to_screen):   
         """ Loop over all our A-Ci measured curves and fit the Farquhar model
-        parameters to this data """
+        parameters to this data 
+        
+        Parameters
+        ----------
+        print_to_screen : logical
+            print fitting result to screen? Default is no!
+        """
         all_data = self.get_data(self.infname)
         fp = self.open_output_files(self.ofname)
         wr = self.write_file_hdr(fp, self.header)
@@ -435,14 +586,25 @@ class FitEaDels(FitMe):
             (peak_fit) = self.forward_run(result, data)
             Topt = (self.calc_Topt(result.params["Hd"].value, 
                                result.params["Ea"].value, 
-                               result.params["delS"].value) - 
-                               self.deg2kelvin)
+                               result.params["delS"].value))
             self.report_fits(wr, result, data, data["Vnorm"], peak_fit, 
                              "Vcmax", Topt)
        
         fp.close()  
     
     def get_data(self, infname):
+        """ Read in some of the fitted results 
+        
+        Parameters
+        ----------
+        infname : string
+            filename to read
+        
+        Returns 
+        -------
+        all_data : array
+            read data
+        """
         all_data = self.read_data(infname)
         all_data["Tav"] = all_data["Tav"] + self.deg2kelvin
         all_data["Jnorm"] = np.exp(all_data["Jnorm"])
@@ -451,6 +613,20 @@ class FitEaDels(FitMe):
         return all_data
         
     def forward_run(self, result, data):
+        """ Run peaked Arrhenius model with fitted parameters and return result 
+        
+        Parameters
+        ----------
+        result : object
+            fitting result, param, std. error etc.
+        data : object
+            input A-Ci curve information
+        
+        Returns
+        --------
+        model_fit : array
+            fitted result
+        """
         Hd = result.params['Hd'].value
         Ea = result.params['Ea'].value
         delS = result.params['delS'].value
@@ -461,7 +637,27 @@ class FitEaDels(FitMe):
         return model_fit
     
     def report_fits(self, f, result, data, obs, fit, pname, Topt):
-        """ Save fitting results to a file... """
+        """ Save fitting results to a file... 
+        
+        Parameters
+        ----------
+        f : object
+            file pointer
+        result: object
+            fitting result, param, std. error etc.
+        data : object
+            input A-Ci curve information
+        obs : array
+            A-Ci data to fit model against
+        fit : array
+            best model fit to optimised parameters
+        fname : string
+            filename to append to output file
+        pname : string 
+            param_name
+        Topt : float
+            Optimum temperature [deg C]
+        """
         pearsons_r = stats.pearsonr(obs, fit)[0]
         row = [pname]
         for name, par in result.params.items():
@@ -473,6 +669,25 @@ class FitEaDels(FitMe):
         f.writerow(row)
     
     def residual(self, parameters, data, obs):
+        """ simple function to quantify how good the fit was for the fitting
+        routine. Could use something better? RMSE?
+        
+        Parameters
+        ----------
+        params : object
+            List of parameters to be fit, initial guess, ranges etc. This is
+            an lmfit object
+        data: array
+            data to run farquhar model with
+        obs : array
+            A-Ci data to fit model against
+        
+        Returns: 
+        --------
+        residual : array
+            residual of fit between model and obs, based on current parameter
+            set
+        """
         Hd = parameters["Hd"].value
         Ea = parameters["Ea"].value
         delS = parameters["delS"].value
@@ -483,12 +698,36 @@ class FitEaDels(FitMe):
         return (obs - model)
     
     def calc_Topt(self, Hd, Ha, delS, RGAS=8.314):
-        """ calculate the temperature optimum """
+        """ Calculate the temperature optimum 
         
-        #print Ha, Hd, delS
-        return Hd / (delS - RGAS * np.log(Ha / (Hd - Ha)))
+        Parameters
+        ----------
+        Hd : float
+            describes rate of decrease about the optimum temp [KJ mol-1]
+        Ha : float
+            activation energy for the parameter [kJ mol-1]
+        delS : float
+            entropy factor [J mol-1 K-1)
+        RGAS : float
+            Universal gas constant [J mol-1 K-1]
         
-    def pick_starting_point(self, data, obs, grid_size=100):
+        Returns
+        --------
+        Topt : float
+            optimum temperature [deg C]
+        
+        Reference
+        ----------
+        * Medlyn, B. E., Dreyer, E., Ellsworth, D., Forstreuter, M., Harley, 
+          P.C., Kirschbaum, M.U.F., Leroux, X., Montpied, P., Strassemeyer, J., 
+          Walcroft, A., Wang, K. and Loustau, D. (2002) Temperature response of 
+          parameters of a biochemically based model of photosynthesis. II. 
+          A review of experimental data. Plant, Cell and Enviroment 25, 
+          1167-1179.
+        """
+        return (Hd / (delS - RGAS * np.log(Ha / (Hd - Ha)))) - self.deg2kelvin
+        
+    def pick_starting_point(self, data, obs, grid_size=500):
         """ High-density grid search to overcome issues with ending up in a 
         local minima. Values that yield the lowest SSE (without minimisation)
         are used as the starting point for the minimisation.
@@ -498,8 +737,6 @@ class FitEaDels(FitMe):
         Dubois et al (2007) Optimizing the statistical estimation of the 
         parameters of the Farquhar-von Caemmerer-Berry model of photosynthesis. 
         New Phytologist, 176, 402--414
-
-        
         """
         # Shuffle arrays so that our combination of parameters is random
         Hd = 200000.0
