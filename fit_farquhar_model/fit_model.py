@@ -131,8 +131,14 @@ class FitMe(object):
         Jmax = params['Jmax'].value
         Vcmax = params['Vcmax'].value
         Rd = params['Rd'].value  
-        (An, Anc, Anj) = self.call_model(data["Ci"], data["Tleaf"], Jmax=Jmax, 
-                                         Vcmax=Vcmax, Rd=Rd)
+        
+        if hasattr(data, "Par"):
+             (An, Anc, Anj) = self.call_model(data["Ci"], data["Tleaf"],
+                                              Par=data["Par"], Jmax=Jmax, 
+                                              Vcmax=Vcmax, Rd=Rd)
+        else:
+            (An, Anc, Anj) = self.call_model(data["Ci"], data["Tleaf"], 
+                                             Jmax=Jmax, Vcmax=Vcmax, Rd=Rd)
         return (obs - An)
     
     def report_fits(self, f, result, fname, data, An_fit):
@@ -194,11 +200,15 @@ class FitMe(object):
         Jmax = result.params['Jmax'].value
         Vcmax = result.params['Vcmax'].value
         Rd = result.params['Rd'].value  
-        (An_fit, Anc_fit, Anj_fit) = self.call_model(data["Ci"], data["Tleaf"], 
-                                                     Jmax=Jmax, Vcmax=Vcmax, 
-                                                     Rd=Rd)
+        if hasattr(data, "Par"):
+             (An, Anc, Anj) = self.call_model(data["Ci"], data["Tleaf"],
+                                              Par=data["Par"], Jmax=Jmax, 
+                                              Vcmax=Vcmax, Rd=Rd)
+        else:
+            (An, Anc, Anj) = self.call_model(data["Ci"], data["Tleaf"], 
+                                             Jmax=Jmax, Vcmax=Vcmax, Rd=Rd)
         
-        return (An_fit, Anc_fit, Anj_fit)
+        return (An, Anc, Anj)
                 
     def setup_model_params(self, jmax_guess=None, vcmax_guess=None, 
                            rd_guess=None, hd_guess=None, ea_guess=None, 
@@ -403,18 +413,33 @@ class FitMe(object):
             np.random.shuffle(Rd)
         
             for i in xrange(len(Vcmax)):
-                (An, Anc, Anj) = self.call_model(data["Ci"], data["Tleaf"], 
-                                                 Jmax=Jmax[i], Vcmax=Vcmax[i], 
-                                                 Rd=Rd[i])     
+                if hasattr(data, "Par"):
+                    (An, Anc, Anj) = self.call_model(data["Ci"], data["Tleaf"],
+                                                     Par=data["Par"], 
+                                                     Jmax=Jmax[i], 
+                                                     Vcmax=Vcmax[i], Rd=Rd[i])
+                else:
+                    (An, Anc, Anj) = self.call_model(data["Ci"], data["Tleaf"], 
+                                                     Jmax=Jmax[i], 
+                                                     Vcmax=Vcmax[i], 
+                                                     Rd=Rd[i])
                 # Save SSE
                 fits = np.append(fits, np.sum((data["Photo"] - An)**2))
         else:
             for i in Vcmax:
                 for j in Jmax:
                     for k in Rd:
-                        (An, Anc, Anj) = self.call_model(data["Ci"], 
-                                                         data["Tleaf"], 
-                                                         Jmax=j, Vcmax=i, Rd=k) 
+                        if hasattr(data, "Par"):
+                            (An, Anc, Anj) = self.call_model(data["Ci"], 
+                                                             data["Tleaf"],
+                                                             Par=data["Par"], 
+                                                             Jmax=j, Vcmax=i, 
+                                                             Rd=k)
+                        else:
+                            (An, Anc, Anj) = self.call_model(data["Ci"], 
+                                                             data["Tleaf"], 
+                                                             Jmax=j, Vcmax=i, 
+                                                             Rd=k)
 
                         # Save SSE
                         fits = np.append(fits, np.sum((data["Photo"] - An)**2))

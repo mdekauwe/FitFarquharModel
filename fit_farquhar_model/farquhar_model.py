@@ -109,7 +109,7 @@ class FarquharC3(object):
         else:
             self.alpha = quantum_yield * absorptance # (Medlyn et al 2002)     
         
-    def calc_photosynthesis(self, Ci, Tleaf, par=None, Jmax=None, Vcmax=None, 
+    def calc_photosynthesis(self, Ci, Tleaf, Par=None, Jmax=None, Vcmax=None, 
                             Jmax25=None, Vcmax25=None, Rd=None, Q10=None, 
                             Eaj=None, Eav=None, deltaSj=None, deltaSv=None, 
                             r25=None, Hdv=200000.0, Hdj=200000.0):
@@ -151,7 +151,7 @@ class FarquharC3(object):
         r25 : float
             Estimate of respiration rate at the reference temperature 25 deg C
              or 298 K [deg K]
-        par : float
+        Par : float
             PAR [umol m-2 time unit-1]. Default is not to supply PAR, with 
             measurements taken under light saturation.
         
@@ -189,10 +189,10 @@ class FarquharC3(object):
             else:
                 Jmax = self.arrh(Jmax25, Eaj, Tleaf)
         
-         # actual rate of electron transport, a function of absorbed PAR
-        if par is not None:
-            J = self.quadratic(a=self.theta_J, b=-(self.alpha * par + Jmax), 
-                               c=self.alpha * par * Jmax)
+        # actual rate of electron transport, a function of absorbed PAR
+        if Par is not None:
+            J = self.quadratic(a=self.theta_J, b=-(self.alpha * Par + Jmax), 
+                               c=self.alpha * Par * Jmax)
         # All measurements are calculated under saturated light!!
         else:
             J = Jmax
