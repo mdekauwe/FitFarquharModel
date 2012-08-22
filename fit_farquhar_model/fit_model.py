@@ -426,36 +426,44 @@ class FitMe(object):
                 # Save SSE
                 fits = np.append(fits, np.sum((data["Photo"] - An)**2))
         else:
-            #import itertools
-            #x = []
-            #for (i,j,k) in itertools.product(Vcmax,Jmax,Rd):
-            #    x.extend((i,j,k))
-            #for i in xrange(0,len(x), 3):
-            #    (An, Anc, Anj) = self.call_model(data["Ci"], data["Tleaf"], 
-            #                                     Jmax=x[i+1], Vcmax=x[i], 
-            #                                     Rd=x[i+2])     
-            #    # Save SSE
-            #    fits = np.append(fits, np.sum((data["Photo"] - An)**2))
-            #    print np.sum((data["Photo"] - An)**2)
-            #sys.exit()
-            for i in Vcmax:
-                for j in Jmax:
+            #p1, p2, p3 = np.ix_(Jmax, Vcmax, Rd)
+            #if hasattr(data, "Par"):
+            #    (An, Anc, Anj) = self.call_model(data["Ci"][:,None,None,None], 
+            #                                     data["Tleaf"][:,None,None,None], 
+            #                                     Par=data["Par"][:,None,None,None],
+            #                                     Jmax=p1, Vcmax=p2, Rd=p3)
+            #else:
+            #    (An, Anc, Anj) = self.call_model(data["Ci"][:,None,None,None], 
+            #                                     data["Tleaf"][:,None,None,None], 
+            #                                     Jmax=p1, Vcmax=p2, Rd=p3)
+            #fits = ((data["Photo"][:,None,None,None]- An).sum(0)**2).reshape(grid_size**3) 
+            
+            
+            
+            for i in Jmax:
+                for j in Vcmax:
                     for k in Rd:
                         if hasattr(data, "Par"):
                             (An, Anc, Anj) = self.call_model(data["Ci"], 
                                                              data["Tleaf"],
                                                              Par=data["Par"], 
-                                                             Jmax=j, Vcmax=i, 
+                                                             Jmax=i, Vcmax=j, 
                                                              Rd=k)
                         else:
+                            
                             (An, Anc, Anj) = self.call_model(data["Ci"], 
                                                              data["Tleaf"], 
-                                                             Jmax=j, Vcmax=i, 
+                                                             Jmax=i, Vcmax=j, 
                                                              Rd=k)
 
                         # Save SSE
                         fits = np.append(fits, np.sum((data["Photo"] - An)**2))
-                        print np.sum((data["Photo"] - An)**2)
+                        print (np.sum(data["Photo"] - An))**2, i, j, k
+        
+        
+        
+        
+        sys.exit()
         index = np.argmin(fits, 0) # smalles SSE
         
         return Vcmax[index], Jmax[index], Rd[index]
