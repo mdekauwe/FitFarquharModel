@@ -463,7 +463,7 @@ class FitMe(object):
         
         
         
-        sys.exit()
+            sys.exit()
         index = np.argmin(fits, 0) # smalles SSE
         
         return Vcmax[index], Jmax[index], Rd[index]
