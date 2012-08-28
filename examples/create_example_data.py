@@ -55,8 +55,7 @@ for Tleaf in np.arange(15.0, 40.0, 5.0):
             noise = np.random.normal(0.0, 2.0)
         else:
             noise = 0.0
-        row = [curve, Tleaf-deg2kelvin, Ci[i], \
-               An[i] + Rd + noise, "Potatoes",\
+        row = [curve, Tleaf-deg2kelvin, Ci[i], An[i] + Rd + noise, "Potatoes",\
                "Summer", 1]
         wr.writerow(row) 
     curve += 1    
@@ -66,8 +65,7 @@ for Tleaf in np.arange(15.0, 40.0, 5.0):
             noise = np.random.normal(0.0, 2.0)
         else:
             noise = 0.0
-        row = [curve, Tleaf-deg2kelvin, Ci[i], \
-               An[i] + Rd + noise, "Potatoes",\
+        row = [curve, Tleaf-deg2kelvin, Ci[i], An[i] + Rd + noise, "Potatoes",\
                "Summer", 2]
         wr.writerow(row) 
     curve += 1     
