@@ -58,3 +58,10 @@ The examples directory contains a series of self contained example scripts. Name
 Of course with real data a series of stats test should be carried out before
 fitting the final Eav, Eaj, deltaSv and deltaSj parameters. This is left up to the individual user.
     
+Documentation
+=============
+Minimal python docstring documentation output as html files in subdirectory
+html_documentation.
+
+created using... 
+    pydoc -w ./

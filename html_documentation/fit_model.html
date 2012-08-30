@@ -1,0 +1,777 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module fit_model</title>
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>fit_model</strong></big></big> (version 1.0 (13.08.2012))</font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/Users/mdekauwe/src/python/FitFarquharModel/fit_farquhar_model/fit_model.py">/Users/mdekauwe/src/python/FitFarquharModel/fit_farquhar_model/fit_model.py</a></font></td></tr></table>
+    <p><tt>Using&nbsp;the&nbsp;Levenberg-Marquardt&nbsp;algorithm&nbsp;&nbsp;to&nbsp;fit&nbsp;Jmax,&nbsp;Vcmax,&nbsp;Rd,&nbsp;Eaj,&nbsp;Eav,<br>
+deltaSj&nbsp;and&nbsp;deltaSv.<br>
+&nbsp;<br>
+The&nbsp;steps&nbsp;here&nbsp;are:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;1.&nbsp;Define&nbsp;a&nbsp;search&nbsp;grid&nbsp;to&nbsp;pick&nbsp;the&nbsp;starting&nbsp;point&nbsp;of&nbsp;the&nbsp;minimiser,&nbsp;in&nbsp;an<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;attempt&nbsp;to&nbsp;avoid&nbsp;issues&nbsp;relating&nbsp;to&nbsp;falling&nbsp;into&nbsp;a&nbsp;local&nbsp;minima.&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;2.&nbsp;Try&nbsp;and&nbsp;fit&nbsp;the&nbsp;parameters&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+That's&nbsp;all&nbsp;folks.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="csv.html">csv</a><br>
+<a href="glob.html">glob</a><br>
+</td><td width="25%" valign=top><a href="numpy.html">numpy</a><br>
+<a href="os.html">os</a><br>
+</td><td width="25%" valign=top><a href="matplotlib.pyplot.html">matplotlib.pyplot</a><br>
+<a href="lmfit.printfuncs.html">lmfit.printfuncs</a><br>
+</td><td width="25%" valign=top><a href="scipy.stats.html">scipy.stats</a><br>
+<a href="sys.html">sys</a><br>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="__builtin__.html#object">__builtin__.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="fit_model.html#FitMe">FitMe</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="fit_model.html#FitEaDels">FitEaDels</a>
+</font></dt><dt><font face="helvetica, arial"><a href="fit_model.html#FitJmaxVcmaxRd">FitJmaxVcmaxRd</a>
+</font></dt></dl>
+</dd>
+</dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="FitEaDels">class <strong>FitEaDels</strong></a>(<a href="fit_model.html#FitMe">FitMe</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Fit&nbsp;the&nbsp;model&nbsp;parameters&nbsp;Eaj,&nbsp;Eav,&nbsp;Dels&nbsp;to&nbsp;the&nbsp;measured&nbsp;A-Ci&nbsp;data<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="fit_model.html#FitEaDels">FitEaDels</a></dd>
+<dd><a href="fit_model.html#FitMe">FitMe</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="FitEaDels-__init__"><strong>__init__</strong></a>(self, model<font color="#909090">=None</font>, infname<font color="#909090">=None</font>, ofname<font color="#909090">=None</font>, results_dir<font color="#909090">=None</font>, data_dir<font color="#909090">=None</font>)</dt><dd><tt>Parameters<br>
+----------<br>
+model&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;model&nbsp;that&nbsp;we&nbsp;are&nbsp;fitting&nbsp;measurements&nbsp;against...<br>
+ofname&nbsp;:&nbsp;string<br>
+&nbsp;&nbsp;&nbsp;&nbsp;output&nbsp;filename&nbsp;for&nbsp;writing&nbsp;fitting&nbsp;result.<br>
+results_dir&nbsp;:&nbsp;string<br>
+&nbsp;&nbsp;&nbsp;&nbsp;output&nbsp;directory&nbsp;path&nbsp;for&nbsp;the&nbsp;result&nbsp;to&nbsp;be&nbsp;written<br>
+data_dir&nbsp;:&nbsp;string<br>
+&nbsp;&nbsp;&nbsp;&nbsp;input&nbsp;directory&nbsp;path&nbsp;where&nbsp;measured&nbsp;A-Ci&nbsp;files&nbsp;live<br>
+plot_dir&nbsp;:&nbsp;string<br>
+&nbsp;&nbsp;&nbsp;&nbsp;directory&nbsp;to&nbsp;save&nbsp;plots&nbsp;of&nbsp;various&nbsp;fitting&nbsp;routines</tt></dd></dl>
+
+<dl><dt><a name="FitEaDels-calc_Topt"><strong>calc_Topt</strong></a>(self, Hd, Ha, delS, RGAS<font color="#909090">=8.3140000000000001</font>)</dt><dd><tt>Calculate&nbsp;the&nbsp;temperature&nbsp;optimum&nbsp;<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+Hd&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;describes&nbsp;rate&nbsp;of&nbsp;decrease&nbsp;about&nbsp;the&nbsp;optimum&nbsp;temp&nbsp;[KJ&nbsp;mol-1]<br>
+Ha&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;activation&nbsp;energy&nbsp;for&nbsp;the&nbsp;parameter&nbsp;[kJ&nbsp;mol-1]<br>
+delS&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;entropy&nbsp;factor&nbsp;[J&nbsp;mol-1&nbsp;K-1)<br>
+RGAS&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Universal&nbsp;gas&nbsp;constant&nbsp;[J&nbsp;mol-1&nbsp;K-1]<br>
+&nbsp;<br>
+Returns<br>
+--------<br>
+Topt&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;optimum&nbsp;temperature&nbsp;[deg&nbsp;C]<br>
+&nbsp;<br>
+Reference<br>
+----------<br>
+*&nbsp;Medlyn,&nbsp;B.&nbsp;E.,&nbsp;Dreyer,&nbsp;E.,&nbsp;Ellsworth,&nbsp;D.,&nbsp;Forstreuter,&nbsp;M.,&nbsp;Harley,&nbsp;<br>
+&nbsp;&nbsp;P.C.,&nbsp;Kirschbaum,&nbsp;M.U.F.,&nbsp;Leroux,&nbsp;X.,&nbsp;Montpied,&nbsp;P.,&nbsp;Strassemeyer,&nbsp;J.,&nbsp;<br>
+&nbsp;&nbsp;Walcroft,&nbsp;A.,&nbsp;Wang,&nbsp;K.&nbsp;and&nbsp;Loustau,&nbsp;D.&nbsp;(2002)&nbsp;Temperature&nbsp;response&nbsp;of&nbsp;<br>
+&nbsp;&nbsp;parameters&nbsp;of&nbsp;a&nbsp;biochemically&nbsp;based&nbsp;model&nbsp;of&nbsp;photosynthesis.&nbsp;II.&nbsp;<br>
+&nbsp;&nbsp;A&nbsp;review&nbsp;of&nbsp;experimental&nbsp;data.&nbsp;Plant,&nbsp;Cell&nbsp;and&nbsp;Enviroment&nbsp;25,&nbsp;<br>
+&nbsp;&nbsp;1167-1179.</tt></dd></dl>
+
+<dl><dt><a name="FitEaDels-forward_run"><strong>forward_run</strong></a>(self, result, data)</dt><dd><tt>Run&nbsp;peaked&nbsp;Arrhenius&nbsp;model&nbsp;with&nbsp;fitted&nbsp;parameters&nbsp;and&nbsp;return&nbsp;result&nbsp;<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+result&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;fitting&nbsp;result,&nbsp;param,&nbsp;std.&nbsp;error&nbsp;etc.<br>
+data&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;input&nbsp;A-Ci&nbsp;curve&nbsp;information<br>
+&nbsp;<br>
+Returns<br>
+--------<br>
+model_fit&nbsp;:&nbsp;array<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fitted&nbsp;result</tt></dd></dl>
+
+<dl><dt><a name="FitEaDels-get_data"><strong>get_data</strong></a>(self, infname)</dt><dd><tt>Read&nbsp;in&nbsp;some&nbsp;of&nbsp;the&nbsp;fitted&nbsp;results&nbsp;<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+infname&nbsp;:&nbsp;string<br>
+&nbsp;&nbsp;&nbsp;&nbsp;filename&nbsp;to&nbsp;read<br>
+&nbsp;<br>
+Returns&nbsp;<br>
+-------<br>
+all_data&nbsp;:&nbsp;array<br>
+&nbsp;&nbsp;&nbsp;&nbsp;read&nbsp;data</tt></dd></dl>
+
+<dl><dt><a name="FitEaDels-main"><strong>main</strong></a>(self, print_to_screen)</dt><dd><tt>Loop&nbsp;over&nbsp;all&nbsp;our&nbsp;A-Ci&nbsp;measured&nbsp;curves&nbsp;and&nbsp;fit&nbsp;the&nbsp;Farquhar&nbsp;model<br>
+parameters&nbsp;to&nbsp;this&nbsp;data&nbsp;<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+print_to_screen&nbsp;:&nbsp;logical<br>
+&nbsp;&nbsp;&nbsp;&nbsp;print&nbsp;fitting&nbsp;result&nbsp;to&nbsp;screen?&nbsp;Default&nbsp;is&nbsp;no!</tt></dd></dl>
+
+<dl><dt><a name="FitEaDels-pick_starting_point"><strong>pick_starting_point</strong></a>(self, data, obs, grid_size<font color="#909090">=50</font>)</dt><dd><tt>High-density&nbsp;grid&nbsp;search&nbsp;to&nbsp;overcome&nbsp;issues&nbsp;with&nbsp;ending&nbsp;up&nbsp;in&nbsp;a&nbsp;<br>
+local&nbsp;minima.&nbsp;Values&nbsp;that&nbsp;yield&nbsp;the&nbsp;lowest&nbsp;RMSE&nbsp;(without&nbsp;minimisation)<br>
+are&nbsp;used&nbsp;as&nbsp;the&nbsp;starting&nbsp;point&nbsp;for&nbsp;the&nbsp;minimisation.<br>
+&nbsp;<br>
+Reference:<br>
+----------<br>
+Dubois&nbsp;et&nbsp;al&nbsp;(2007)&nbsp;Optimizing&nbsp;the&nbsp;statistical&nbsp;estimation&nbsp;of&nbsp;the&nbsp;<br>
+parameters&nbsp;of&nbsp;the&nbsp;Farquhar-von&nbsp;Caemmerer-Berry&nbsp;model&nbsp;of&nbsp;photosynthesis.&nbsp;<br>
+New&nbsp;Phytologist,&nbsp;176,&nbsp;402--414</tt></dd></dl>
+
+<dl><dt><a name="FitEaDels-report_fits"><strong>report_fits</strong></a>(self, f, result, data, obs, fit, pname, Topt)</dt><dd><tt>Save&nbsp;fitting&nbsp;results&nbsp;to&nbsp;a&nbsp;file...&nbsp;<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+f&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;file&nbsp;pointer<br>
+result:&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;fitting&nbsp;result,&nbsp;param,&nbsp;std.&nbsp;error&nbsp;etc.<br>
+data&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;input&nbsp;A-Ci&nbsp;curve&nbsp;information<br>
+obs&nbsp;:&nbsp;array<br>
+&nbsp;&nbsp;&nbsp;&nbsp;A-Ci&nbsp;data&nbsp;to&nbsp;fit&nbsp;model&nbsp;against<br>
+fit&nbsp;:&nbsp;array<br>
+&nbsp;&nbsp;&nbsp;&nbsp;best&nbsp;model&nbsp;fit&nbsp;to&nbsp;optimised&nbsp;parameters<br>
+fname&nbsp;:&nbsp;string<br>
+&nbsp;&nbsp;&nbsp;&nbsp;filename&nbsp;to&nbsp;append&nbsp;to&nbsp;output&nbsp;file<br>
+pname&nbsp;:&nbsp;string&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;param_name<br>
+Topt&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Optimum&nbsp;temperature&nbsp;[deg&nbsp;C]</tt></dd></dl>
+
+<dl><dt><a name="FitEaDels-residual"><strong>residual</strong></a>(self, parameters, data, obs)</dt><dd><tt>simple&nbsp;function&nbsp;to&nbsp;quantify&nbsp;how&nbsp;good&nbsp;the&nbsp;fit&nbsp;was&nbsp;for&nbsp;the&nbsp;fitting<br>
+routine.&nbsp;Could&nbsp;use&nbsp;something&nbsp;better?&nbsp;RMSE?<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+params&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;List&nbsp;of&nbsp;parameters&nbsp;to&nbsp;be&nbsp;fit,&nbsp;initial&nbsp;guess,&nbsp;ranges&nbsp;etc.&nbsp;This&nbsp;is<br>
+&nbsp;&nbsp;&nbsp;&nbsp;an&nbsp;lmfit&nbsp;<a href="__builtin__.html#object">object</a><br>
+data:&nbsp;array<br>
+&nbsp;&nbsp;&nbsp;&nbsp;data&nbsp;to&nbsp;run&nbsp;farquhar&nbsp;model&nbsp;with<br>
+obs&nbsp;:&nbsp;array<br>
+&nbsp;&nbsp;&nbsp;&nbsp;A-Ci&nbsp;data&nbsp;to&nbsp;fit&nbsp;model&nbsp;against<br>
+&nbsp;<br>
+Returns:&nbsp;<br>
+--------<br>
+residual&nbsp;:&nbsp;array<br>
+&nbsp;&nbsp;&nbsp;&nbsp;residual&nbsp;of&nbsp;fit&nbsp;between&nbsp;model&nbsp;and&nbsp;obs,&nbsp;based&nbsp;on&nbsp;current&nbsp;parameter<br>
+&nbsp;&nbsp;&nbsp;&nbsp;set</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="fit_model.html#FitMe">FitMe</a>:<br>
+<dl><dt><a name="FitEaDels-make_plot"><strong>make_plot</strong></a>(self, data, curve_num, An_fit, Anc_fit, Anj_fit)</dt><dd><tt>Make&nbsp;some&nbsp;plots&nbsp;to&nbsp;show&nbsp;how&nbsp;good&nbsp;our&nbsp;fitted&nbsp;model&nbsp;is&nbsp;to&nbsp;the&nbsp;data&nbsp;<br>
+&nbsp;<br>
+*&nbsp;Plots&nbsp;A-Ci&nbsp;model&nbsp;fits&nbsp;vs.&nbsp;data<br>
+*&nbsp;Residuals&nbsp;between&nbsp;fit&nbsp;and&nbsp;measured&nbsp;A<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+data&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;input&nbsp;A-Ci&nbsp;curve&nbsp;information&nbsp;<br>
+curve_num&nbsp;:&nbsp;int<br>
+&nbsp;&nbsp;&nbsp;&nbsp;unique&nbsp;identifier&nbsp;to&nbsp;distinguish&nbsp;A-Ci&nbsp;curve<br>
+An_fit&nbsp;:&nbsp;array<br>
+&nbsp;&nbsp;&nbsp;&nbsp;best&nbsp;model&nbsp;fit&nbsp;using&nbsp;optimised&nbsp;parameters,&nbsp;Net&nbsp;leaf&nbsp;assimilation&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;rate&nbsp;[umol&nbsp;m-2&nbsp;s-1]<br>
+Anc_fit&nbsp;:&nbsp;array<br>
+&nbsp;&nbsp;&nbsp;&nbsp;best&nbsp;model&nbsp;fit&nbsp;using&nbsp;optimised&nbsp;parameters,&nbsp;Net&nbsp;rubisco-limited&nbsp;leaf&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;assimilation&nbsp;rate&nbsp;[umol&nbsp;m-2&nbsp;s-1]<br>
+Anj_fit&nbsp;:&nbsp;array<br>
+&nbsp;&nbsp;&nbsp;&nbsp;best&nbsp;model&nbsp;fit&nbsp;using&nbsp;optimised&nbsp;parameters,&nbsp;Net&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;RuBP-regeneration-limited&nbsp;leaf&nbsp;assimilation&nbsp;rate&nbsp;[umol&nbsp;m-2&nbsp;s-1]</tt></dd></dl>
+
+<dl><dt><a name="FitEaDels-open_output_files"><strong>open_output_files</strong></a>(self, ofname)</dt><dd><tt>Opens&nbsp;output&nbsp;file&nbsp;for&nbsp;recording&nbsp;fit&nbsp;information<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+ofname&nbsp;:&nbsp;string<br>
+&nbsp;&nbsp;&nbsp;&nbsp;output&nbsp;file&nbsp;name<br>
+&nbsp;<br>
+Returns:&nbsp;<br>
+--------<br>
+fp&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;file&nbsp;pointer</tt></dd></dl>
+
+<dl><dt><a name="FitEaDels-print_fit_to_screen"><strong>print_fit_to_screen</strong></a>(self, result)</dt><dd><tt>Print&nbsp;the&nbsp;fitting&nbsp;result&nbsp;to&nbsp;the&nbsp;terminal&nbsp;<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+result&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;fitting&nbsp;result,&nbsp;param,&nbsp;std.&nbsp;error&nbsp;etc.</tt></dd></dl>
+
+<dl><dt><a name="FitEaDels-read_data"><strong>read_data</strong></a>(self, fname, delimiter<font color="#909090">=','</font>)</dt><dd><tt>Read&nbsp;the&nbsp;A-Ci&nbsp;data.&nbsp;<br>
+&nbsp;<br>
+Expects&nbsp;a&nbsp;format&nbsp;of:<br>
+-&gt;&nbsp;Curve,&nbsp;Tleaf,&nbsp;Ci,&nbsp;Photo,&nbsp;Species,&nbsp;Season,&nbsp;Leaf<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+fname&nbsp;:&nbsp;string<br>
+&nbsp;&nbsp;&nbsp;&nbsp;input&nbsp;file&nbsp;name,&nbsp;expecting&nbsp;csv&nbsp;file.<br>
+&nbsp;<br>
+Returns:&nbsp;<br>
+--------<br>
+data&nbsp;:&nbsp;array<br>
+&nbsp;&nbsp;&nbsp;&nbsp;numpy&nbsp;array&nbsp;containing&nbsp;the&nbsp;data</tt></dd></dl>
+
+<dl><dt><a name="FitEaDels-setup_model_params"><strong>setup_model_params</strong></a>(self, jmax_guess<font color="#909090">=None</font>, vcmax_guess<font color="#909090">=None</font>, rd_guess<font color="#909090">=None</font>, hd_guess<font color="#909090">=None</font>, ea_guess<font color="#909090">=None</font>, dels_guess<font color="#909090">=None</font>)</dt><dd><tt>Setup&nbsp;lmfit&nbsp;Parameters&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+jmax_guess&nbsp;:&nbsp;value<br>
+&nbsp;&nbsp;&nbsp;&nbsp;initial&nbsp;parameter&nbsp;guess,&nbsp;if&nbsp;nothing&nbsp;is&nbsp;passed,&nbsp;i.e.&nbsp;it&nbsp;is&nbsp;None,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;parameter&nbsp;is&nbsp;not&nbsp;fitted<br>
+vcmax_guess&nbsp;:&nbsp;value<br>
+&nbsp;&nbsp;&nbsp;&nbsp;initial&nbsp;parameter&nbsp;guess,&nbsp;if&nbsp;nothing&nbsp;is&nbsp;passed,&nbsp;i.e.&nbsp;it&nbsp;is&nbsp;None,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;parameter&nbsp;is&nbsp;not&nbsp;fitted<br>
+rd_guess&nbsp;:&nbsp;value<br>
+&nbsp;&nbsp;&nbsp;&nbsp;initial&nbsp;parameter&nbsp;guess,&nbsp;if&nbsp;nothing&nbsp;is&nbsp;passed,&nbsp;i.e.&nbsp;it&nbsp;is&nbsp;None,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;parameter&nbsp;is&nbsp;not&nbsp;fitted<br>
+hd_guess&nbsp;:&nbsp;value<br>
+&nbsp;&nbsp;&nbsp;&nbsp;initial&nbsp;parameter&nbsp;guess,&nbsp;if&nbsp;nothing&nbsp;is&nbsp;passed,&nbsp;i.e.&nbsp;it&nbsp;is&nbsp;None,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;parameter&nbsp;is&nbsp;not&nbsp;fitted<br>
+ea_guess&nbsp;:&nbsp;value<br>
+&nbsp;&nbsp;&nbsp;&nbsp;initial&nbsp;parameter&nbsp;guess,&nbsp;if&nbsp;nothing&nbsp;is&nbsp;passed,&nbsp;i.e.&nbsp;it&nbsp;is&nbsp;None,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;parameter&nbsp;is&nbsp;not&nbsp;fitted<br>
+dels_guess&nbsp;:&nbsp;value<br>
+&nbsp;&nbsp;&nbsp;&nbsp;initial&nbsp;parameter&nbsp;guess,&nbsp;if&nbsp;nothing&nbsp;is&nbsp;passed,&nbsp;i.e.&nbsp;it&nbsp;is&nbsp;None,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;parameter&nbsp;is&nbsp;not&nbsp;fitted<br>
+&nbsp;<br>
+Returns<br>
+-------<br>
+params&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;lmfit&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;containing&nbsp;parameters&nbsp;to&nbsp;fit</tt></dd></dl>
+
+<dl><dt><a name="FitEaDels-tidy_up"><strong>tidy_up</strong></a>(self, fp<font color="#909090">=None</font>)</dt><dd><tt>Clean&nbsp;up&nbsp;at&nbsp;the&nbsp;end&nbsp;of&nbsp;fitting&nbsp;<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+fp&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;file&nbsp;pointer</tt></dd></dl>
+
+<dl><dt><a name="FitEaDels-write_file_hdr"><strong>write_file_hdr</strong></a>(self, fname, header)</dt><dd><tt>Write&nbsp;CSV&nbsp;file&nbsp;header&nbsp;<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+fname&nbsp;:&nbsp;string<br>
+&nbsp;&nbsp;&nbsp;&nbsp;output&nbsp;filename<br>
+header&nbsp;:&nbsp;list/array<br>
+&nbsp;&nbsp;&nbsp;&nbsp;List/array&nbsp;containing&nbsp;information&nbsp;for&nbsp;header&nbsp;for&nbsp;output&nbsp;CSV&nbsp;file<br>
+&nbsp;<br>
+Returns<br>
+-------<br>
+wr&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;output&nbsp;file&nbsp;pointer</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="fit_model.html#FitMe">FitMe</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="FitJmaxVcmaxRd">class <strong>FitJmaxVcmaxRd</strong></a>(<a href="fit_model.html#FitMe">FitMe</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Fit&nbsp;the&nbsp;model&nbsp;parameters&nbsp;Jmax,&nbsp;Vcmax&nbsp;and&nbsp;Rd&nbsp;to&nbsp;the&nbsp;measured&nbsp;A-Ci&nbsp;data<br>
+&nbsp;<br>
+This&nbsp;is&nbsp;a&nbsp;subclass&nbsp;of&nbsp;the&nbsp;<a href="#FitMe">FitMe</a>&nbsp;class&nbsp;above,&nbsp;it&nbsp;uses&nbsp;most&nbsp;of&nbsp;the&nbsp;same&nbsp;<br>
+methods<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="fit_model.html#FitJmaxVcmaxRd">FitJmaxVcmaxRd</a></dd>
+<dd><a href="fit_model.html#FitMe">FitMe</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="FitJmaxVcmaxRd-__init__"><strong>__init__</strong></a>(self, model<font color="#909090">=None</font>, ofname<font color="#909090">=None</font>, results_dir<font color="#909090">=None</font>, data_dir<font color="#909090">=None</font>, plot_dir<font color="#909090">=None</font>)</dt><dd><tt>Parameters<br>
+----------<br>
+model&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;model&nbsp;that&nbsp;we&nbsp;are&nbsp;fitting&nbsp;measurements&nbsp;against...<br>
+ofname&nbsp;:&nbsp;string<br>
+&nbsp;&nbsp;&nbsp;&nbsp;output&nbsp;filename&nbsp;for&nbsp;writing&nbsp;fitting&nbsp;result.<br>
+results_dir&nbsp;:&nbsp;string<br>
+&nbsp;&nbsp;&nbsp;&nbsp;output&nbsp;directory&nbsp;path&nbsp;for&nbsp;the&nbsp;result&nbsp;to&nbsp;be&nbsp;written<br>
+data_dir&nbsp;:&nbsp;string<br>
+&nbsp;&nbsp;&nbsp;&nbsp;input&nbsp;directory&nbsp;path&nbsp;where&nbsp;measured&nbsp;A-Ci&nbsp;files&nbsp;live<br>
+plot_dir&nbsp;:&nbsp;string<br>
+&nbsp;&nbsp;&nbsp;&nbsp;directory&nbsp;to&nbsp;save&nbsp;plots&nbsp;of&nbsp;various&nbsp;fitting&nbsp;routines</tt></dd></dl>
+
+<dl><dt><a name="FitJmaxVcmaxRd-main"><strong>main</strong></a>(self, print_to_screen)</dt><dd><tt>Loop&nbsp;over&nbsp;all&nbsp;our&nbsp;A-Ci&nbsp;measured&nbsp;curves&nbsp;and&nbsp;fit&nbsp;the&nbsp;Farquhar&nbsp;model<br>
+parameters&nbsp;to&nbsp;this&nbsp;data&nbsp;<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+print_to_screen&nbsp;:&nbsp;logical<br>
+&nbsp;&nbsp;&nbsp;&nbsp;print&nbsp;fitting&nbsp;result&nbsp;to&nbsp;screen?&nbsp;Default&nbsp;is&nbsp;no!</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="fit_model.html#FitMe">FitMe</a>:<br>
+<dl><dt><a name="FitJmaxVcmaxRd-forward_run"><strong>forward_run</strong></a>(self, result, data)</dt><dd><tt>Run&nbsp;farquhar&nbsp;model&nbsp;with&nbsp;fitted&nbsp;parameters&nbsp;and&nbsp;return&nbsp;result&nbsp;<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+result&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;fitting&nbsp;result,&nbsp;param,&nbsp;std.&nbsp;error&nbsp;etc.<br>
+data&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;input&nbsp;A-Ci&nbsp;curve&nbsp;information<br>
+&nbsp;<br>
+Returns<br>
+--------<br>
+An&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Net&nbsp;leaf&nbsp;assimilation&nbsp;rate&nbsp;[umol&nbsp;m-2&nbsp;s-1]<br>
+Acn&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Net&nbsp;rubisco-limited&nbsp;leaf&nbsp;assimilation&nbsp;rate&nbsp;[umol&nbsp;m-2&nbsp;s-1]<br>
+Ajn&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Net&nbsp;RuBP-regeneration-limited&nbsp;leaf&nbsp;assimilation&nbsp;rate&nbsp;[umol&nbsp;m-2&nbsp;s-1]</tt></dd></dl>
+
+<dl><dt><a name="FitJmaxVcmaxRd-make_plot"><strong>make_plot</strong></a>(self, data, curve_num, An_fit, Anc_fit, Anj_fit)</dt><dd><tt>Make&nbsp;some&nbsp;plots&nbsp;to&nbsp;show&nbsp;how&nbsp;good&nbsp;our&nbsp;fitted&nbsp;model&nbsp;is&nbsp;to&nbsp;the&nbsp;data&nbsp;<br>
+&nbsp;<br>
+*&nbsp;Plots&nbsp;A-Ci&nbsp;model&nbsp;fits&nbsp;vs.&nbsp;data<br>
+*&nbsp;Residuals&nbsp;between&nbsp;fit&nbsp;and&nbsp;measured&nbsp;A<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+data&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;input&nbsp;A-Ci&nbsp;curve&nbsp;information&nbsp;<br>
+curve_num&nbsp;:&nbsp;int<br>
+&nbsp;&nbsp;&nbsp;&nbsp;unique&nbsp;identifier&nbsp;to&nbsp;distinguish&nbsp;A-Ci&nbsp;curve<br>
+An_fit&nbsp;:&nbsp;array<br>
+&nbsp;&nbsp;&nbsp;&nbsp;best&nbsp;model&nbsp;fit&nbsp;using&nbsp;optimised&nbsp;parameters,&nbsp;Net&nbsp;leaf&nbsp;assimilation&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;rate&nbsp;[umol&nbsp;m-2&nbsp;s-1]<br>
+Anc_fit&nbsp;:&nbsp;array<br>
+&nbsp;&nbsp;&nbsp;&nbsp;best&nbsp;model&nbsp;fit&nbsp;using&nbsp;optimised&nbsp;parameters,&nbsp;Net&nbsp;rubisco-limited&nbsp;leaf&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;assimilation&nbsp;rate&nbsp;[umol&nbsp;m-2&nbsp;s-1]<br>
+Anj_fit&nbsp;:&nbsp;array<br>
+&nbsp;&nbsp;&nbsp;&nbsp;best&nbsp;model&nbsp;fit&nbsp;using&nbsp;optimised&nbsp;parameters,&nbsp;Net&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;RuBP-regeneration-limited&nbsp;leaf&nbsp;assimilation&nbsp;rate&nbsp;[umol&nbsp;m-2&nbsp;s-1]</tt></dd></dl>
+
+<dl><dt><a name="FitJmaxVcmaxRd-open_output_files"><strong>open_output_files</strong></a>(self, ofname)</dt><dd><tt>Opens&nbsp;output&nbsp;file&nbsp;for&nbsp;recording&nbsp;fit&nbsp;information<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+ofname&nbsp;:&nbsp;string<br>
+&nbsp;&nbsp;&nbsp;&nbsp;output&nbsp;file&nbsp;name<br>
+&nbsp;<br>
+Returns:&nbsp;<br>
+--------<br>
+fp&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;file&nbsp;pointer</tt></dd></dl>
+
+<dl><dt><a name="FitJmaxVcmaxRd-pick_starting_point"><strong>pick_starting_point</strong></a>(self, data, grid_size<font color="#909090">=50</font>)</dt><dd><tt>Figure&nbsp;out&nbsp;a&nbsp;good&nbsp;starting&nbsp;parameter&nbsp;guess<br>
+&nbsp;<br>
+High-density&nbsp;grid&nbsp;search&nbsp;to&nbsp;overcome&nbsp;issues&nbsp;with&nbsp;ending&nbsp;up&nbsp;in&nbsp;a&nbsp;<br>
+local&nbsp;minima.&nbsp;Values&nbsp;that&nbsp;yield&nbsp;the&nbsp;lowest&nbsp;RMSE&nbsp;(without&nbsp;minimisation)<br>
+are&nbsp;used&nbsp;as&nbsp;the&nbsp;starting&nbsp;point&nbsp;for&nbsp;the&nbsp;minimisation.&nbsp;<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+data&nbsp;:&nbsp;array<br>
+&nbsp;&nbsp;&nbsp;&nbsp;model&nbsp;driving&nbsp;data<br>
+grid_size&nbsp;:&nbsp;int<br>
+&nbsp;&nbsp;&nbsp;&nbsp;hardwired,&nbsp;number&nbsp;of&nbsp;samples<br>
+&nbsp;<br>
+Returns:&nbsp;<br>
+--------<br>
+retval&nbsp;*&nbsp;3&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Three&nbsp;starting&nbsp;guesses&nbsp;for&nbsp;Jmax,&nbsp;Vcmax&nbsp;and&nbsp;Rd<br>
+&nbsp;<br>
+Reference:<br>
+----------<br>
+Dubois&nbsp;et&nbsp;al&nbsp;(2007)&nbsp;Optimizing&nbsp;the&nbsp;statistical&nbsp;estimation&nbsp;of&nbsp;the&nbsp;<br>
+parameters&nbsp;of&nbsp;the&nbsp;Farquhar-von&nbsp;Caemmerer-Berry&nbsp;model&nbsp;of&nbsp;photosynthesis.&nbsp;<br>
+New&nbsp;Phytologist,&nbsp;176,&nbsp;402--414</tt></dd></dl>
+
+<dl><dt><a name="FitJmaxVcmaxRd-print_fit_to_screen"><strong>print_fit_to_screen</strong></a>(self, result)</dt><dd><tt>Print&nbsp;the&nbsp;fitting&nbsp;result&nbsp;to&nbsp;the&nbsp;terminal&nbsp;<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+result&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;fitting&nbsp;result,&nbsp;param,&nbsp;std.&nbsp;error&nbsp;etc.</tt></dd></dl>
+
+<dl><dt><a name="FitJmaxVcmaxRd-read_data"><strong>read_data</strong></a>(self, fname, delimiter<font color="#909090">=','</font>)</dt><dd><tt>Read&nbsp;the&nbsp;A-Ci&nbsp;data.&nbsp;<br>
+&nbsp;<br>
+Expects&nbsp;a&nbsp;format&nbsp;of:<br>
+-&gt;&nbsp;Curve,&nbsp;Tleaf,&nbsp;Ci,&nbsp;Photo,&nbsp;Species,&nbsp;Season,&nbsp;Leaf<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+fname&nbsp;:&nbsp;string<br>
+&nbsp;&nbsp;&nbsp;&nbsp;input&nbsp;file&nbsp;name,&nbsp;expecting&nbsp;csv&nbsp;file.<br>
+&nbsp;<br>
+Returns:&nbsp;<br>
+--------<br>
+data&nbsp;:&nbsp;array<br>
+&nbsp;&nbsp;&nbsp;&nbsp;numpy&nbsp;array&nbsp;containing&nbsp;the&nbsp;data</tt></dd></dl>
+
+<dl><dt><a name="FitJmaxVcmaxRd-report_fits"><strong>report_fits</strong></a>(self, f, result, fname, data, An_fit)</dt><dd><tt>Save&nbsp;fitting&nbsp;results&nbsp;to&nbsp;a&nbsp;file...&nbsp;<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+f&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;file&nbsp;pointer<br>
+result:&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;fitting&nbsp;result,&nbsp;param,&nbsp;std.&nbsp;error&nbsp;etc.<br>
+obs&nbsp;:&nbsp;array<br>
+&nbsp;&nbsp;&nbsp;&nbsp;A-Ci&nbsp;data&nbsp;to&nbsp;fit&nbsp;model&nbsp;against<br>
+fname&nbsp;:&nbsp;string<br>
+&nbsp;&nbsp;&nbsp;&nbsp;filename&nbsp;to&nbsp;append&nbsp;to&nbsp;output&nbsp;file<br>
+data&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;input&nbsp;A-Ci&nbsp;curve&nbsp;information<br>
+An_fit&nbsp;:&nbsp;array<br>
+&nbsp;&nbsp;&nbsp;&nbsp;best&nbsp;model&nbsp;fit&nbsp;using&nbsp;optimised&nbsp;parameters,&nbsp;Net&nbsp;leaf&nbsp;assimilation&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;rate&nbsp;[umol&nbsp;m-2&nbsp;s-1]</tt></dd></dl>
+
+<dl><dt><a name="FitJmaxVcmaxRd-residual"><strong>residual</strong></a>(self, params, data, obs)</dt><dd><tt>simple&nbsp;function&nbsp;to&nbsp;quantify&nbsp;how&nbsp;good&nbsp;the&nbsp;fit&nbsp;was&nbsp;for&nbsp;the&nbsp;fitting<br>
+routine.&nbsp;Could&nbsp;use&nbsp;something&nbsp;better?&nbsp;RMSE?<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+params&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;List&nbsp;of&nbsp;parameters&nbsp;to&nbsp;be&nbsp;fit,&nbsp;initial&nbsp;guess,&nbsp;ranges&nbsp;etc.&nbsp;This&nbsp;is<br>
+&nbsp;&nbsp;&nbsp;&nbsp;an&nbsp;lmfit&nbsp;<a href="__builtin__.html#object">object</a><br>
+data:&nbsp;array<br>
+&nbsp;&nbsp;&nbsp;&nbsp;data&nbsp;to&nbsp;run&nbsp;farquhar&nbsp;model&nbsp;with<br>
+obs&nbsp;:&nbsp;array<br>
+&nbsp;&nbsp;&nbsp;&nbsp;A-Ci&nbsp;data&nbsp;to&nbsp;fit&nbsp;model&nbsp;against<br>
+&nbsp;<br>
+Returns:&nbsp;<br>
+--------<br>
+residual&nbsp;:&nbsp;array<br>
+&nbsp;&nbsp;&nbsp;&nbsp;residual&nbsp;of&nbsp;fit&nbsp;between&nbsp;model&nbsp;and&nbsp;obs,&nbsp;based&nbsp;on&nbsp;current&nbsp;parameter<br>
+&nbsp;&nbsp;&nbsp;&nbsp;set</tt></dd></dl>
+
+<dl><dt><a name="FitJmaxVcmaxRd-setup_model_params"><strong>setup_model_params</strong></a>(self, jmax_guess<font color="#909090">=None</font>, vcmax_guess<font color="#909090">=None</font>, rd_guess<font color="#909090">=None</font>, hd_guess<font color="#909090">=None</font>, ea_guess<font color="#909090">=None</font>, dels_guess<font color="#909090">=None</font>)</dt><dd><tt>Setup&nbsp;lmfit&nbsp;Parameters&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+jmax_guess&nbsp;:&nbsp;value<br>
+&nbsp;&nbsp;&nbsp;&nbsp;initial&nbsp;parameter&nbsp;guess,&nbsp;if&nbsp;nothing&nbsp;is&nbsp;passed,&nbsp;i.e.&nbsp;it&nbsp;is&nbsp;None,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;parameter&nbsp;is&nbsp;not&nbsp;fitted<br>
+vcmax_guess&nbsp;:&nbsp;value<br>
+&nbsp;&nbsp;&nbsp;&nbsp;initial&nbsp;parameter&nbsp;guess,&nbsp;if&nbsp;nothing&nbsp;is&nbsp;passed,&nbsp;i.e.&nbsp;it&nbsp;is&nbsp;None,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;parameter&nbsp;is&nbsp;not&nbsp;fitted<br>
+rd_guess&nbsp;:&nbsp;value<br>
+&nbsp;&nbsp;&nbsp;&nbsp;initial&nbsp;parameter&nbsp;guess,&nbsp;if&nbsp;nothing&nbsp;is&nbsp;passed,&nbsp;i.e.&nbsp;it&nbsp;is&nbsp;None,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;parameter&nbsp;is&nbsp;not&nbsp;fitted<br>
+hd_guess&nbsp;:&nbsp;value<br>
+&nbsp;&nbsp;&nbsp;&nbsp;initial&nbsp;parameter&nbsp;guess,&nbsp;if&nbsp;nothing&nbsp;is&nbsp;passed,&nbsp;i.e.&nbsp;it&nbsp;is&nbsp;None,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;parameter&nbsp;is&nbsp;not&nbsp;fitted<br>
+ea_guess&nbsp;:&nbsp;value<br>
+&nbsp;&nbsp;&nbsp;&nbsp;initial&nbsp;parameter&nbsp;guess,&nbsp;if&nbsp;nothing&nbsp;is&nbsp;passed,&nbsp;i.e.&nbsp;it&nbsp;is&nbsp;None,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;parameter&nbsp;is&nbsp;not&nbsp;fitted<br>
+dels_guess&nbsp;:&nbsp;value<br>
+&nbsp;&nbsp;&nbsp;&nbsp;initial&nbsp;parameter&nbsp;guess,&nbsp;if&nbsp;nothing&nbsp;is&nbsp;passed,&nbsp;i.e.&nbsp;it&nbsp;is&nbsp;None,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;parameter&nbsp;is&nbsp;not&nbsp;fitted<br>
+&nbsp;<br>
+Returns<br>
+-------<br>
+params&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;lmfit&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;containing&nbsp;parameters&nbsp;to&nbsp;fit</tt></dd></dl>
+
+<dl><dt><a name="FitJmaxVcmaxRd-tidy_up"><strong>tidy_up</strong></a>(self, fp<font color="#909090">=None</font>)</dt><dd><tt>Clean&nbsp;up&nbsp;at&nbsp;the&nbsp;end&nbsp;of&nbsp;fitting&nbsp;<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+fp&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;file&nbsp;pointer</tt></dd></dl>
+
+<dl><dt><a name="FitJmaxVcmaxRd-write_file_hdr"><strong>write_file_hdr</strong></a>(self, fname, header)</dt><dd><tt>Write&nbsp;CSV&nbsp;file&nbsp;header&nbsp;<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+fname&nbsp;:&nbsp;string<br>
+&nbsp;&nbsp;&nbsp;&nbsp;output&nbsp;filename<br>
+header&nbsp;:&nbsp;list/array<br>
+&nbsp;&nbsp;&nbsp;&nbsp;List/array&nbsp;containing&nbsp;information&nbsp;for&nbsp;header&nbsp;for&nbsp;output&nbsp;CSV&nbsp;file<br>
+&nbsp;<br>
+Returns<br>
+-------<br>
+wr&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;output&nbsp;file&nbsp;pointer</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="fit_model.html#FitMe">FitMe</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="FitMe">class <strong>FitMe</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Basic&nbsp;fitting&nbsp;class,&nbsp;contains&nbsp;some&nbsp;generic&nbsp;methods&nbsp;which&nbsp;are&nbsp;used&nbsp;by&nbsp;the<br>
+fitting&nbsp;routines,&nbsp;e.g.&nbsp;plotting,&nbsp;file&nbsp;reporting&nbsp;etc.&nbsp;This&nbsp;is&nbsp;intended<br>
+to&nbsp;be&nbsp;subclased.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="FitMe-__init__"><strong>__init__</strong></a>(self, model<font color="#909090">=None</font>, ofname<font color="#909090">=None</font>, results_dir<font color="#909090">=None</font>, data_dir<font color="#909090">=None</font>, plot_dir<font color="#909090">=None</font>)</dt><dd><tt>Parameters<br>
+----------<br>
+model&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;model&nbsp;that&nbsp;we&nbsp;are&nbsp;fitting&nbsp;measurements&nbsp;against...<br>
+ofname&nbsp;:&nbsp;string<br>
+&nbsp;&nbsp;&nbsp;&nbsp;output&nbsp;filename&nbsp;for&nbsp;writing&nbsp;fitting&nbsp;result.<br>
+results_dir&nbsp;:&nbsp;string<br>
+&nbsp;&nbsp;&nbsp;&nbsp;output&nbsp;directory&nbsp;path&nbsp;for&nbsp;the&nbsp;result&nbsp;to&nbsp;be&nbsp;written<br>
+data_dir&nbsp;:&nbsp;string<br>
+&nbsp;&nbsp;&nbsp;&nbsp;input&nbsp;directory&nbsp;path&nbsp;where&nbsp;measured&nbsp;A-Ci&nbsp;files&nbsp;live<br>
+plot_dir&nbsp;:&nbsp;string<br>
+&nbsp;&nbsp;&nbsp;&nbsp;directory&nbsp;to&nbsp;save&nbsp;plots&nbsp;of&nbsp;various&nbsp;fitting&nbsp;routines</tt></dd></dl>
+
+<dl><dt><a name="FitMe-forward_run"><strong>forward_run</strong></a>(self, result, data)</dt><dd><tt>Run&nbsp;farquhar&nbsp;model&nbsp;with&nbsp;fitted&nbsp;parameters&nbsp;and&nbsp;return&nbsp;result&nbsp;<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+result&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;fitting&nbsp;result,&nbsp;param,&nbsp;std.&nbsp;error&nbsp;etc.<br>
+data&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;input&nbsp;A-Ci&nbsp;curve&nbsp;information<br>
+&nbsp;<br>
+Returns<br>
+--------<br>
+An&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Net&nbsp;leaf&nbsp;assimilation&nbsp;rate&nbsp;[umol&nbsp;m-2&nbsp;s-1]<br>
+Acn&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Net&nbsp;rubisco-limited&nbsp;leaf&nbsp;assimilation&nbsp;rate&nbsp;[umol&nbsp;m-2&nbsp;s-1]<br>
+Ajn&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Net&nbsp;RuBP-regeneration-limited&nbsp;leaf&nbsp;assimilation&nbsp;rate&nbsp;[umol&nbsp;m-2&nbsp;s-1]</tt></dd></dl>
+
+<dl><dt><a name="FitMe-make_plot"><strong>make_plot</strong></a>(self, data, curve_num, An_fit, Anc_fit, Anj_fit)</dt><dd><tt>Make&nbsp;some&nbsp;plots&nbsp;to&nbsp;show&nbsp;how&nbsp;good&nbsp;our&nbsp;fitted&nbsp;model&nbsp;is&nbsp;to&nbsp;the&nbsp;data&nbsp;<br>
+&nbsp;<br>
+*&nbsp;Plots&nbsp;A-Ci&nbsp;model&nbsp;fits&nbsp;vs.&nbsp;data<br>
+*&nbsp;Residuals&nbsp;between&nbsp;fit&nbsp;and&nbsp;measured&nbsp;A<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+data&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;input&nbsp;A-Ci&nbsp;curve&nbsp;information&nbsp;<br>
+curve_num&nbsp;:&nbsp;int<br>
+&nbsp;&nbsp;&nbsp;&nbsp;unique&nbsp;identifier&nbsp;to&nbsp;distinguish&nbsp;A-Ci&nbsp;curve<br>
+An_fit&nbsp;:&nbsp;array<br>
+&nbsp;&nbsp;&nbsp;&nbsp;best&nbsp;model&nbsp;fit&nbsp;using&nbsp;optimised&nbsp;parameters,&nbsp;Net&nbsp;leaf&nbsp;assimilation&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;rate&nbsp;[umol&nbsp;m-2&nbsp;s-1]<br>
+Anc_fit&nbsp;:&nbsp;array<br>
+&nbsp;&nbsp;&nbsp;&nbsp;best&nbsp;model&nbsp;fit&nbsp;using&nbsp;optimised&nbsp;parameters,&nbsp;Net&nbsp;rubisco-limited&nbsp;leaf&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;assimilation&nbsp;rate&nbsp;[umol&nbsp;m-2&nbsp;s-1]<br>
+Anj_fit&nbsp;:&nbsp;array<br>
+&nbsp;&nbsp;&nbsp;&nbsp;best&nbsp;model&nbsp;fit&nbsp;using&nbsp;optimised&nbsp;parameters,&nbsp;Net&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;RuBP-regeneration-limited&nbsp;leaf&nbsp;assimilation&nbsp;rate&nbsp;[umol&nbsp;m-2&nbsp;s-1]</tt></dd></dl>
+
+<dl><dt><a name="FitMe-open_output_files"><strong>open_output_files</strong></a>(self, ofname)</dt><dd><tt>Opens&nbsp;output&nbsp;file&nbsp;for&nbsp;recording&nbsp;fit&nbsp;information<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+ofname&nbsp;:&nbsp;string<br>
+&nbsp;&nbsp;&nbsp;&nbsp;output&nbsp;file&nbsp;name<br>
+&nbsp;<br>
+Returns:&nbsp;<br>
+--------<br>
+fp&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;file&nbsp;pointer</tt></dd></dl>
+
+<dl><dt><a name="FitMe-pick_starting_point"><strong>pick_starting_point</strong></a>(self, data, grid_size<font color="#909090">=50</font>)</dt><dd><tt>Figure&nbsp;out&nbsp;a&nbsp;good&nbsp;starting&nbsp;parameter&nbsp;guess<br>
+&nbsp;<br>
+High-density&nbsp;grid&nbsp;search&nbsp;to&nbsp;overcome&nbsp;issues&nbsp;with&nbsp;ending&nbsp;up&nbsp;in&nbsp;a&nbsp;<br>
+local&nbsp;minima.&nbsp;Values&nbsp;that&nbsp;yield&nbsp;the&nbsp;lowest&nbsp;RMSE&nbsp;(without&nbsp;minimisation)<br>
+are&nbsp;used&nbsp;as&nbsp;the&nbsp;starting&nbsp;point&nbsp;for&nbsp;the&nbsp;minimisation.&nbsp;<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+data&nbsp;:&nbsp;array<br>
+&nbsp;&nbsp;&nbsp;&nbsp;model&nbsp;driving&nbsp;data<br>
+grid_size&nbsp;:&nbsp;int<br>
+&nbsp;&nbsp;&nbsp;&nbsp;hardwired,&nbsp;number&nbsp;of&nbsp;samples<br>
+&nbsp;<br>
+Returns:&nbsp;<br>
+--------<br>
+retval&nbsp;*&nbsp;3&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Three&nbsp;starting&nbsp;guesses&nbsp;for&nbsp;Jmax,&nbsp;Vcmax&nbsp;and&nbsp;Rd<br>
+&nbsp;<br>
+Reference:<br>
+----------<br>
+Dubois&nbsp;et&nbsp;al&nbsp;(2007)&nbsp;Optimizing&nbsp;the&nbsp;statistical&nbsp;estimation&nbsp;of&nbsp;the&nbsp;<br>
+parameters&nbsp;of&nbsp;the&nbsp;Farquhar-von&nbsp;Caemmerer-Berry&nbsp;model&nbsp;of&nbsp;photosynthesis.&nbsp;<br>
+New&nbsp;Phytologist,&nbsp;176,&nbsp;402--414</tt></dd></dl>
+
+<dl><dt><a name="FitMe-print_fit_to_screen"><strong>print_fit_to_screen</strong></a>(self, result)</dt><dd><tt>Print&nbsp;the&nbsp;fitting&nbsp;result&nbsp;to&nbsp;the&nbsp;terminal&nbsp;<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+result&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;fitting&nbsp;result,&nbsp;param,&nbsp;std.&nbsp;error&nbsp;etc.</tt></dd></dl>
+
+<dl><dt><a name="FitMe-read_data"><strong>read_data</strong></a>(self, fname, delimiter<font color="#909090">=','</font>)</dt><dd><tt>Read&nbsp;the&nbsp;A-Ci&nbsp;data.&nbsp;<br>
+&nbsp;<br>
+Expects&nbsp;a&nbsp;format&nbsp;of:<br>
+-&gt;&nbsp;Curve,&nbsp;Tleaf,&nbsp;Ci,&nbsp;Photo,&nbsp;Species,&nbsp;Season,&nbsp;Leaf<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+fname&nbsp;:&nbsp;string<br>
+&nbsp;&nbsp;&nbsp;&nbsp;input&nbsp;file&nbsp;name,&nbsp;expecting&nbsp;csv&nbsp;file.<br>
+&nbsp;<br>
+Returns:&nbsp;<br>
+--------<br>
+data&nbsp;:&nbsp;array<br>
+&nbsp;&nbsp;&nbsp;&nbsp;numpy&nbsp;array&nbsp;containing&nbsp;the&nbsp;data</tt></dd></dl>
+
+<dl><dt><a name="FitMe-report_fits"><strong>report_fits</strong></a>(self, f, result, fname, data, An_fit)</dt><dd><tt>Save&nbsp;fitting&nbsp;results&nbsp;to&nbsp;a&nbsp;file...&nbsp;<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+f&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;file&nbsp;pointer<br>
+result:&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;fitting&nbsp;result,&nbsp;param,&nbsp;std.&nbsp;error&nbsp;etc.<br>
+obs&nbsp;:&nbsp;array<br>
+&nbsp;&nbsp;&nbsp;&nbsp;A-Ci&nbsp;data&nbsp;to&nbsp;fit&nbsp;model&nbsp;against<br>
+fname&nbsp;:&nbsp;string<br>
+&nbsp;&nbsp;&nbsp;&nbsp;filename&nbsp;to&nbsp;append&nbsp;to&nbsp;output&nbsp;file<br>
+data&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;input&nbsp;A-Ci&nbsp;curve&nbsp;information<br>
+An_fit&nbsp;:&nbsp;array<br>
+&nbsp;&nbsp;&nbsp;&nbsp;best&nbsp;model&nbsp;fit&nbsp;using&nbsp;optimised&nbsp;parameters,&nbsp;Net&nbsp;leaf&nbsp;assimilation&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;rate&nbsp;[umol&nbsp;m-2&nbsp;s-1]</tt></dd></dl>
+
+<dl><dt><a name="FitMe-residual"><strong>residual</strong></a>(self, params, data, obs)</dt><dd><tt>simple&nbsp;function&nbsp;to&nbsp;quantify&nbsp;how&nbsp;good&nbsp;the&nbsp;fit&nbsp;was&nbsp;for&nbsp;the&nbsp;fitting<br>
+routine.&nbsp;Could&nbsp;use&nbsp;something&nbsp;better?&nbsp;RMSE?<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+params&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;List&nbsp;of&nbsp;parameters&nbsp;to&nbsp;be&nbsp;fit,&nbsp;initial&nbsp;guess,&nbsp;ranges&nbsp;etc.&nbsp;This&nbsp;is<br>
+&nbsp;&nbsp;&nbsp;&nbsp;an&nbsp;lmfit&nbsp;<a href="__builtin__.html#object">object</a><br>
+data:&nbsp;array<br>
+&nbsp;&nbsp;&nbsp;&nbsp;data&nbsp;to&nbsp;run&nbsp;farquhar&nbsp;model&nbsp;with<br>
+obs&nbsp;:&nbsp;array<br>
+&nbsp;&nbsp;&nbsp;&nbsp;A-Ci&nbsp;data&nbsp;to&nbsp;fit&nbsp;model&nbsp;against<br>
+&nbsp;<br>
+Returns:&nbsp;<br>
+--------<br>
+residual&nbsp;:&nbsp;array<br>
+&nbsp;&nbsp;&nbsp;&nbsp;residual&nbsp;of&nbsp;fit&nbsp;between&nbsp;model&nbsp;and&nbsp;obs,&nbsp;based&nbsp;on&nbsp;current&nbsp;parameter<br>
+&nbsp;&nbsp;&nbsp;&nbsp;set</tt></dd></dl>
+
+<dl><dt><a name="FitMe-setup_model_params"><strong>setup_model_params</strong></a>(self, jmax_guess<font color="#909090">=None</font>, vcmax_guess<font color="#909090">=None</font>, rd_guess<font color="#909090">=None</font>, hd_guess<font color="#909090">=None</font>, ea_guess<font color="#909090">=None</font>, dels_guess<font color="#909090">=None</font>)</dt><dd><tt>Setup&nbsp;lmfit&nbsp;Parameters&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+jmax_guess&nbsp;:&nbsp;value<br>
+&nbsp;&nbsp;&nbsp;&nbsp;initial&nbsp;parameter&nbsp;guess,&nbsp;if&nbsp;nothing&nbsp;is&nbsp;passed,&nbsp;i.e.&nbsp;it&nbsp;is&nbsp;None,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;parameter&nbsp;is&nbsp;not&nbsp;fitted<br>
+vcmax_guess&nbsp;:&nbsp;value<br>
+&nbsp;&nbsp;&nbsp;&nbsp;initial&nbsp;parameter&nbsp;guess,&nbsp;if&nbsp;nothing&nbsp;is&nbsp;passed,&nbsp;i.e.&nbsp;it&nbsp;is&nbsp;None,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;parameter&nbsp;is&nbsp;not&nbsp;fitted<br>
+rd_guess&nbsp;:&nbsp;value<br>
+&nbsp;&nbsp;&nbsp;&nbsp;initial&nbsp;parameter&nbsp;guess,&nbsp;if&nbsp;nothing&nbsp;is&nbsp;passed,&nbsp;i.e.&nbsp;it&nbsp;is&nbsp;None,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;parameter&nbsp;is&nbsp;not&nbsp;fitted<br>
+hd_guess&nbsp;:&nbsp;value<br>
+&nbsp;&nbsp;&nbsp;&nbsp;initial&nbsp;parameter&nbsp;guess,&nbsp;if&nbsp;nothing&nbsp;is&nbsp;passed,&nbsp;i.e.&nbsp;it&nbsp;is&nbsp;None,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;parameter&nbsp;is&nbsp;not&nbsp;fitted<br>
+ea_guess&nbsp;:&nbsp;value<br>
+&nbsp;&nbsp;&nbsp;&nbsp;initial&nbsp;parameter&nbsp;guess,&nbsp;if&nbsp;nothing&nbsp;is&nbsp;passed,&nbsp;i.e.&nbsp;it&nbsp;is&nbsp;None,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;parameter&nbsp;is&nbsp;not&nbsp;fitted<br>
+dels_guess&nbsp;:&nbsp;value<br>
+&nbsp;&nbsp;&nbsp;&nbsp;initial&nbsp;parameter&nbsp;guess,&nbsp;if&nbsp;nothing&nbsp;is&nbsp;passed,&nbsp;i.e.&nbsp;it&nbsp;is&nbsp;None,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;parameter&nbsp;is&nbsp;not&nbsp;fitted<br>
+&nbsp;<br>
+Returns<br>
+-------<br>
+params&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;lmfit&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;containing&nbsp;parameters&nbsp;to&nbsp;fit</tt></dd></dl>
+
+<dl><dt><a name="FitMe-tidy_up"><strong>tidy_up</strong></a>(self, fp<font color="#909090">=None</font>)</dt><dd><tt>Clean&nbsp;up&nbsp;at&nbsp;the&nbsp;end&nbsp;of&nbsp;fitting&nbsp;<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+fp&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;file&nbsp;pointer</tt></dd></dl>
+
+<dl><dt><a name="FitMe-write_file_hdr"><strong>write_file_hdr</strong></a>(self, fname, header)</dt><dd><tt>Write&nbsp;CSV&nbsp;file&nbsp;header&nbsp;<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+fname&nbsp;:&nbsp;string<br>
+&nbsp;&nbsp;&nbsp;&nbsp;output&nbsp;filename<br>
+header&nbsp;:&nbsp;list/array<br>
+&nbsp;&nbsp;&nbsp;&nbsp;List/array&nbsp;containing&nbsp;information&nbsp;for&nbsp;header&nbsp;for&nbsp;output&nbsp;CSV&nbsp;file<br>
+&nbsp;<br>
+Returns<br>
+-------<br>
+wr&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;output&nbsp;file&nbsp;pointer</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>__author__</strong> = 'Martin De Kauwe'<br>
+<strong>__email__</strong> = 'mdekauwe@gmail.com'<br>
+<strong>__version__</strong> = '1.0 (13.08.2012)'</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#7799ee">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Author</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#7799ee"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%">Martin&nbsp;De&nbsp;Kauwe</td></tr></table>
+</body></html>
