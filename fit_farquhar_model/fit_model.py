@@ -557,6 +557,8 @@ class FitEaDels(FitMe):
                                self.deg2kelvin)
             self.report_fits(wr, result, data, data["Jnorm"], peak_fit, 
                              "Jmax", Topt)
+            if print_to_screen:
+                print Topt
             
             # Fit Vcmax vs T next 
             (ea_guess, 
@@ -580,7 +582,9 @@ class FitEaDels(FitMe):
                                result.params["delS"].value))
             self.report_fits(wr, result, data, data["Vnorm"], peak_fit, 
                              "Vcmax", Topt)
-       
+            if print_to_screen:
+                print Topt
+                
         fp.close()  
     
     def get_data(self, infname):
@@ -716,7 +720,6 @@ class FitEaDels(FitMe):
           A review of experimental data. Plant, Cell and Enviroment 25, 
           1167-1179.
         """
-        print (Hd / (delS - RGAS * np.log(Ha / (Hd - Ha)))) - self.deg2kelvin
         return (Hd / (delS - RGAS * np.log(Ha / (Hd - Ha)))) - self.deg2kelvin
         
     def pick_starting_point(self, data, obs, grid_size=50):
