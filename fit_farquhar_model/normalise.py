@@ -232,7 +232,7 @@ class Normalise(object):
         subset : array
             subset of data
         leaf : ?
-            ?
+            ?c
         fp1 : object
             file pointer1
         fp2 : object
@@ -275,31 +275,42 @@ class Normalise(object):
         # Do plots by Species
         # Plot Jmax vs T   
         fig = plt.figure()
+        plt.rcParams['legend.fontsize'] = 10
         ax1 = fig.add_subplot(111)
+        # Shink current axis by 20%
+        box = ax1.get_position()
+        ax1.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+        
         for i, spp in enumerate(np.unique(data_all["Species"])):
             prov = data_all[np.where(data_all["Species"]==spp)]
             ax1.plot(prov["Tav"],prov["Jmax"], ls="", lw=1.5, marker="o", 
                      c=colour_list[i], label = spp)
             ax1.set_xlabel("Temperature")
             ax1.set_ylabel("Jmax")
-            ax1.legend(numpoints=1, loc='best', shadow=False).draw_frame(True)
+            # Put a legend to the right of the current axis
+            ax1.legend(numpoints=1, loc='center left', bbox_to_anchor=(1, 0.5))
         fig.savefig(os.path.join(self.plot_dir, "JmaxvsT.png"), dpi=100)
         
         #Plot normalised Jmax in Arrhenius plot
         fig = plt.figure()
         ax1 = fig.add_subplot(111)
+        box = ax1.get_position()
+        ax1.set_position([box.x0, box.y0, box.width * 0.8, box.height])
         for i, spp in enumerate(np.unique(data_all["Species"])):
             prov = data_all[np.where(data_all["Species"]==spp)]     
             ax1.plot(self.calc_Tarrh(prov), prov["Jnorm"], ls="", lw=1.5, 
                      marker="o", c=colour_list[i], label=spp)
             ax1.set_xlabel("1/Tk - 1/298")
             ax1.set_ylabel("Normalised Jmax")
-            ax1.legend(numpoints=1, loc='best', shadow=False).draw_frame(True)
+            # Put a legend to the right of the current axis
+            ax1.legend(numpoints=1, loc='center left', bbox_to_anchor=(1, 0.5))
         fig.savefig(os.path.join(self.plot_dir, "JArrh.png"), dpi=100)
         
         # Plot Vcmax vs T             
         fig = plt.figure()
         ax1 = fig.add_subplot(111)
+        box = ax1.get_position()
+        ax1.set_position([box.x0, box.y0, box.width * 0.8, box.height])
         for i, spp in enumerate(np.unique(data_all["Species"])):
             prov = data_all[np.where(data_all["Species"]==spp)]         
             
@@ -307,12 +318,15 @@ class Normalise(object):
                      ls="", lw=1.5, marker="o", c=colour_list[i], label = spp)
             ax1.set_xlabel("Temperature")
             ax1.set_ylabel("Vcmax")
-            ax1.legend(numpoints=1, loc='best', shadow=False).draw_frame(True)
+            # Put a legend to the right of the current axis
+            ax1.legend(numpoints=1, loc='center left', bbox_to_anchor=(1, 0.5))
         fig.savefig(os.path.join(self.plot_dir, "vcmaxvsT.png"), dpi=100)
         
         #Plot normalised Vmax in Arrhenius plot
         fig = plt.figure()
         ax1 = fig.add_subplot(111)
+        box = ax1.get_position()
+        ax1.set_position([box.x0, box.y0, box.width * 0.8, box.height])
         for i, spp in enumerate(np.unique(data_all["Species"])):
             prov = data_all[np.where(data_all["Species"]==spp)]    
             
@@ -320,7 +334,8 @@ class Normalise(object):
                      marker="o", c=colour_list[i], label = spp)
             ax1.set_xlabel("1/Tk - 1/298")
             ax1.set_ylabel("Normalised Vcmax")
-            ax1.legend(numpoints=1, loc='best', shadow=False).draw_frame(True)
+            # Put a legend to the right of the current axis
+            ax1.legend(numpoints=1, loc='center left', bbox_to_anchor=(1, 0.5))
         fig.savefig(os.path.join(self.plot_dir, "VArrh.png"), dpi=100)
 
     def calc_Tarrh(self, data):
