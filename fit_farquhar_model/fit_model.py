@@ -716,6 +716,7 @@ class FitEaDels(FitMe):
           A review of experimental data. Plant, Cell and Enviroment 25, 
           1167-1179.
         """
+        print (Hd / (delS - RGAS * np.log(Ha / (Hd - Ha)))) - self.deg2kelvin
         return (Hd / (delS - RGAS * np.log(Ha / (Hd - Ha)))) - self.deg2kelvin
         
     def pick_starting_point(self, data, obs, grid_size=50):
