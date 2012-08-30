@@ -553,13 +553,10 @@ class FitEaDels(FitMe):
             (peak_fit) = self.forward_run(result, data)
             Topt = (self.calc_Topt(result.params["Hd"].value, 
                                result.params["Ea"].value, 
-                               result.params["delS"].value) - 
-                               self.deg2kelvin)
+                               result.params["delS"].value))
             self.report_fits(wr, result, data, data["Jnorm"], peak_fit, 
                              "Jmax", Topt)
-            if print_to_screen:
-                print Topt
-            
+           
             # Fit Vcmax vs T next 
             (ea_guess, 
                 dels_guess) = self.pick_starting_point(data, data["Vnorm"])
@@ -582,9 +579,7 @@ class FitEaDels(FitMe):
                                result.params["delS"].value))
             self.report_fits(wr, result, data, data["Vnorm"], peak_fit, 
                              "Vcmax", Topt)
-            if print_to_screen:
-                print Topt
-                
+            
         fp.close()  
     
     def get_data(self, infname):
