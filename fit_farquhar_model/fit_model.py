@@ -21,7 +21,7 @@ import sys
 import glob
 import numpy as np
 import csv
-from lmfit import minimize, Parameters, printfuncs, conf_interval
+from lmfit import minimize, Parameters, printfuncs, conf_interval, conf_interval2d
 from scipy import stats
 import matplotlib.pyplot as plt
 
@@ -172,7 +172,23 @@ class FitMe(object):
                                str(data["Season"][0]), \
                                str(data["Leaf"][0])))
         f.writerow(row)
-       
+        
+        fname2 = os.path.join(self.results_dir, 
+                                "fitted_conf_int_j_v_rd.txt")
+        f2 = open(fname2, "w")
+        try:
+            ci = conf_interval(result, sigmas=[0.95])
+            
+            print >>f2, "\t\t95%\t\t0.00%\t\t95%"
+            for k, v in ci.iteritems():
+                print >>f2,"%s\t\t%f\t%f\t%f" % (k, round(ci[k][0][1], 3), \
+                                                 round(ci[k][1][1], 3), \
+                                                 round(ci[k][2][1], 3))
+        
+        except ValueError:
+            print >>f2, "Oops!  Some problem fitting confidence intervals..."    
+        f2.close()
+        
     def forward_run(self, result, data):
         """ Run farquhar model with fitted parameters and return result 
         
@@ -264,7 +280,7 @@ class FitMe(object):
             print '%s = %.8f +/- %.8f ' % (name, par.value, par.stderr)
         print 
     
-    def make_plot(self, data, curve_num, An_fit, Anc_fit, Anj_fit):
+    def make_plot(self, data, curve_num, An_fit, Anc_fit, Anj_fit, result):
         """ Make some plots to show how good our fitted model is to the data 
         
         * Plots A-Ci model fits vs. data
@@ -285,6 +301,8 @@ class FitMe(object):
         Anj_fit : array
             best model fit using optimised parameters, Net 
             RuBP-regeneration-limited leaf assimilation rate [umol m-2 s-1]
+        result : object
+            fitting result, param, std. error etc.
         """
         species = data["Species"][0]
         season = data["Season"][0]
@@ -333,7 +351,21 @@ class FitMe(object):
         
         fig.savefig(ofname)
         plt.clf()    
-
+        
+        # Plots confidence regions for two fixed parameters.
+        ofname = "%s/%s_%s_%s_%s_jmax_vcmax_conf_surface.png" % \
+                 (self.plot_dir, species, season, leaf, curve_num)
+        
+        fig = plt.figure() 
+        ax = fig.add_subplot(111)
+        x, y, grid = conf_interval2d(result, 'Jmax', 'Vcmax', 30, 30)
+        plt.contourf(x, y, grid, np.linspace(0,1,11))
+        plt.xlabel('Jmax')
+        plt.ylabel('Vcmax')
+        plt.colorbar()
+        fig.savefig(ofname)
+        plt.clf()
+        
     def write_file_hdr(self, fname, header):  
         """ Write CSV file header 
         
@@ -485,7 +517,7 @@ class FitJmaxVcmaxRd(FitMe):
                 self.report_fits(wr, result, os.path.basename(fname), 
                                  curve_data, An)
                 
-                self.make_plot(curve_data, curve_num, An, Anc, Anj)
+                self.make_plot(curve_data, curve_num, An, Anc, Anj, result)
                 self.nfiles += 1       
         self.tidy_up(fp)    
     
@@ -657,7 +689,24 @@ class FitEaDels(FitMe):
         row.append("%s" % (len(fit)))
         row.append("%s" % (Topt))
         f.writerow(row)
-    
+        
+        fname2 = os.path.join(self.results_dir, 
+                                "fitted_conf_int_ea_del.txt")
+        f2 = open(fname2, "w")
+        try:
+            ci = conf_interval(result, sigmas=[0.95])
+            
+            print >>f2, "\t\t95%\t\t0.00%\t\t95%"
+            for k, v in ci.iteritems():
+                print >>f2,"%s\t\t%f\t%f\t%f" % (k, round(ci[k][0][1], 3), \
+                                                 round(ci[k][1][1], 3), \
+                                                 round(ci[k][2][1], 3))
+        
+        except ValueError:
+            print >>f2, "Oops!  Some problem fitting confidence intervals..."    
+        f2.close()
+        
+        
     def residual(self, parameters, data, obs):
         """ simple function to quantify how good the fit was for the fitting
         routine. Could use something better? RMSE?
