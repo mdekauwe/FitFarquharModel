@@ -181,6 +181,7 @@ class FitMe(object):
             
             print >>f2, "\t\t95%\t\t0.00%\t\t95%"
             for k, v in ci.iteritems():
+                print k, v
                 print >>f2,"%s\t\t%f\t%f\t%f" % (k, round(ci[k][0][1], 3), \
                                                  round(ci[k][1][1], 3), \
                                                  round(ci[k][2][1], 3))
