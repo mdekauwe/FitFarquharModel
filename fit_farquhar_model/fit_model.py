@@ -259,10 +259,11 @@ class FitMe(object):
             params.add('Vcmax', value=vcmax_guess, min=0.0)
         if rd_guess is not None:
             params.add('Rd', value=rd_guess)
-        if hd_guess is not None:
-            params.add('Hd', value=hd_guess, vary=False)
+        
         if ea_guess is not None:
             params.add('Ea', value=ea_guess, min=0.0)
+        if hd_guess is not None:
+            params.add('Hd', value=hd_guess, vary=False)
         if dels_guess is not None:
             params.add('delS', value=dels_guess, min=0.0, max=700.0)
         
@@ -525,7 +526,7 @@ class FitJmaxVcmaxRd(FitMe):
 class FitEaDels(FitMe):
     """ Fit the model parameters Eaj, Eav, Dels to the measured A-Ci data"""
     def __init__(self, model=None, infname=None, ofname=None, results_dir=None, 
-                 data_dir=None):
+                 data_dir=None, peaked=True):
         """
         Parameters
         ----------
@@ -544,9 +545,15 @@ class FitEaDels(FitMe):
         self.infname = infname
         FitMe.__init__(self, model=model, ofname=ofname, 
                        results_dir=results_dir, data_dir=data_dir)
-        self.header = ["Param", "Hd", "SE", "Ea", "SE", "delS", "delSSE", \
-                       "R2", "n", "Topt"]
-        self.call_model = model.peaked_arrh
+       
+        self.peaked = peaked
+        if self.peaked:
+            self.call_model = model.peaked_arrh
+            self.header = ["Param", "Hd", "SE", "Ea", "SE", "delS", "delSSE", \
+                            "R2", "n", "Topt"]
+        else:
+            self.call_model = model.arrh
+            self.header = ["Param", "Ea", "SE", "R2", "n", "Topt"]
         
     def main(self, print_to_screen):   
         """ Loop over all our A-Ci measured curves and fit the Farquhar model
@@ -567,11 +574,18 @@ class FitEaDels(FitMe):
             data = all_data[np.where(all_data["fitgroup"] == id)]
             
             # Fit Jmax vs T first
-            (ea_guess, 
+            
+            if self.peaked:
+                (ea_guess, 
                 dels_guess) = self.pick_starting_point(data, data["Jnorm"])  
-            params = self.setup_model_params(hd_guess=200000.0, 
+                params = self.setup_model_params(hd_guess=200000.0, 
                                              ea_guess=ea_guess, 
                                              dels_guess=dels_guess)
+            else:
+                params = Parameters()
+                ea_guess = np.random.uniform(20000.0, 80000.0)
+                params.add('Ea', value=ea_guess, min=0.0)
+            
             result = minimize(self.residual, params, engine="leastsq", 
                               args=(data, data["Jnorm"]))
             if print_to_screen:
@@ -583,18 +597,29 @@ class FitEaDels(FitMe):
                 self.succes_count += 1
         
             (peak_fit) = self.forward_run(result, data)
-            Topt = (self.calc_Topt(result.params["Hd"].value, 
-                               result.params["Ea"].value, 
-                               result.params["delS"].value))
+            if self.peaked:
+                Topt = (self.calc_Topt(result.params["Hd"].value, 
+                                       result.params["Ea"].value, 
+                                       result.params["delS"].value))
+            else:
+                Topt = -9999.9 # not calculated
             self.report_fits(wr, result, data, data["Jnorm"], peak_fit, 
                              "Jmax", Topt)
            
             # Fit Vcmax vs T next 
-            (ea_guess, 
+            if self.peaked:
+                (ea_guess, 
                 dels_guess) = self.pick_starting_point(data, data["Vnorm"])
-            params = self.setup_model_params(hd_guess=200000.0, 
+                params = self.setup_model_params(hd_guess=200000.0, 
                                              ea_guess=ea_guess, 
                                              dels_guess=dels_guess)
+            else:
+                params = Parameters()
+                if ea_guess is not None:
+                    params = Parameters()
+                    ea_guess = np.random.uniform(20000.0, 80000.0)
+                    params.add('Ea', value=ea_guess, min=0.0)
+                
             result = minimize(self.residual, params, engine="leastsq", 
                               args=(data, data["Vnorm"]))
             if print_to_screen:
@@ -606,9 +631,13 @@ class FitEaDels(FitMe):
                 self.succes_count += 1
         
             (peak_fit) = self.forward_run(result, data)
-            Topt = (self.calc_Topt(result.params["Hd"].value, 
-                               result.params["Ea"].value, 
-                               result.params["delS"].value))
+            if self.peaked:
+                Topt = (self.calc_Topt(result.params["Hd"].value, 
+                                       result.params["Ea"].value, 
+                                       result.params["delS"].value))
+            else:
+                Topt = -9999.9 # not calculated
+            
             self.report_fits(wr, result, data, data["Vnorm"], peak_fit, 
                              "Vcmax", Topt)
             
@@ -649,12 +678,16 @@ class FitEaDels(FitMe):
         model_fit : array
             fitted result
         """
-        Hd = result.params['Hd'].value
         Ea = result.params['Ea'].value
-        delS = result.params['delS'].value
         
-        # First arg is 1.0, as this is calculated at the normalised temp
-        model_fit = self.call_model(1.0, Ea, data["Tav"], delS, Hd)                                         
+        if self.peaked:
+            Hd = result.params['Hd'].value
+            delS = result.params['delS'].value
+        
+            # First arg is 1.0, as this is calculated at the normalised temp
+            model_fit = self.call_model(1.0, Ea, data["Tav"], delS, Hd)                                         
+        else:
+            model_fit = self.call_model(1.0, Ea, data["Tav"])     
         
         return model_fit
     
@@ -727,13 +760,16 @@ class FitEaDels(FitMe):
             residual of fit between model and obs, based on current parameter
             set
         """
-        Hd = parameters["Hd"].value
         Ea = parameters["Ea"].value
-        delS = parameters["delS"].value
         
-        # First arg is 1.0, as this is calculated at the normalised temp
-        model = self.call_model(1.0, Ea, data["Tav"], delS, Hd)
-        
+        if self.peaked:
+            Hd = parameters["Hd"].value
+            delS = parameters["delS"].value
+            # First arg is 1.0, as this is calculated at the normalised temp
+            model = self.call_model(1.0, Ea, data["Tav"], delS, Hd)                                         
+        else:
+            model = self.call_model(1.0, Ea, data["Tav"])   
+            
         return (obs - model)
     
     def calc_Topt(self, Hd, Ha, delS, RGAS=8.314):
@@ -783,7 +819,10 @@ class FitEaDels(FitMe):
         delS = np.linspace(550.0, 700.0, grid_size)
      
         p1, p2 = np.ix_(Ea, delS)
-        model = self.call_model(1.0, p1, data["Tav"][:,None,None], p2, Hd)
+       
+        if self.peaked:
+            # First arg is 1.0, as this is calculated at the normalised temp
+            model = self.call_model(1.0, p1, data["Tav"][:,None,None], p2, Hd)                                  
         
         rmse = np.sqrt(((obs[:,None,None]- model)**2).mean(0))
         ndx = np.where(rmse.min()== rmse)

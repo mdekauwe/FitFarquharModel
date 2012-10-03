@@ -288,6 +288,7 @@ class FarquharC3(object):
         -----------
         * Medlyn et al. 2002, PCE, 25, 1167-1179.   
         """
+        
         return k25 * np.exp((Ea * (Tk - 298.15)) / (298.15 * self.RGAS * Tk)) 
     
     def peaked_arrh(self, k25, Ea, Tk, deltaS, Hd):

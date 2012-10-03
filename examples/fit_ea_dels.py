@@ -37,6 +37,7 @@ ofname = "ea_results.csv"
 results_dir = "results"
 data_dir = "data"
 model = FarquharC3()
+peaked = False
 ############################
 
 
@@ -58,7 +59,7 @@ for row in data:
     wr.writerow(new_row)
 fp.close()
 
-F2 = FitEaDels(model, infname, ofname, results_dir, data_dir)
+F2 = FitEaDels(model, infname, ofname, results_dir, data_dir, peaked=peaked)
 F2.main(print_to_screen=False)
 
 # OK what are the real values??
@@ -67,11 +68,17 @@ Eav = 60000.0
 deltaSj = 650.0
 deltaSv = 650.0
   
-
-fit = read_data("results/ea_results.csv")
-print "Truth - Jmax", Eaj, deltaSj
-print "Fit - Jmax", fit["Ea"][0], fit["delS"][0]
-print
-print "Truth - Vcmax", Eav, deltaSv
-print "Fit - Vcmax", fit["Ea"][1], fit["delS"][1]
-
+if peaked:
+    fit = read_data("results/ea_results.csv")
+    print "Truth - Jmax", Eaj, deltaSj
+    print "Fit - Jmax", fit["Ea"][0], fit["delS"][0]
+    print
+    print "Truth - Vcmax", Eav, deltaSv
+    print "Fit - Vcmax", fit["Ea"][1], fit["delS"][1]
+else:
+    fit = read_data("results/ea_results.csv")
+    print "Truth - Jmax", Eaj
+    print "Fit - Jmax", fit["Ea"][0]
+    print
+    print "Truth - Vcmax", Eav
+    print "Fit - Vcmax", fit["Ea"][1]
