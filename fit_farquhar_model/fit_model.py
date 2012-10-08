@@ -549,7 +549,7 @@ class FitEaDels(FitMe):
         self.peaked = peaked
         if self.peaked:
             self.call_model = model.peaked_arrh
-            self.header = ["Param", "Hd", "SE", "Ea", "SE", "delS", "delSSE", \
+            self.header = ["Param", "Ea", "SE", "Hd", "SE", "delS", "delSSE", \
                             "R2", "n", "Topt"]
         else:
             self.call_model = model.arrh
