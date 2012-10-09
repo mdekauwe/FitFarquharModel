@@ -53,8 +53,8 @@ class FarquharC3(object):
     def __init__(self, peaked_Jmax=False, peaked_Vcmax=False, Oi=205.0, 
                  gamstar25=42.75, Kc25=404.9, Ko25=278.4, Ec=79430.0,
                  Eo=36380.0, Egamma=37830.0, theta_hyperbol=0.9995, 
-                 theta_J=0.7, force_jmax_fit_pts=None, alpha=None, 
-                 quantum_yield=0.3, absorptance=0.8):
+                 theta_J=0.7, force_jmax_fit_pts=None, force_vcmax_fit_pts=None,
+                 alpha=None, quantum_yield=0.3, absorptance=0.8):
         """
         Parameters
         ----------
@@ -93,6 +93,8 @@ class FarquharC3(object):
             Use the peaked Arrhenius function (if true)
         force_jmax_fit_pts : None or npts
             Force Aj fit via last number of points (e.g. 2)
+        force_vcmax_fit_pts : None or npts
+            Force Ac fit for first X points
         """
         self.peaked_Jmax = peaked_Jmax
         self.peaked_Vcmax = peaked_Vcmax
@@ -112,6 +114,7 @@ class FarquharC3(object):
         else:
             self.alpha = quantum_yield * absorptance # (Medlyn et al 2002)     
         self.force_jmax_fit_pts = force_jmax_fit_pts
+        self.force_vcmax_fit_pts = force_vcmax_fit_pts
         
     def calc_photosynthesis(self, Ci, Tleaf, Par=None, Jmax=None, Vcmax=None, 
                             Jmax25=None, Vcmax25=None, Rd=None, Q10=None, 
@@ -216,6 +219,10 @@ class FarquharC3(object):
               (2.0 * self.theta_hyperbol))
         A = np.where(Ci < 150, Ac, arg)
         
+         
+        
+        
+        
         # Specifically for Angelica's data...force Aj fit through the last X 
         # probably 2, points. Otherwise at least via a single point
         if self.force_jmax_fit_pts is not None:
@@ -226,6 +233,13 @@ class FarquharC3(object):
         else:
             err_msg = "error jmax fitting, are you suppling the correct args?"
             raise AttributeError, err_msg   
+        
+        # Specifically for Angelica's data...force Ac fit through the first X 
+        # points.
+        if self.force_vcmax_fit_pts is not None:
+            indx = self.force_vcmax_fit_pts - 1 # indexed from zero
+            A = np.where(Ci <= Ci[indx] , Ac, A)   
+        
             
         # net assimilation rates.
         An = A - Rd
