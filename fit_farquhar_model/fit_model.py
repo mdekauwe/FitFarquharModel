@@ -476,7 +476,7 @@ class FitJmaxVcmaxRd(FitMe):
                        "R2", "n", "Species", "Season", "Leaf", "Curve", \
                        "Filename", "id"]
                        
-    def main(self, print_to_screen):   
+    def main(self, print_to_screen, infname_tag="*.csv"):   
         """ Loop over all our A-Ci measured curves and fit the Farquhar model
         parameters to this data 
         
@@ -490,7 +490,7 @@ class FitJmaxVcmaxRd(FitMe):
         wr = self.write_file_hdr(fp, self.header)
     
         # Loop over all the measured data and fit the model params.
-        for fname in glob.glob(os.path.join(self.data_dir, "*.csv")):
+        for fname in glob.glob(os.path.join(self.data_dir, infname_tag)):
             data = self.read_data(fname)
             data["Tleaf"] += self.deg2kelvin
             for curve_num in np.unique(data["Curve"]):
