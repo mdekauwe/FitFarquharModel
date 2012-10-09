@@ -352,7 +352,7 @@ class FitMe(object):
         
         fig.savefig(ofname)
         plt.clf()    
-        
+        """
         # Plots confidence regions for two fixed parameters.
         ofname = "%s/%s_%s_%s_%s_jmax_vcmax_conf_surface.png" % \
                  (self.plot_dir, species, season, leaf, curve_num)
@@ -366,6 +366,7 @@ class FitMe(object):
         plt.colorbar()
         fig.savefig(ofname)
         plt.clf()
+        """
         
     def write_file_hdr(self, fname, header):  
         """ Write CSV file header 
