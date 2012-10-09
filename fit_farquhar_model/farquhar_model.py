@@ -222,6 +222,7 @@ class FarquharC3(object):
         # points.
         if self.force_vcmax_fit_pts is not None:
             indx = self.force_vcmax_fit_pts - 1 # indexed from zero
+            
             A = np.where(Ci <= Ci[indx] , Ac, A)    
             indx += 1 # use all the rest for Aj limited...
             A = np.where(Ci >= Ci[indx] , Aj, A)

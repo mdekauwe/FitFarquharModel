@@ -173,6 +173,7 @@ class FitMe(object):
                                str(data["Leaf"][0])))
         f.writerow(row)
         
+        """
         fname2 = os.path.join(self.results_dir, 
                                 "fitted_conf_int_j_v_rd.txt")
         f2 = open(fname2, "w")
@@ -188,7 +189,7 @@ class FitMe(object):
         except ValueError:
             print >>f2, "Oops!  Some problem fitting confidence intervals..."    
         f2.close()
-        
+        """
     def forward_run(self, result, data):
         """ Run farquhar model with fitted parameters and return result 
         
