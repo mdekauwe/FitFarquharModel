@@ -83,10 +83,11 @@ class FitMe(object):
         
         return fp
         
-    def read_data(self, fname, delimiter=","):
-        """ Read the A-Ci data. 
+    def read_data(self, fname, infile_type="aci", delimiter=","):
+        """ Reads in the A-Ci data if infile_type="aci" is true, otherwise this
+        reads in the fitted results... 
         
-        Expects a format of:
+        For A-Ci data, code expects a format of:
         -> Curve, Tleaf, Ci, Photo, Species, Season, Leaf
         
         Parameters
@@ -100,7 +101,20 @@ class FitMe(object):
             numpy array containing the data
         """
         data = np.recfromcsv(fname, delimiter=delimiter, names=True, 
-                             case_sensitive=True)
+                                 case_sensitive=True)
+        if infile_type == "norm":
+            # using normalised temp data
+            data["Tav"] = data["Tav"] + self.deg2kelvin
+            data["Jnorm"] = np.exp(data["Jnorm"])
+            data["Vnorm"] = np.exp(data["Vnorm"])
+        elif infile_type == "meas":
+            # using measured temp data.
+            data["Tav"] = data["Tav"] + self.deg2kelvin
+            data["Jmax"] = data["Jmax"]
+            data["Vcmax"] = data["Vcmax"]  
+        else:
+            raise IOError("Unknown file type in read??\n")   
+              
         return data
                       
     def residual(self, params, data, obs):
@@ -450,7 +464,37 @@ class FitMe(object):
         (jidx, vidx, rdidx) = ndx
         
         return Vcmax[vidx].squeeze(), Jmax[jidx].squeeze(), Rd[rdidx].squeeze()
+    
+    def calc_Topt(self, Hd, Ha, delS, RGAS=8.314):
+        """ Calculate the temperature optimum 
         
+        Parameters
+        ----------
+        Hd : float
+            describes rate of decrease about the optimum temp [KJ mol-1]
+        Ha : float
+            activation energy for the parameter [kJ mol-1]
+        delS : float
+            entropy factor [J mol-1 K-1)
+        RGAS : float
+            Universal gas constant [J mol-1 K-1]
+        
+        Returns
+        --------
+        Topt : float
+            optimum temperature [deg C]
+        
+        Reference
+        ----------
+        * Medlyn, B. E., Dreyer, E., Ellsworth, D., Forstreuter, M., Harley, 
+          P.C., Kirschbaum, M.U.F., Leroux, X., Montpied, P., Strassemeyer, J., 
+          Walcroft, A., Wang, K. and Loustau, D. (2002) Temperature response of 
+          parameters of a biochemically based model of photosynthesis. II. 
+          A review of experimental data. Plant, Cell and Enviroment 25, 
+          1167-1179.
+        """
+        return (Hd / (delS - RGAS * np.log(Ha / (Hd - Ha)))) - self.deg2kelvin
+            
 class FitJmaxVcmaxRd(FitMe):
     """ Fit the model parameters Jmax, Vcmax and Rd to the measured A-Ci data
     
@@ -493,7 +537,7 @@ class FitJmaxVcmaxRd(FitMe):
     
         # Loop over all the measured data and fit the model params.
         for fname in glob.glob(os.path.join(self.data_dir, infname_tag)):
-            data = self.read_data(fname)
+            data = self.read_data(fname, infile_type="aci")
             data["Tleaf"] += self.deg2kelvin
             for curve_num in np.unique(data["Curve"]):
                 curve_data = data[np.where(data["Curve"]==curve_num)]
@@ -566,7 +610,7 @@ class FitEaDels(FitMe):
         print_to_screen : logical
             print fitting result to screen? Default is no!
         """
-        all_data = self.get_data(self.infname)
+        all_data = self.read_data(self.infname, infile_type="norm")
         fp = self.open_output_files(self.ofname)
         wr = self.write_file_hdr(fp, self.header)
         
@@ -576,13 +620,12 @@ class FitEaDels(FitMe):
             data = all_data[np.where(all_data["fitgroup"] == id)]
             
             # Fit Jmax vs T first
-            
             if self.peaked:
                 (ea_guess, 
                 dels_guess) = self.pick_starting_point(data, data["Jnorm"])  
                 params = self.setup_model_params(hd_guess=200000.0, 
-                                             ea_guess=ea_guess, 
-                                             dels_guess=dels_guess)
+                                                 ea_guess=ea_guess, 
+                                                 dels_guess=dels_guess)
             else:
                 params = Parameters()
                 ea_guess = np.random.uniform(20000.0, 80000.0)
@@ -613,8 +656,8 @@ class FitEaDels(FitMe):
                 (ea_guess, 
                 dels_guess) = self.pick_starting_point(data, data["Vnorm"])
                 params = self.setup_model_params(hd_guess=200000.0, 
-                                             ea_guess=ea_guess, 
-                                             dels_guess=dels_guess)
+                                                 ea_guess=ea_guess, 
+                                                 dels_guess=dels_guess)
             else:
                 params = Parameters()
                 if ea_guess is not None:
@@ -644,26 +687,6 @@ class FitEaDels(FitMe):
                              "Vcmax", Topt)
             
         fp.close()  
-    
-    def get_data(self, infname):
-        """ Read in some of the fitted results 
-        
-        Parameters
-        ----------
-        infname : string
-            filename to read
-        
-        Returns 
-        -------
-        all_data : array
-            read data
-        """
-        all_data = self.read_data(infname)
-        all_data["Tav"] = all_data["Tav"] + self.deg2kelvin
-        all_data["Jnorm"] = np.exp(all_data["Jnorm"])
-        all_data["Vnorm"] = np.exp(all_data["Vnorm"])
-        
-        return all_data
         
     def forward_run(self, result, data):
         """ Run peaked Arrhenius model with fitted parameters and return result 
@@ -725,22 +748,6 @@ class FitEaDels(FitMe):
         row.append("%s" % (Topt))
         f.writerow(row)
         
-        fname2 = os.path.join(self.results_dir, 
-                                "fitted_conf_int_ea_del.txt")
-        f2 = open(fname2, "w")
-        try:
-            ci = conf_interval(result, sigmas=[0.95])
-            
-            print >>f2, "\t\t95%\t\t0.00%\t\t95%"
-            for k, v in ci.iteritems():
-                print >>f2,"%s\t\t%f\t%f\t%f" % (k, round(ci[k][0][1], 3), \
-                                                 round(ci[k][1][1], 3), \
-                                                 round(ci[k][2][1], 3))
-        
-        except ValueError:
-            print >>f2, "Oops!  Some problem fitting confidence intervals..."    
-        f2.close()
-        
         
     def residual(self, parameters, data, obs):
         """ simple function to quantify how good the fit was for the fitting
@@ -774,36 +781,6 @@ class FitEaDels(FitMe):
             
         return (obs - model)
     
-    def calc_Topt(self, Hd, Ha, delS, RGAS=8.314):
-        """ Calculate the temperature optimum 
-        
-        Parameters
-        ----------
-        Hd : float
-            describes rate of decrease about the optimum temp [KJ mol-1]
-        Ha : float
-            activation energy for the parameter [kJ mol-1]
-        delS : float
-            entropy factor [J mol-1 K-1)
-        RGAS : float
-            Universal gas constant [J mol-1 K-1]
-        
-        Returns
-        --------
-        Topt : float
-            optimum temperature [deg C]
-        
-        Reference
-        ----------
-        * Medlyn, B. E., Dreyer, E., Ellsworth, D., Forstreuter, M., Harley, 
-          P.C., Kirschbaum, M.U.F., Leroux, X., Montpied, P., Strassemeyer, J., 
-          Walcroft, A., Wang, K. and Loustau, D. (2002) Temperature response of 
-          parameters of a biochemically based model of photosynthesis. II. 
-          A review of experimental data. Plant, Cell and Enviroment 25, 
-          1167-1179.
-        """
-        return (Hd / (delS - RGAS * np.log(Ha / (Hd - Ha)))) - self.deg2kelvin
-        
     def pick_starting_point(self, data, obs, grid_size=50):
         """ High-density grid search to overcome issues with ending up in a 
         local minima. Values that yield the lowest RMSE (without minimisation)
@@ -831,4 +808,223 @@ class FitEaDels(FitMe):
         (idx, jdx) = ndx
         
         return Ea[idx].squeeze(), delS[jdx].squeeze()
+
+
+class FitK25EaDels(FitMe):
+    """ Fit the model parameters K25j, K25v, Eaj, Eav, Dels to the measured 
+        A-Ci data, i.e. not fitting normalised data!!!
+    """
+    def __init__(self, model=None, infname=None, ofname=None, results_dir=None, 
+                 data_dir=None, peaked=True):
+        """
+        Parameters
+        ----------
+        model : object
+            model that we are fitting measurements against...
+        ofname : string
+            output filename for writing fitting result.
+        results_dir : string
+            output directory path for the result to be written
+        data_dir : string
+            input directory path where measured A-Ci files live
+        plot_dir : string
+            directory to save plots of various fitting routines
+        """
+        
+        self.infname = infname
+        FitMe.__init__(self, model=model, ofname=ofname, 
+                       results_dir=results_dir, data_dir=data_dir)
+       
+        self.peaked = peaked
+        if self.peaked:
+            self.call_model = model.peaked_arrh
+            self.header = ["Param", "K25", "SE", "Ea", "SE", "Hd", "SE", \
+                            "delS", "delSSE", "R2", "n", "Topt"]
+        else:
+            self.call_model = model.arrh
+            self.header = ["Param", "K25", "SE", "Ea", "SE", "R2", "n", "Topt"]
+        
+    def main(self, print_to_screen):   
+        """ Loop over all our A-Ci measured curves and fit the Farquhar model
+        parameters to this data 
+        
+        Parameters
+        ----------
+        print_to_screen : logical
+            print fitting result to screen? Default is no!
+        """
+        all_data = self.read_data(self.infname, infile_type="meas")
+        fp = self.open_output_files(self.ofname)
+        wr = self.write_file_hdr(fp, self.header)
+        
+        # Loop over all the measured data and fit the model params.
+        for id in np.unique(all_data["fitgroup"]):
+            data = all_data[np.where(all_data["fitgroup"] == id)]
+            
+            # Fit Jmax vs T first
+            params = self.setup_model_params(peaked=self.peaked)
+            result = minimize(self.residual, params, engine="leastsq", 
+                              args=(data, data["Jmax"]))
+            if print_to_screen:
+                self.print_fit_to_screen(result)
+            
+            # Did we resolve the error bars during the fit? If yes then
+            # move onto the next A-Ci curve
+            if result.errorbars:
+                self.succes_count += 1
+        
+            (peak_fit) = self.forward_run(result, data)
+            if self.peaked:
+                Topt = (self.calc_Topt(result.params["Hd"].value, 
+                                       result.params["Ea"].value, 
+                                       result.params["delS"].value))
+            else:
+                Topt = -9999.9 # not calculated
+            
+            self.report_fits(wr, result, data, data["Jmax"], peak_fit, 
+                             "Jmax", Topt)
+           
+            # Fit Vcmax vs T next 
+            params = self.setup_model_params(peaked=self.peaked)
+            result = minimize(self.residual, params, engine="leastsq", 
+                              args=(data, data["Vcmax"]))
+            if print_to_screen:
+                self.print_fit_to_screen(result)
+            
+            # Did we resolve the error bars during the fit? If yes then
+            # move onto the next A-Ci curve
+            if result.errorbars:
+                self.succes_count += 1
+        
+            (peak_fit) = self.forward_run(result, data)
+            if self.peaked:
+                Topt = (self.calc_Topt(result.params["Hd"].value, 
+                                       result.params["Ea"].value, 
+                                       result.params["delS"].value))
+            else:
+                Topt = -9999.9 # not calculated
+            
+            self.report_fits(wr, result, data, data["Vcmax"], peak_fit, 
+                             "Vcmax", Topt)
+            
+        fp.close()  
+        
+    def forward_run(self, result, data):
+        """ Run peaked Arrhenius model with fitted parameters and return result 
+        
+        Parameters
+        ----------
+        result : object
+            fitting result, param, std. error etc.
+        data : object
+            input A-Ci curve information
+        
+        Returns
+        --------
+        model_fit : array
+            fitted result
+        """
+        Ea = result.params['Ea'].value
+        K25 = result.params['K25'].value
+        
+        if self.peaked:
+            Hd = result.params['Hd'].value
+            delS = result.params['delS'].value
+            model_fit = self.call_model(K25, Ea, data["Tav"], delS, Hd)                                         
+        else:
+            model_fit = self.call_model(K25, Ea, data["Tav"])     
+        
+        return model_fit
     
+    def report_fits(self, f, result, data, obs, fit, pname, Topt):
+        """ Save fitting results to a file... 
+        
+        Parameters
+        ----------
+        f : object
+            file pointer
+        result: object
+            fitting result, param, std. error etc.
+        data : object
+            input A-Ci curve information
+        obs : array
+            A-Ci data to fit model against
+        fit : array
+            best model fit to optimised parameters
+        fname : string
+            filename to append to output file
+        pname : string 
+            param_name
+        Topt : float
+            Optimum temperature [deg C]
+        """
+        pearsons_r = stats.pearsonr(obs, fit)[0]
+        row = [pname]
+        for name, par in result.params.items():
+            row.append("%s" % (par.value))
+            row.append("%s" % (par.stderr))
+        row.append("%s" % (pearsons_r**2))
+        row.append("%s" % (len(fit)))
+        row.append("%s" % (Topt))
+        f.writerow(row)
+        
+    def residual(self, parameters, data, obs):
+        """ simple function to quantify how good the fit was for the fitting
+        routine. Could use something better? RMSE?
+        
+        Parameters
+        ----------
+        params : object
+            List of parameters to be fit, initial guess, ranges etc. This is
+            an lmfit object
+        data: array
+            data to run farquhar model with
+        obs : array
+            A-Ci data to fit model against
+        
+        Returns: 
+        --------
+        residual : array
+            residual of fit between model and obs, based on current parameter
+            set
+        """
+        Ea = parameters["Ea"].value
+        K25 = parameters['K25'].value
+        if self.peaked:
+            Hd = parameters["Hd"].value
+            delS = parameters["delS"].value
+            model = self.call_model(K25, Ea, data["Tav"], delS, Hd)                                         
+        else:
+            model = self.call_model(K25, Ea, data["Tav"])   
+            
+        return (obs - model)
+
+    def setup_model_params(self, peaked):
+        """ Setup lmfit Parameters object
+        
+        Parameters
+        ----------
+        
+        
+        Returns
+        -------
+        params : object
+            lmfit object containing parameters to fit
+        """
+        params = Parameters()
+        if peaked:
+            k25_guess = np.random.uniform(50.0, 250.0)
+            ea_guess = np.random.uniform(20000.0, 80000.0)
+            dels_guess = np.random.uniform(550.0, 700.0)
+            params.add('K25', value=k25_guess, min=0.0)
+            params.add('Ea', value=ea_guess, min=0.0)
+            params.add('delS', value=dels_guess, min=0.0)  
+            params.add('Hd', value=200000.0, vary=False)
+        else:
+            params = Parameters()
+            k25_guess = np.random.uniform(50.0, 250.0)
+            ea_guess = np.random.uniform(20000.0, 80000.0)
+            params.add('K25', value=k25_guess, min=0.0)
+            params.add('Ea', value=ea_guess, min=0.0)
+        
+        return params
