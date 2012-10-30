@@ -112,7 +112,7 @@ class FitMe(object):
             data["Tav"] = data["Tav"] + self.deg2kelvin
             data["Jmax"] = data["Jmax"]
             data["Vcmax"] = data["Vcmax"]  
-        else:
+        elif infile_type != "aci":
             raise IOError("Unknown file type in read??\n")   
               
         return data
