@@ -493,8 +493,6 @@ class FitMe(object):
           A review of experimental data. Plant, Cell and Enviroment 25, 
           1167-1179.
         """
-        print Ha, Hd, (Ha / (Hd - Ha))
-        
         return (Hd / (delS - RGAS * np.log(Ha / (Hd - Ha)))) - self.deg2kelvin
             
 class FitJmaxVcmaxRd(FitMe):
@@ -1022,7 +1020,7 @@ class FitK25EaDels(FitMe):
             dels_guess = np.random.uniform(550.0, 700.0)
             params.add('K25', value=k25_guess, min=0.0)
             params.add('Ea', value=ea_guess, min=0.0, max=199999.9)
-            params.add('delS', value=dels_guess, min=0.0)  
+            params.add('delS', value=dels_guess, min=0.0, max=800.0)  
             params.add('Hd', value=200000.0, vary=False)
         else:
             params = Parameters()
