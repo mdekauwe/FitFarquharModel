@@ -842,7 +842,8 @@ class FitK25EaDels(FitMe):
                             "delS", "delSSE", "R2", "n", "Topt"]
         else:
             self.call_model = model.arrh
-            self.header = ["Param", "K25", "SE", "Ea", "SE", "R2", "n", "Topt"]
+            self.header = ["Param", "K25", "SE", "Ea", "SE", "R2", "n", "Topt",\
+                             "ID"]
         
     def main(self, print_to_screen):   
         """ Loop over all our A-Ci measured curves and fit the Farquhar model
