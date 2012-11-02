@@ -882,7 +882,7 @@ class FitK25EaDels(FitMe):
                 Topt = -9999.9 # not calculated
             
             self.report_fits(wr, result, data, data["Jmax"], peak_fit, 
-                             "Jmax", Topt)
+                             "Jmax", Topt, id)
            
             # Fit Vcmax vs T next 
             params = self.setup_model_params(peaked=self.peaked)
@@ -905,7 +905,7 @@ class FitK25EaDels(FitMe):
                 Topt = -9999.9 # not calculated
             
             self.report_fits(wr, result, data, data["Vcmax"], peak_fit, 
-                             "Vcmax", Topt)
+                             "Vcmax", Topt, id)
             
         fp.close()  
         
@@ -936,7 +936,7 @@ class FitK25EaDels(FitMe):
         
         return model_fit
     
-    def report_fits(self, f, result, data, obs, fit, pname, Topt):
+    def report_fits(self, f, result, data, obs, fit, pname, Topt, id):
         """ Save fitting results to a file... 
         
         Parameters
@@ -966,6 +966,7 @@ class FitK25EaDels(FitMe):
         row.append("%s" % (pearsons_r**2))
         row.append("%s" % (len(fit)))
         row.append("%s" % (Topt))
+        row.append("%d" % (id))
         f.writerow(row)
         
     def residual(self, parameters, data, obs):

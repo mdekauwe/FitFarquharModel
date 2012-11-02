@@ -232,9 +232,6 @@ class FarquharC3(object):
             err_msg = "error jmax fitting, are you suppling the correct args?"
             raise AttributeError, err_msg   
         
-        
-        
-            
         # net assimilation rates.
         An = A - Rd
         Acn = Ac - Rd
