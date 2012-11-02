@@ -839,7 +839,7 @@ class FitK25EaDels(FitMe):
         if self.peaked:
             self.call_model = model.peaked_arrh
             self.header = ["Param", "K25", "SE", "Ea", "SE", "Hd", "SE", \
-                            "delS", "delSSE", "R2", "n", "Topt"]
+                            "delS", "delSSE", "R2", "n", "Topt", "ID"]
         else:
             self.call_model = model.arrh
             self.header = ["Param", "K25", "SE", "Ea", "SE", "R2", "n", "Topt",\
