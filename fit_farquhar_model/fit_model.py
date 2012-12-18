@@ -170,12 +170,15 @@ class FitMe(object):
             rate [umol m-2 s-1]
         """
         pearsons_r = stats.pearsonr(data["Photo"], An_fit)[0]
+        ssq = np.sum((data["Photo"]-An_fit)**2)
+        
         row = []
         for name, par in result.params.items():
             row.append("%s" % (par.value))
             row.append("%s" % (par.stderr))
         row.append("%s" % (np.mean(data["Tleaf"] - self.deg2kelvin)))
         row.append("%s" % (pearsons_r**2))
+        row.append("%s" % (ssq))
         row.append("%s" % (len(An_fit)))
         row.append("%s" % (data["Species"][0]))
         row.append("%s" % (data["Season"][0]))
@@ -519,7 +522,7 @@ class FitJmaxVcmaxRd(FitMe):
         """        
         FitMe.__init__(self, model, ofname, results_dir, data_dir, plot_dir)
         self.header = ["Jmax", "JSE", "Vcmax", "VSE", "Rd", "RSE", "Tav", \
-                       "R2", "n", "Species", "Season", "Leaf", "Curve", \
+                       "R2", "SSQ", "n", "Species", "Season", "Leaf", "Curve", \
                        "Filename", "id"]
                        
     def main(self, print_to_screen, infname_tag="*.csv"):   
@@ -596,10 +599,10 @@ class FitEaDels(FitMe):
         if self.peaked:
             self.call_model = model.peaked_arrh
             self.header = ["Param", "Ea", "SE", "Hd", "SE", "delS", "delSSE", \
-                            "R2", "n", "Topt"]
+                            "R2", "SSQ", "n", "Topt"]
         else:
             self.call_model = model.arrh
-            self.header = ["Param", "Ea", "SE", "R2", "n", "Topt"]
+            self.header = ["Param", "Ea", "SE", "R2", "SSQ", "n", "Topt"]
         
     def main(self, print_to_screen):   
         """ Loop over all our A-Ci measured curves and fit the Farquhar model
@@ -739,15 +742,16 @@ class FitEaDels(FitMe):
             Optimum temperature [deg C]
         """
         pearsons_r = stats.pearsonr(obs, fit)[0]
+        ssq = np.sum((obs-fit)**2)
         row = [pname]
         for name, par in result.params.items():
             row.append("%s" % (par.value))
             row.append("%s" % (par.stderr))
         row.append("%s" % (pearsons_r**2))
+        row.append("%s" % (ssq))
         row.append("%s" % (len(fit)))
         row.append("%s" % (Topt))
         f.writerow(row)
-        
         
     def residual(self, parameters, data, obs):
         """ simple function to quantify how good the fit was for the fitting
@@ -839,10 +843,10 @@ class FitK25EaDels(FitMe):
         if self.peaked:
             self.call_model = model.peaked_arrh
             self.header = ["Param", "K25", "SE", "Ea", "SE", "Hd", "SE", \
-                            "delS", "delSSE", "R2", "n", "Topt", "ID"]
+                            "delS", "delSSE", "R2", "SSQ", "n", "Topt", "ID"]
         else:
             self.call_model = model.arrh
-            self.header = ["Param", "K25", "SE", "Ea", "SE", "R2", "n", "Topt",\
+            self.header = ["Param", "K25", "SE", "Ea", "SE", "R2", "SSQ", "n", "Topt",\
                              "ID"]
         
     def main(self, print_to_screen):   
@@ -960,11 +964,13 @@ class FitK25EaDels(FitMe):
             Optimum temperature [deg C]
         """
         pearsons_r = stats.pearsonr(obs, fit)[0]
+        ssq = np.sum((obs-fit)**2)
         row = [pname]
         for name, par in result.params.items():
             row.append("%s" % (par.value))
             row.append("%s" % (par.stderr))
         row.append("%s" % (pearsons_r**2))
+        row.append("%s" % (ssq))
         row.append("%s" % (len(fit)))
         row.append("%s" % (Topt))
         row.append("%d" % (id))
