@@ -178,6 +178,7 @@ class FitMe(object):
             row.append("%s" % (par.value))
             row.append("%s" % (par.stderr))
         row.append("%s" % (np.mean(data["Tleaf"] - self.deg2kelvin)))
+        row.append("%s" % ((data["Photo"]-An_fit).var()))
         row.append("%s" % (pearsons_r**2))
         row.append("%s" % (ssq))
         row.append("%s" % (mean_sq_err))
@@ -525,7 +526,7 @@ class FitJmaxVcmaxRd(FitMe):
         """        
         FitMe.__init__(self, model, ofname, results_dir, data_dir, plot_dir)
         self.header = ["Jmax", "JSE", "Vcmax", "VSE", "Rd", "RSE", "Tav", \
-                       "R2", "SSQ", "MSE", "DOF", "n", "Species", "Season", \
+                       "R2", "Var", "SSQ", "MSE", "DOF", "n", "Species", "Season", \
                        "Leaf", "Curve", "Filename", "id"]
                        
     def main(self, print_to_screen, infname_tag="*.csv"):   
@@ -602,10 +603,10 @@ class FitEaDels(FitMe):
         if self.peaked:
             self.call_model = model.peaked_arrh
             self.header = ["Param", "Ea", "SE", "Hd", "SE", "delS", "delSSE", \
-                            "R2", "SSQ", "MSE", "DOF", "n", "Topt"]
+                            "R2", "Var", "SSQ", "MSE", "DOF", "n", "Topt"]
         else:
             self.call_model = model.arrh
-            self.header = ["Param", "Ea", "SE", "R2", "SSQ", "MSE", "DOF", \
+            self.header = ["Param", "Ea", "SE", "R2", "Var", "SSQ", "MSE", "DOF", \
                             "n", "Topt"]
         
     def main(self, print_to_screen):   
@@ -754,6 +755,7 @@ class FitEaDels(FitMe):
         for name, par in result.params.items():
             row.append("%s" % (par.value))
             row.append("%s" % (par.stderr))
+        row.append("%s" % ((obs-fit).var()))
         row.append("%s" % (pearsons_r**2))
         row.append("%s" % (ssq))
         row.append("%s" % (mean_sq_err))
@@ -852,11 +854,11 @@ class FitK25EaDels(FitMe):
         if self.peaked:
             self.call_model = model.peaked_arrh
             self.header = ["Param", "K25", "SE", "Ea", "SE", "Hd", "SE", \
-                            "delS", "delSSE", "R2", "SSQ", "MSE", "DOF", \
+                            "delS", "delSSE", "R2", "Var", "SSQ", "MSE", "DOF", \
                             "n", "Topt", "ID"]
         else:
             self.call_model = model.arrh
-            self.header = ["Param", "K25", "SE", "Ea", "SE", "R2", "SSQ", \
+            self.header = ["Param", "K25", "SE", "Ea", "SE", "R2", "Var", "SSQ", \
                             "MSE", "DOF", "n", "Topt", "ID"]
         
     def main(self, print_to_screen):   
@@ -982,6 +984,7 @@ class FitK25EaDels(FitMe):
         for name, par in result.params.items():
             row.append("%s" % (par.value))
             row.append("%s" % (par.stderr))
+        row.append("%s" % ((obs-fit).var()))
         row.append("%s" % (pearsons_r**2))
         row.append("%s" % (ssq))
         row.append("%s" % (mean_sq_err))
