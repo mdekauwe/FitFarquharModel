@@ -170,8 +170,9 @@ class FitMe(object):
             rate [umol m-2 s-1]
         """
         pearsons_r = stats.pearsonr(data["Photo"], An_fit)[0]
-        ssq = np.sum((data["Photo"]-An_fit)**2)
-        
+        diff_sq = (data["Photo"]-An_fit)**2
+        ssq = np.sum(diff_sq)
+        mean_sq_err = np.mean(diff_sq)
         row = []
         for name, par in result.params.items():
             row.append("%s" % (par.value))
@@ -179,6 +180,8 @@ class FitMe(object):
         row.append("%s" % (np.mean(data["Tleaf"] - self.deg2kelvin)))
         row.append("%s" % (pearsons_r**2))
         row.append("%s" % (ssq))
+        row.append("%s" % (mean_sq_err))
+        row.append("%s" % (len(An_fit)-1))
         row.append("%s" % (len(An_fit)))
         row.append("%s" % (data["Species"][0]))
         row.append("%s" % (data["Season"][0]))
@@ -522,8 +525,8 @@ class FitJmaxVcmaxRd(FitMe):
         """        
         FitMe.__init__(self, model, ofname, results_dir, data_dir, plot_dir)
         self.header = ["Jmax", "JSE", "Vcmax", "VSE", "Rd", "RSE", "Tav", \
-                       "R2", "SSQ", "n", "Species", "Season", "Leaf", "Curve", \
-                       "Filename", "id"]
+                       "R2", "SSQ", "MSE", "DOF", "n", "Species", "Season", \
+                       "Leaf", "Curve", "Filename", "id"]
                        
     def main(self, print_to_screen, infname_tag="*.csv"):   
         """ Loop over all our A-Ci measured curves and fit the Farquhar model
@@ -599,10 +602,11 @@ class FitEaDels(FitMe):
         if self.peaked:
             self.call_model = model.peaked_arrh
             self.header = ["Param", "Ea", "SE", "Hd", "SE", "delS", "delSSE", \
-                            "R2", "SSQ", "n", "Topt"]
+                            "R2", "SSQ", "MSE", "DOF", "n", "Topt"]
         else:
             self.call_model = model.arrh
-            self.header = ["Param", "Ea", "SE", "R2", "SSQ", "n", "Topt"]
+            self.header = ["Param", "Ea", "SE", "R2", "SSQ", "MSE", "DOF", \
+                            "n", "Topt"]
         
     def main(self, print_to_screen):   
         """ Loop over all our A-Ci measured curves and fit the Farquhar model
@@ -742,13 +746,18 @@ class FitEaDels(FitMe):
             Optimum temperature [deg C]
         """
         pearsons_r = stats.pearsonr(obs, fit)[0]
-        ssq = np.sum((obs-fit)**2)
+        diff_sq = (obs-fit)**2
+        ssq = np.sum(diff_sq)
+        mean_sq_err = np.mean(diff_sq)
+        
         row = [pname]
         for name, par in result.params.items():
             row.append("%s" % (par.value))
             row.append("%s" % (par.stderr))
         row.append("%s" % (pearsons_r**2))
         row.append("%s" % (ssq))
+        row.append("%s" % (mean_sq_err))
+        row.append("%s" % (len(obs)-1))
         row.append("%s" % (len(fit)))
         row.append("%s" % (Topt))
         f.writerow(row)
@@ -843,11 +852,12 @@ class FitK25EaDels(FitMe):
         if self.peaked:
             self.call_model = model.peaked_arrh
             self.header = ["Param", "K25", "SE", "Ea", "SE", "Hd", "SE", \
-                            "delS", "delSSE", "R2", "SSQ", "n", "Topt", "ID"]
+                            "delS", "delSSE", "R2", "SSQ", "MSE", "DOF", \
+                            "n", "Topt", "ID"]
         else:
             self.call_model = model.arrh
-            self.header = ["Param", "K25", "SE", "Ea", "SE", "R2", "SSQ", "n", "Topt",\
-                             "ID"]
+            self.header = ["Param", "K25", "SE", "Ea", "SE", "R2", "SSQ", \
+                            "MSE", "DOF", "n", "Topt", "ID"]
         
     def main(self, print_to_screen):   
         """ Loop over all our A-Ci measured curves and fit the Farquhar model
@@ -964,13 +974,18 @@ class FitK25EaDels(FitMe):
             Optimum temperature [deg C]
         """
         pearsons_r = stats.pearsonr(obs, fit)[0]
-        ssq = np.sum((obs-fit)**2)
+        diff_sq = (obs-fit)**2
+        ssq = np.sum(diff_sq)
+        mean_sq_err = np.mean(diff_sq)
+        
         row = [pname]
         for name, par in result.params.items():
             row.append("%s" % (par.value))
             row.append("%s" % (par.stderr))
         row.append("%s" % (pearsons_r**2))
         row.append("%s" % (ssq))
+        row.append("%s" % (mean_sq_err))
+        row.append("%s" % (len(fit)-1))
         row.append("%s" % (len(fit)))
         row.append("%s" % (Topt))
         row.append("%d" % (id))
