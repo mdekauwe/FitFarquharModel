@@ -198,7 +198,7 @@ class FarquharC3(object):
         # actual rate of electron transport, a function of absorbed PAR
         if Par is not None:
             J = self.quadratic(a=self.theta_J, b=-(self.alpha * Par + Jmax), 
-                               c=self.alpha * Par * Jmax)
+                                    c=self.alpha * Par * Jmax)
         # All measurements are calculated under saturated light!!
         else:
             J = Jmax
@@ -368,11 +368,11 @@ class FarquharC3(object):
         Tjoelker et al (2001) GCB, 7, 223-230.
         """
         return r25 * Q10**(((Tleaf - self.deg2kelvin) - Tref) / 10.0)
-    
-    def quadratic(self, a, b, c):
+        
+    def quadratic(self, a=None, b=None, c=None, error=False):
         """ minimilist quadratic solution as root for J solution should always
-        be positive, so I have excluded other quadratic solution steps. If 
-        roots for J are negative or equal to zero then the data is bogus 
+        be positive, so I have excluded other quadratic solution steps. I am 
+        only returning the smallest of the two roots 
         
         Parameters:
         ----------
@@ -388,13 +388,16 @@ class FarquharC3(object):
         val : float
             positive root
         """
-       
-        # solve quadratic and return smallest root...
-        root = b**2 - 4.0 * a * c    
-        x = np.where(root > 0.0, (-b + np.sqrt(root)) / (2.0 * a), -9999.9)
-        y = np.where(root > 0.0, (-b - np.sqrt(root)) / (2.0 * a), -9999.9)
-        x = np.ma.masked_where(y < -9000.0, y)
-        y = np.ma.masked_where(y < -9000.0, y)
         
-        return np.minimum(x, y)
+        d = b**2 - 4.0 * a * c # discriminant
+        if np.any(d <= 0.0) or np.any(np.isnan(d)):
+            error = True
+            root1 = 0.0
+            root2 = 0.0
+            warnings.warn("Imaginary root found")
+        else:
+            root1 = (-b - np.sqrt(d)) / (2.0 * a)
+            #root2 = (-b + np.sqrt(d)) / (2.0 * a) # don't want to return this
+            
+        return root1
         
