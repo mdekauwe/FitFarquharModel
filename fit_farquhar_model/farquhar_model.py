@@ -198,7 +198,7 @@ class FarquharC3(object):
         # actual rate of electron transport, a function of absorbed PAR
         if Par is not None:
             J = self.quadratic(a=self.theta_J, b=-(self.alpha * Par + Jmax), 
-                                    c=self.alpha * Par * Jmax)
+                               c=self.alpha * Par * Jmax)
         # All measurements are calculated under saturated light!!
         else:
             J = Jmax
@@ -368,8 +368,8 @@ class FarquharC3(object):
         Tjoelker et al (2001) GCB, 7, 223-230.
         """
         return r25 * Q10**(((Tleaf - self.deg2kelvin) - Tref) / 10.0)
-        
-    def quadratic(self, a=None, b=None, c=None, error=False):
+    
+    def quadratic(self, a=None, b=None, c=None):
         """ minimilist quadratic solution as root for J solution should always
         be positive, so I have excluded other quadratic solution steps. I am 
         only returning the smallest of the two roots 
@@ -390,14 +390,11 @@ class FarquharC3(object):
         """
         
         d = b**2 - 4.0 * a * c # discriminant
-        if np.any(d <= 0.0) or np.any(np.isnan(d)):
-            error = True
-            root1 = 0.0
-            root2 = 0.0
-            warnings.warn("Imaginary root found")
-        else:
-            root1 = (-b - np.sqrt(d)) / (2.0 * a)
-            #root2 = (-b + np.sqrt(d)) / (2.0 * a) # don't want to return this
-            
+        # if < 0.0 then an imaginary root was found
+        d = np.where(np.logical_or(d<=0, np.any(np.isnan(d))), -999.9, d)
+        root1 = np.where(d>0.0, (-b - np.sqrt(d)) / (2.0 * a), d)
+        #root2 = np.where(d>0.0, (-b + np.sqrt(d)) / (2.0 * a), d)
+        
         return root1
         
+   
