@@ -55,7 +55,7 @@ class FarquharC3(object):
                  Eo=36380.0, Egamma=37830.0, theta_hyperbol=0.9995, 
                  theta_J=0.7, force_vcmax_fit_pts=None,
                  alpha=None, quantum_yield=0.3, absorptance=0.8,
-                 change_over_pt=150.0):
+                 change_over_pt=None):
         """
         Parameters
         ----------
@@ -96,8 +96,7 @@ class FarquharC3(object):
         force_vcmax_fit_pts : None or npts
             Force Ac fit for first X points
         change_over_pt : None or value of Ci
-            Explicitly set the transition point between Aj and Ac. Default is
-            to assume everything Ci<150 is Ac
+            Explicitly set the transition point between Aj and Ac. 
         
         """
         self.peaked_Jmax = peaked_Jmax
@@ -214,34 +213,39 @@ class FarquharC3(object):
         
         # rate of photosynthesis when RuBP-regeneration is limiting
         Aj = (J / 4.0) * ((Ci - gamma_star) / (Ci + 2.0 * gamma_star))
-       
-        # Photosynthesis estimated using hyperbolic minimum of Ac and Aj to
-        # effectively smooth over discontinuity when moving from light/electron 
-        # transport limited to rubisco limited photosynthesis
-        # except if Ci < 150 in which case it is always Rubisco limited
-        arg = ((Ac + Aj - \
-               np.sqrt((Ac + Aj)**2 - 4.0 * self.theta_hyperbol * Ac * Aj)) / 
-              (2.0 * self.theta_hyperbol))
         
-        # By default we assume a everything under Ci<150 is Ac limited, but 
+        
         # there is also the option for the user to specify a different 
         # transition point
-        A = np.where(Ci < self.change_over_pt, Ac, arg)
+        if self.change_over_pt is not None:
+            A = np.where(Ci < self.change_over_pt, Ac, Aj)
+            
+        else:
+            # Photosynthesis estimated using hyperbolic minimum of Ac and Aj to
+            # effectively smooth over discontinuity when moving from light/electron 
+            # transport limited to rubisco limited photosynthesis
+            # except if Ci < 150 in which case it is always Rubisco limited
+            arg = ((Ac + Aj - \
+                   np.sqrt((Ac + Aj)**2 - 4.0 * self.theta_hyperbol * Ac * Aj)) / 
+                  (2.0 * self.theta_hyperbol))
+            
+            # By default we assume a everything under Ci<150 is Ac limited
+            A = np.where(Ci < 150.0, Ac, arg)
         
             
-        # Specifically for Angelica's data...force Ac fit through the first X 
-        # points.
-        if self.force_vcmax_fit_pts is not None:
-            indx = self.force_vcmax_fit_pts - 1 # indexed from zero
-            
-            A = np.where(Ci <= Ci[indx] , Ac, A)    
-            indx += 1 # use all the rest for Aj limited...
-            A = np.where(Ci >= Ci[indx] , Aj, A)
-        elif self.force_vcmax_fit_pts is None:
-            A = np.where(Ci > np.max(Ci) - 10.0, Aj, A)
-        else:
-            err_msg = "error jmax fitting, are you suppling the correct args?"
-            raise AttributeError, err_msg   
+            # Specifically for Angelica's data...force Ac fit through the first X 
+            # points.
+            if self.force_vcmax_fit_pts is not None:
+                indx = self.force_vcmax_fit_pts - 1 # indexed from zero
+                
+                A = np.where(Ci <= Ci[indx] , Ac, A)    
+                indx += 1 # use all the rest for Aj limited...
+                A = np.where(Ci >= Ci[indx] , Aj, A)
+            elif self.force_vcmax_fit_pts is None:
+                A = np.where(Ci > np.max(Ci) - 10.0, Aj, A)
+            else:
+                err_msg = "error jmax fitting, are you suppling the correct args?"
+                raise AttributeError, err_msg   
         
         # net assimilation rates.
         An = A - Rd
