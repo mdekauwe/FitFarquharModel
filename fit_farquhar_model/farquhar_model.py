@@ -54,7 +54,8 @@ class FarquharC3(object):
                  gamstar25=42.75, Kc25=404.9, Ko25=278.4, Ec=79430.0,
                  Eo=36380.0, Egamma=37830.0, theta_hyperbol=0.9995, 
                  theta_J=0.7, force_vcmax_fit_pts=None,
-                 alpha=None, quantum_yield=0.3, absorptance=0.8):
+                 alpha=None, quantum_yield=0.3, absorptance=0.8,
+                 change_over_pt=None):
         """
         Parameters
         ----------
@@ -94,6 +95,9 @@ class FarquharC3(object):
         
         force_vcmax_fit_pts : None or npts
             Force Ac fit for first X points
+        change_over_pt : None or value of Ci
+            Explicitly set the transition point between Aj and Ac, e.g. Ci=250
+        
         """
         self.peaked_Jmax = peaked_Jmax
         self.peaked_Vcmax = peaked_Vcmax
@@ -114,6 +118,7 @@ class FarquharC3(object):
             self.alpha = quantum_yield * absorptance # (Medlyn et al 2002)     
         
         self.force_vcmax_fit_pts = force_vcmax_fit_pts
+        self.change_over_pt = change_over_pt
         
     def calc_photosynthesis(self, Ci, Tleaf, Par=None, Jmax=None, Vcmax=None, 
                             Jmax25=None, Vcmax25=None, Rd=None, Q10=None, 
@@ -217,6 +222,10 @@ class FarquharC3(object):
                np.sqrt((Ac + Aj)**2 - 4.0 * self.theta_hyperbol * Ac * Aj)) / 
               (2.0 * self.theta_hyperbol))
         A = np.where(Ci < 150, Ac, arg)
+        
+        # Use a specified transition point between limitations
+        if self.change_over_pt is not None:
+            A = np.where(Ci < self.change_over_pt, Ac, arg)
         
         # Specifically for Angelica's data...force Ac fit through the first X 
         # points.
