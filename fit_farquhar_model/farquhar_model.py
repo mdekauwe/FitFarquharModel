@@ -221,12 +221,14 @@ class FarquharC3(object):
         arg = ((Ac + Aj - \
                np.sqrt((Ac + Aj)**2 - 4.0 * self.theta_hyperbol * Ac * Aj)) / 
               (2.0 * self.theta_hyperbol))
-        A = np.where(Ci < 150, Ac, arg)
         
         # Use a specified transition point between limitations
         if self.change_over_pt is not None:
+            print self.change_over_pt
             A = np.where(Ci < self.change_over_pt, Ac, arg)
-        
+        else:
+            A = np.where(Ci < 150, Ac, arg)
+            
         # Specifically for Angelica's data...force Ac fit through the first X 
         # points.
         if self.force_vcmax_fit_pts is not None:
