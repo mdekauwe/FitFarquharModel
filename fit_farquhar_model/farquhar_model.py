@@ -224,7 +224,6 @@ class FarquharC3(object):
         
         # Use a specified transition point between limitations
         if self.change_over_pt is not None:
-            print self.change_over_pt
             A = np.where(Ci < self.change_over_pt, Ac, arg)
         else:
             A = np.where(Ci < 150, Ac, arg)
