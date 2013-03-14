@@ -526,7 +526,7 @@ class FitJmaxVcmaxRd(FitMe):
         """        
         FitMe.__init__(self, model, ofname, results_dir, data_dir, plot_dir)
         self.header = ["Jmax", "JSE", "Vcmax", "VSE", "Rd", "RSE", "Tav", \
-                       "R2", "Var", "SSQ", "MSE", "DOF", "n", "Species", "Season", \
+                       "Var", "R2", "SSQ", "MSE", "DOF", "n", "Species", "Season", \
                        "Leaf", "Curve", "Filename", "id"]
                        
     def main(self, print_to_screen, infname_tag="*.csv"):   
@@ -603,10 +603,10 @@ class FitEaDels(FitMe):
         if self.peaked:
             self.call_model = model.peaked_arrh
             self.header = ["Param", "Ea", "SE", "Hd", "SE", "delS", "delSSE", \
-                            "R2", "Var", "SSQ", "MSE", "DOF", "n", "Topt"]
+                            "Var", "R2", "SSQ", "MSE", "DOF", "n", "Topt"]
         else:
             self.call_model = model.arrh
-            self.header = ["Param", "Ea", "SE", "R2", "Var", "SSQ", "MSE", "DOF", \
+            self.header = ["Param", "Ea", "SE", "Var", "R2", "SSQ", "MSE", "DOF", \
                             "n", "Topt"]
         
     def main(self, print_to_screen):   
@@ -854,11 +854,11 @@ class FitK25EaDels(FitMe):
         if self.peaked:
             self.call_model = model.peaked_arrh
             self.header = ["Param", "K25", "SE", "Ea", "SE", "Hd", "SE", \
-                            "delS", "delSSE", "R2", "Var", "SSQ", "MSE", "DOF", \
+                            "delS", "delSSE", "Var", "R2", "SSQ", "MSE", "DOF", \
                             "n", "Topt", "ID"]
         else:
             self.call_model = model.arrh
-            self.header = ["Param", "K25", "SE", "Ea", "SE", "R2", "Var", "SSQ", \
+            self.header = ["Param", "K25", "SE", "Ea", "SE", "Var", "R2", "SSQ", \
                             "MSE", "DOF", "n", "Topt", "ID"]
         
     def main(self, print_to_screen):   
