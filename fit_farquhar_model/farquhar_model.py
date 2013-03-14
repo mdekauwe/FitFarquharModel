@@ -55,7 +55,7 @@ class FarquharC3(object):
                  Eo=36380.0, Egamma=37830.0, theta_hyperbol=0.9995, 
                  theta_J=0.7, force_vcmax_fit_pts=None,
                  alpha=None, quantum_yield=0.3, absorptance=0.8,
-                 change_over_pt=None):
+                 change_over_pt=150.0):
         """
         Parameters
         ----------
@@ -96,7 +96,8 @@ class FarquharC3(object):
         force_vcmax_fit_pts : None or npts
             Force Ac fit for first X points
         change_over_pt : None or value of Ci
-            Explicitly set the transition point between Aj and Ac, e.g. Ci=250
+            Explicitly set the transition point between Aj and Ac. Default is
+            to assume everything Ci<150 is Ac
         
         """
         self.peaked_Jmax = peaked_Jmax
@@ -222,11 +223,11 @@ class FarquharC3(object):
                np.sqrt((Ac + Aj)**2 - 4.0 * self.theta_hyperbol * Ac * Aj)) / 
               (2.0 * self.theta_hyperbol))
         
-        # Use a specified transition point between limitations
-        if self.change_over_pt is not None:
-            A = np.where(Ci < self.change_over_pt, Ac, arg)
-        else:
-            A = np.where(Ci < 150, Ac, arg)
+        # By default we assume a everything under Ci<150 is Ac limited, but 
+        # there is also the option for the user to specify a different 
+        # transition point
+        A = np.where(Ci < self.change_over_pt, Ac, arg)
+        
             
         # Specifically for Angelica's data...force Ac fit through the first X 
         # points.
