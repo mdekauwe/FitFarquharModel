@@ -146,6 +146,7 @@ class FitMe(object):
                                               Par=data["Par"], Jmax=Jmax, 
                                               Vcmax=Vcmax, Rd=Rd)
         else:
+            
             (An, Anc, Anj) = self.call_model(data["Ci"], data["Tleaf"], 
                                              Jmax=Jmax, Vcmax=Vcmax, Rd=Rd)
         return (obs - An)

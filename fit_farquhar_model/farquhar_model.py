@@ -185,20 +185,24 @@ class FarquharC3(object):
         # Effect of temp on CO2 compensation point 
         gamma_star = self.arrh(self.gamstar25, self.Egamma, Tleaf)
         
+        
         # Calculations at 25 degrees C or the measurement temperature.
-        if r25 is not None and Jmax25 is not None and Vcmax25 is not None:
+        if r25 is not None: 
             Rd = self.resp(Tleaf, Q10, r25, Tref=25.0)
         
+        if Vcmax25 is not None:    
             # Effect of temperature on Vcmax and Jamx
             if self.peaked_Vcmax:
                 Vcmax = self.peaked_arrh(Vcmax25, Eav, Tleaf, deltaSv, Hdv)
             else:
                 Vcmax = self.arrh(Vcmax25, Eav, Tleaf)
             
+        if Jmax25 is not None:    
             if self.peaked_Jmax:
                 Jmax = self.peaked_arrh(Jmax25, Eaj, Tleaf, deltaSj, Hdj)
             else:
                 Jmax = self.arrh(Jmax25, Eaj, Tleaf)
+        
         
         # actual rate of electron transport, a function of absorbed PAR
         if Par is not None:
@@ -214,7 +218,6 @@ class FarquharC3(object):
         # rate of photosynthesis when RuBP-regeneration is limiting
         Aj = (J / 4.0) * ((Ci - gamma_star) / (Ci + 2.0 * gamma_star))
         
-        
         # there is also the option for the user to specify a different 
         # transition point
         if self.change_over_pt is not None:
@@ -228,7 +231,7 @@ class FarquharC3(object):
             arg = ((Ac + Aj - \
                    np.sqrt((Ac + Aj)**2 - 4.0 * self.theta_hyperbol * Ac * Aj)) / 
                   (2.0 * self.theta_hyperbol))
-            
+        
             # By default we assume a everything under Ci<150 is Ac limited
             A = np.where(Ci < 150.0, Ac, arg)
         
