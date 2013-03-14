@@ -354,11 +354,11 @@ class FitMe(object):
         
         ax.plot(data["Ci"], data["Photo"], 
                 ls="", lw=1.5, marker="o", c="black")
-        ax.plot(data["Ci"], An_fit, '-', c="black", linewidth=1, 
+        ax.plot(data["Ci"], An_fit, '-', c="black", linewidth=3, 
                 label="An-Rd")
-        ax.plot(data["Ci"], Anc_fit, '--', c="red", linewidth=3, 
+        ax.plot(data["Ci"], Anc_fit, '-', c="red", linewidth=1, 
                 label="Ac-Rd")
-        ax.plot(data["Ci"], Anj_fit, '--', c="blue", linewidth=3, 
+        ax.plot(data["Ci"], Anj_fit, '-', c="blue", linewidth=1, 
                 label="Aj-Rd")
         ax.set_ylabel("A$_n$", weight="bold")
         ax.axes.get_xaxis().set_visible(False)
