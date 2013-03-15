@@ -142,12 +142,12 @@ class FitMe(object):
         Rd = params['Rd'].value  
         
         if hasattr(data, "Par"):
-             (An, Anc, Anj) = self.call_model(data["Ci"], data["Tleaf"],
+             (An, Anc, Anj) = self.call_model(Ci=data["Ci"], Tleaf=data["Tleaf"],
                                               Par=data["Par"], Jmax=Jmax, 
                                               Vcmax=Vcmax, Rd=Rd)
         else:
             
-            (An, Anc, Anj) = self.call_model(data["Ci"], data["Tleaf"], 
+            (An, Anc, Anj) = self.call_model(Ci=data["Ci"], Tleaf=data["Tleaf"], 
                                              Jmax=Jmax, Vcmax=Vcmax, Rd=Rd)
         return (obs - An)
     
@@ -235,13 +235,13 @@ class FitMe(object):
         Vcmax = result.params['Vcmax'].value
         Rd = result.params['Rd'].value  
         if hasattr(data, "Par"):
-             (An, Anc, Anj) = self.call_model(data["Ci"], data["Tleaf"],
+             (An, Anc, Anj) = self.call_model(Ci=data["Ci"], Tleaf=data["Tleaf"],
                                               Par=data["Par"], Jmax=Jmax, 
                                               Vcmax=Vcmax, Rd=Rd)
         else:
-            (An, Anc, Anj) = self.call_model(data["Ci"], data["Tleaf"], 
+            (An, Anc, Anj) = self.call_model(Ci=data["Ci"], Tleaf=data["Tleaf"], 
                                              Jmax=Jmax, Vcmax=Vcmax, Rd=Rd)
-        
+            
         return (An, Anc, Anj)
                 
     def setup_model_params(self, jmax_guess=None, vcmax_guess=None, 
@@ -456,15 +456,32 @@ class FitMe(object):
         Vcmax = np.linspace(5.0, 350, grid_size) 
         Jmax = np.linspace(5.0, 550, grid_size) 
         Rd = np.linspace(1E-8, 10.5, grid_size)
+        
+        """
+        grid_size = 50
+        for v in np.linspace(5.0, 350, grid_size):
+            for j in np.linspace(5.0, 550, grid_size):
+                for r in np.linspace(1E-8, 10.5, grid_size):
+        
+                    (An, Anc, Anj) = self.call_model(data["Ci"], 
+                                                data["Tleaf"], 
+                                                Jmax=j, Vcmax=v, Rd=r)
+                    rmse = np.sqrt(np.mean((data["Photo"]- An)**2))
+                    for k in xrange(len(An)):
+                        
+    
+                        print v, j, r, An[k], data["Ci"][k], rmse
+        """
+       
         p1, p2, p3 = np.ix_(Jmax, Vcmax, Rd)
         if hasattr(data, "Par"):
-            (An, Anc, Anj) = self.call_model(data["Ci"][:,None,None,None], 
-                                             data["Tleaf"][:,None,None,None], 
+            (An, Anc, Anj) = self.call_model(Ci=data["Ci"][:,None,None,None], 
+                                             Tleaf=data["Tleaf"][:,None,None,None], 
                                              Par=data["Par"][:,None,None,None],
                                              Jmax=p1, Vcmax=p2, Rd=p3)
         else:
-            (An, Anc, Anj) = self.call_model(data["Ci"][:,None,None,None], 
-                                             data["Tleaf"][:,None,None,None], 
+            (An, Anc, Anj) = self.call_model(Ci=data["Ci"][:,None,None,None], 
+                                             Tleaf=data["Tleaf"][:,None,None,None], 
                                              Jmax=p1, Vcmax=p2, Rd=p3)
         
         rmse = np.sqrt(((data["Photo"][:,None,None,None]- An)**2).mean(0))
@@ -551,6 +568,7 @@ class FitJmaxVcmaxRd(FitMe):
                 curve_data = data[np.where(data["Curve"]==curve_num)]
                 (vcmax_guess, jmax_guess, 
                     rd_guess) = self.pick_starting_point(curve_data)
+                
                 
                 params = self.setup_model_params(jmax_guess=jmax_guess, 
                                                  vcmax_guess=vcmax_guess, 

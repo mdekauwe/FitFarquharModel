@@ -50,7 +50,7 @@ class FarquharC3(object):
       A review of experimental data. Plant, Cell and Enviroment 25, 1167-1179.
     """
     
-    def __init__(self, peaked_Jmax=False, peaked_Vcmax=False, Oi=205.0, 
+    def __init__(self, peaked_Jmax=False, peaked_Vcmax=False, Oi=210.0, 
                  gamstar25=42.75, Kc25=404.9, Ko25=278.4, Ec=79430.0,
                  Eo=36380.0, Egamma=37830.0, theta_hyperbol=0.9995, 
                  theta_J=0.7, force_vcmax_fit_pts=None,
@@ -116,14 +116,14 @@ class FarquharC3(object):
             self.alpha = alpha
         else:
             self.alpha = quantum_yield * absorptance # (Medlyn et al 2002)     
-        
+            
         self.force_vcmax_fit_pts = force_vcmax_fit_pts
         self.change_over_pt = change_over_pt
         
-    def calc_photosynthesis(self, Ci, Tleaf, Par=None, Jmax=None, Vcmax=None, 
-                            Jmax25=None, Vcmax25=None, Rd=None, Q10=None, 
-                            Eaj=None, Eav=None, deltaSj=None, deltaSv=None, 
-                            r25=None, Hdv=200000.0, Hdj=200000.0):
+    def calc_photosynthesis(self, Ci=None, Tleaf=None, Par=None, Jmax=None, 
+                            Vcmax=None, Jmax25=None, Vcmax25=None, Rd=None, 
+                            Q10=None, Eaj=None, Eav=None, deltaSj=None, 
+                            deltaSv=None, r25=None, Hdv=200000.0, Hdj=200000.0):
         """
         Parameters
         ----------
@@ -177,13 +177,22 @@ class FarquharC3(object):
         """
         self.check_supplied_args(Jmax, Vcmax, Rd, Jmax25, Vcmax25, r25)
         
+        #Tleaf = 31.38 + 273.15
+        
         # Michaelis-Menten constant for O2/CO2, Arrhenius temp dependancy
         Kc = self.arrh(self.Kc25, self.Ec, Tleaf)
         Ko = self.arrh(self.Ko25, self.Eo, Tleaf)
         Km = Kc * (1.0 + self.Oi / Ko)
         
+        #Kc = np.exp(38.05-79430/(8.314*(Tleaf-0.15)))
+        #Ko = np.exp(20.3-36380/(8.314*(Tleaf-0.15)))
+        #Km = Kc * (1.0 + self.Oi / Ko)
+        
+        
         # Effect of temp on CO2 compensation point 
+        #tdeg = Tleaf-0.15-273.
         gamma_star = self.arrh(self.gamstar25, self.Egamma, Tleaf)
+        #gamma_star = 42.75*np.exp(37830*(tdeg-25)/(8.314*298.15*(tdeg+273.15)))
         
         
         # Calculations at 25 degrees C or the measurement temperature.
@@ -222,7 +231,8 @@ class FarquharC3(object):
         # transition point
         if self.change_over_pt is not None:
             A = np.where(Ci < self.change_over_pt, Ac, Aj)
-            
+            A = np.where(np.logical_and(Ci>250.0, Ci<400.0), 
+                         np.minimum(Ac, Aj), A)
         else:
             # Photosynthesis estimated using hyperbolic minimum of Ac and Aj to
             # effectively smooth over discontinuity when moving from light/electron 
@@ -247,9 +257,9 @@ class FarquharC3(object):
             elif self.force_vcmax_fit_pts is None:
                 A = np.where(Ci > np.max(Ci) - 10.0, Aj, A)
             else:
-                err_msg = "error jmax fitting, are you suppling the correct args?"
+                err_msg = "error fitting, are you suppling the correct args?"
                 raise AttributeError, err_msg   
-        
+       
         # net assimilation rates.
         An = A - Rd
         Acn = Ac - Rd
@@ -325,9 +335,8 @@ class FarquharC3(object):
         -----------
         * Medlyn et al. 2002, PCE, 25, 1167-1179.   
         """
-        
         return k25 * np.exp((Ea * (Tk - 298.15)) / (298.15 * self.RGAS * Tk)) 
-    
+        
     def peaked_arrh(self, k25, Ea, Tk, deltaS, Hd):
         """ Temperature dependancy approximated by peaked Arrhenius eqn, 
         accounting for the rate of inhibition at higher temperatures. 
