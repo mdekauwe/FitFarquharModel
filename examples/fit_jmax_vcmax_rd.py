@@ -36,7 +36,7 @@ ofname = "fitting_results.csv"
 results_dir = "results"
 data_dir = "data"
 plot_dir = "plots"
-model = FarquharC3(peaked_Jmax=True, peaked_Vcmax=True)
+model = FarquharC3()
 ##############################
 F = FitJmaxVcmaxRd(model, ofname, results_dir, data_dir, plot_dir)
 F.main(print_to_screen=False)     

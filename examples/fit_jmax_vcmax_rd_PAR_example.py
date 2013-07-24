@@ -26,7 +26,7 @@ results_dir = "results"
 data_dir = "data2"
 plot_dir = "plots"
 Egamma = 37830.0
-model = FarquharC3(peaked_Jmax=True, peaked_Vcmax=True, Egamma=Egamma)
+model = FarquharC3()
 ##############################
 F = FitJmaxVcmaxRd(model, ofname, results_dir, data_dir, plot_dir)
 F.main(print_to_screen=False)     
