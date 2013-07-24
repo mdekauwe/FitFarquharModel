@@ -50,7 +50,7 @@ class FarquharC3(object):
       A review of experimental data. Plant, Cell and Enviroment 25, 1167-1179.
     """
     
-    def __init__(self, peaked_Jmax=False, peaked_Vcmax=False, Oi=210.0, 
+    def __init__(self, peaked_Jmax=False, peaked_Vcmax=False, Oi=205.0, 
                  gamstar25=42.75, Kc25=404.9, Ko25=278.4, Ec=79430.0,
                  Eo=36380.0, Egamma=37830.0, theta_hyperbol=0.9995, 
                  theta_J=0.7, force_vcmax_fit_pts=None,
@@ -70,7 +70,7 @@ class FarquharC3(object):
             25degC [umol mol-1] or 298 K
         Ko25: float
             Michaelis-Menten coefficents for oxygenation by Rubisco at 
-            25degC [umol mol-1]. Note value in Bernacchie 2001 is in mmol!!
+            25degC [mmol mol-1]. Note value in Bernacchie 2001 is in mmol!!
             or 298 K
         Ec : float
             Activation energy for carboxylation [J mol-1]
@@ -227,12 +227,9 @@ class FarquharC3(object):
         # rate of photosynthesis when RuBP-regeneration is limiting
         Aj = (J / 4.0) * ((Ci - gamma_star) / (Ci + 2.0 * gamma_star))
         
-        # there is also the option for the user to specify a different 
-        # transition point
+        # option for the user to specify the transition point
         if self.change_over_pt is not None:
-            A = np.where(Ci < self.change_over_pt, Ac, Aj)
-            A = np.where(np.logical_and(Ci>250.0, Ci<400.0), 
-                         np.minimum(Ac, Aj), A)
+            A = np.where(Ci<self.change_over_pt, Ac, Aj)
         else:
             # Photosynthesis estimated using hyperbolic minimum of Ac and Aj to
             # effectively smooth over discontinuity when moving from light/electron 
@@ -245,15 +242,15 @@ class FarquharC3(object):
             # By default we assume a everything under Ci<150 is Ac limited
             A = np.where(Ci < 150.0, Ac, arg)
         
-            
-            # Specifically for Angelica's data...force Ac fit through the first X 
-            # points.
+            # Specifically for Angelica's data...force Ac fit through the first
+            # X points.
             if self.force_vcmax_fit_pts is not None:
                 indx = self.force_vcmax_fit_pts - 1 # indexed from zero
-                
                 A = np.where(Ci <= Ci[indx] , Ac, A)    
                 indx += 1 # use all the rest for Aj limited...
                 A = np.where(Ci >= Ci[indx] , Aj, A)
+            
+            # Force the fit through at least the final point-ish 
             elif self.force_vcmax_fit_pts is None:
                 A = np.where(Ci > np.max(Ci) - 10.0, Aj, A)
             else:
@@ -295,20 +292,17 @@ class FarquharC3(object):
         Nothing
         """
         try:
-            if (r25 is not None and 
-                Jmax25 is not None and 
-                Vcmax25 is not None and
-                Vcmax is None and 
-                Jmax is None and 
-                Rd is None):
+            if (r25 is not None and Jmax25 is not None and 
+                Vcmax25 is not None and Vcmax is None and 
+                Jmax is None and Rd is None):
+                
                 return
-            elif (r25 is None and 
-                  Jmax25 is None and 
-                  Vcmax25 is None and
-                  Vcmax is not None and 
-                  Jmax is not None and
-                  Rd is not None):
+            elif (r25 is None and Jmax25 is None and 
+                  Vcmax25 is None and Vcmax is not None and 
+                  Jmax is not None and Rd is not None):
+                
                 return
+        
         except AttributeError:
             err_msg = "Supplied arguments are a mess!"
             raise AttributeError, err_msg      
