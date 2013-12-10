@@ -43,10 +43,6 @@ for Tleaf in np.arange(15.0, 40.0, 5.0):
     Q10 = 2.0
     add_noise = False
     
-    Rd = model.resp(Tleaf, Q10, r25, Tref=25.0)
-    
-    
-    
     (An, Acn, Ajn) = model.calc_photosynthesis(Ci=Ci, Tleaf=Tleaf, Par=None, 
                                               Jmax=None, Vcmax=None, 
                                               Jmax25=Jmax25, Vcmax25=Vcmax25, 
@@ -54,7 +50,8 @@ for Tleaf in np.arange(15.0, 40.0, 5.0):
                                               Eav=Eav, deltaSj=deltaSj, 
                                               deltaSv=deltaSv, r25=r25, 
                                               Hdv=Hdv, Hdj=Hdj)
-   
+    
+    Rd = model.resp(Tleaf, Q10, r25, Tref=25.0)
     for i in xrange(len(An)):
         if add_noise:
             noise = np.random.normal(0.0, 2.0)
