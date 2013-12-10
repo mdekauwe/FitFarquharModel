@@ -1,13 +1,1 @@
-/opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/FitFarquharModel-1.0-py2.7.egg/EGG-INFO/dependency_links.txt
-/opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/FitFarquharModel-1.0-py2.7.egg/EGG-INFO/PKG-INFO
-/opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/FitFarquharModel-1.0-py2.7.egg/EGG-INFO/SOURCES.txt
-/opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/FitFarquharModel-1.0-py2.7.egg/EGG-INFO/top_level.txt
-/opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/FitFarquharModel-1.0-py2.7.egg/EGG-INFO/zip-safe
-/opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/FitFarquharModel-1.0-py2.7.egg/fit_farquhar_model/__init__.py
-/opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/FitFarquharModel-1.0-py2.7.egg/fit_farquhar_model/__init__.pyc
-/opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/FitFarquharModel-1.0-py2.7.egg/fit_farquhar_model/farquhar_model.py
-/opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/FitFarquharModel-1.0-py2.7.egg/fit_farquhar_model/farquhar_model.pyc
-/opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/FitFarquharModel-1.0-py2.7.egg/fit_farquhar_model/fit_model.py
-/opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/FitFarquharModel-1.0-py2.7.egg/fit_farquhar_model/fit_model.pyc
-/opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/FitFarquharModel-1.0-py2.7.egg/fit_farquhar_model/normalise.py
-/opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/FitFarquharModel-1.0-py2.7.egg/fit_farquhar_model/normalise.pyc
+/opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/FitFarquharModel-1.0-py2.7.egg

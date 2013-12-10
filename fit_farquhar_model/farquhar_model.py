@@ -212,7 +212,6 @@ class FarquharC3(object):
             else:
                 Jmax = self.arrh(Jmax25, Eaj, Tleaf)
         
-        
         # actual rate of electron transport, a function of absorbed PAR
         if Par is not None:
             J = self.quadratic(a=self.theta_J, b=-(self.alpha * Par + Jmax), 
@@ -241,7 +240,7 @@ class FarquharC3(object):
         
             # By default we assume a everything under Ci<150 is Ac limited
             A = np.where(Ci < 150.0, Ac, arg)
-        
+            
             # Specifically for Angelica's data...force Ac fit through the first
             # X points.
             if self.force_vcmax_fit_pts is not None:
