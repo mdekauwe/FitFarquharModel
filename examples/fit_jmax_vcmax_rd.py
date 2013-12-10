@@ -63,10 +63,13 @@ for Tleaf in np.arange(15.0, 40.0, 5.0):
     Jmax = model.peaked_arrh(Jmax25, Eaj, Tleaf, deltaSj, Hdj)
     Rd = model.resp(Tleaf, Q10, r25, Tref=25.0)
     
-    print "              Tleaf     Jmax      Vcmax        Rd"
-    print "Truth - curve", Tleaf-deg2kelvin, Jmax, Vcmax, Rd
-    print "Fit - curve 1", fit["Tav"][index], fit["Jmax"][index], \
-                           fit["Vcmax"][index], fit["Rd"][index]
+    print "\t\t   %s    %s      %s     %s" % ("Tleaf", "Jmax", "Vcmax", "Rd")
+    print "%s\t %.5f %.5f %.5f %.5f" % ("Truth - curve", 
+                                         Tleaf-deg2kelvin, Jmax, Vcmax, Rd)
+    print "%s\t %.5f %.5f %.5f %.5f" % ("Fit - curve", fit["Tav"][index], 
+                                        fit["Jmax"][index], 
+                                        fit["Vcmax"][index], 
+                                        fit["Rd"][index])
     print
     
     index +=1

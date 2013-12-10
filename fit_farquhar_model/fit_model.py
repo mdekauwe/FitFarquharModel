@@ -455,7 +455,7 @@ class FitMe(object):
         # Shuffle arrays so that our combination of parameters is random
         Vcmax = np.linspace(5.0, 350, grid_size) 
         Jmax = np.linspace(5.0, 550, grid_size) 
-        Rd = np.linspace(1E-8, 6.0, grid_size)
+        Rd = np.linspace(0.0, 6.0, grid_size)
         
         """
         grid_size = 50
