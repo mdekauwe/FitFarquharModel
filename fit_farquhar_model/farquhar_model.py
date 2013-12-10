@@ -255,7 +255,7 @@ class FarquharC3(object):
             else:
                 err_msg = "error fitting, are you suppling the correct args?"
                 raise AttributeError, err_msg   
-       
+        
         # net assimilation rates.
         An = A - Rd
         Acn = Ac - Rd
