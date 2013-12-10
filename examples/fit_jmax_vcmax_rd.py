@@ -57,7 +57,7 @@ for Tleaf in np.arange(15.0, 40.0, 5.0):
     Hdv = 200000.0
     Hdj = 200000.0
     Q10 = 2.0
-    r25 = 0.5
+    r25 = 2.0
     
     Vcmax = model.peaked_arrh(Vcmax25, Eav, Tleaf, deltaSv, Hdv)
     Jmax = model.peaked_arrh(Jmax25, Eaj, Tleaf, deltaSj, Hdj)

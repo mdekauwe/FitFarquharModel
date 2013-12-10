@@ -281,7 +281,7 @@ class FitMe(object):
         if vcmax_guess is not None:
             params.add('Vcmax', value=vcmax_guess, min=0.0)
         if rd_guess is not None:
-            params.add('Rd', value=rd_guess)
+            params.add('Rd', value=rd_guess, min=0.0)
         
         if ea_guess is not None:
             params.add('Ea', value=ea_guess, min=0.0)
@@ -455,7 +455,7 @@ class FitMe(object):
         # Shuffle arrays so that our combination of parameters is random
         Vcmax = np.linspace(5.0, 350, grid_size) 
         Jmax = np.linspace(5.0, 550, grid_size) 
-        Rd = np.linspace(1E-8, 10.5, grid_size)
+        Rd = np.linspace(1E-8, 6.0, grid_size)
         
         """
         grid_size = 50

@@ -33,7 +33,7 @@ for Tleaf in np.arange(15.0, 40.0, 5.0):
     Tleaf += deg2kelvin
     Jmax25 = 150.0
     Vcmax25 = Jmax25 / 1.6
-    r25 = 0.5
+    r25 = 2.0
     Eaj = 30000.0
     Eav = 60000.0
     deltaSj = 650.0
@@ -54,7 +54,7 @@ for Tleaf in np.arange(15.0, 40.0, 5.0):
                                               Eav=Eav, deltaSj=deltaSj, 
                                               deltaSv=deltaSv, r25=r25, 
                                               Hdv=Hdv, Hdj=Hdj)
-    
+   
     for i in xrange(len(An)):
         if add_noise:
             noise = np.random.normal(0.0, 2.0)
@@ -71,6 +71,7 @@ for Tleaf in np.arange(15.0, 40.0, 5.0):
             noise = np.random.normal(0.0, 2.0)
         else:
             noise = 0.0
+        
         row = [curve, Tleaf-deg2kelvin, Ci[i], An[i] + Rd + noise, "Potatoes",\
                "Summer", 2]
         wr.writerow(row) 
