@@ -67,8 +67,6 @@ for Tleaf in np.arange(15.0, 40.0, 5.0):
     print "Truth - curve", Tleaf-deg2kelvin, Jmax, Vcmax, Rd
     print "Fit - curve 1", fit["Tav"][index], fit["Jmax"][index], \
                            fit["Vcmax"][index], fit["Rd"][index]
-    print "Fit - curve 2", fit["Tav"][index+1], fit["Jmax"][index+1], \
-                           fit["Vcmax"][index+1], fit["Rd"][index+1]
     print
     
-    index +=2
+    index +=1
