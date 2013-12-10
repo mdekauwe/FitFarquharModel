@@ -425,7 +425,7 @@ class FitMe(object):
         print "\nOverall fitted %.1f%% of the data\n" % (total_fits)
         fp.close()
     
-    def pick_starting_point(self, data, grid_size=50):
+    def pick_starting_point(self, data, grid_size=100):
         """ Figure out a good starting parameter guess
         
         High-density grid search to overcome issues with ending up in a 
@@ -568,7 +568,6 @@ class FitJmaxVcmaxRd(FitMe):
                 curve_data = data[np.where(data["Curve"]==curve_num)]
                 (vcmax_guess, jmax_guess, 
                     rd_guess) = self.pick_starting_point(curve_data)
-                
                 
                 params = self.setup_model_params(jmax_guess=jmax_guess, 
                                                  vcmax_guess=vcmax_guess, 

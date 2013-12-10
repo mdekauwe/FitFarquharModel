@@ -177,23 +177,13 @@ class FarquharC3(object):
         """
         self.check_supplied_args(Jmax, Vcmax, Rd, Jmax25, Vcmax25, r25)
         
-        #Tleaf = 31.38 + 273.15
-        
         # Michaelis-Menten constant for O2/CO2, Arrhenius temp dependancy
         Kc = self.arrh(self.Kc25, self.Ec, Tleaf)
         Ko = self.arrh(self.Ko25, self.Eo, Tleaf)
         Km = Kc * (1.0 + self.Oi / Ko)
         
-        #Kc = np.exp(38.05-79430/(8.314*(Tleaf-0.15)))
-        #Ko = np.exp(20.3-36380/(8.314*(Tleaf-0.15)))
-        #Km = Kc * (1.0 + self.Oi / Ko)
-        
-        
         # Effect of temp on CO2 compensation point 
-        #tdeg = Tleaf-0.15-273.
         gamma_star = self.arrh(self.gamstar25, self.Egamma, Tleaf)
-        #gamma_star = 42.75*np.exp(37830*(tdeg-25)/(8.314*298.15*(tdeg+273.15)))
-        
         
         # Calculations at 25 degrees C or the measurement temperature.
         if r25 is not None: 
