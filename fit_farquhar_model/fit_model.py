@@ -573,7 +573,7 @@ class FitJmaxVcmaxRd(FitMe):
                 params = self.setup_model_params(jmax_guess=jmax_guess, 
                                                  vcmax_guess=vcmax_guess, 
                                                  rd_guess=rd_guess)
-                result = minimize(self.residual, params, engine="leastsq", 
+                result = minimize(self.residual, params, method="leastsq", 
                                   args=(curve_data, curve_data["Photo"]))
                 
                 if print_to_screen:
@@ -669,7 +669,7 @@ class FitEaDels(FitMe):
                 ea_guess = np.random.uniform(20000.0, 80000.0)
                 params.add('Ea', value=ea_guess, min=0.0)
             
-            result = minimize(self.residual, params, engine="leastsq", 
+            result = minimize(self.residual, params, method="leastsq", 
                               args=(data, data["Jnorm"]))
             if print_to_screen:
                 self.print_fit_to_screen(result)
@@ -703,7 +703,7 @@ class FitEaDels(FitMe):
                     ea_guess = np.random.uniform(20000.0, 80000.0)
                     params.add('Ea', value=ea_guess, min=0.0)
                 
-            result = minimize(self.residual, params, engine="leastsq", 
+            result = minimize(self.residual, params, method="leastsq", 
                               args=(data, data["Vnorm"]))
             if print_to_screen:
                 self.print_fit_to_screen(result)
@@ -910,7 +910,7 @@ class FitK25EaDels(FitMe):
             
             # Fit Jmax vs T first
             params = self.setup_model_params(peaked=self.peaked)
-            result = minimize(self.residual, params, engine="leastsq", 
+            result = minimize(self.residual, params, method="leastsq", 
                               args=(data, data["Jmax"]))
             if print_to_screen:
                 self.print_fit_to_screen(result)
@@ -933,7 +933,7 @@ class FitK25EaDels(FitMe):
            
             # Fit Vcmax vs T next 
             params = self.setup_model_params(peaked=self.peaked)
-            result = minimize(self.residual, params, engine="leastsq", 
+            result = minimize(self.residual, params, method="leastsq", 
                               args=(data, data["Vcmax"]))
             if print_to_screen:
                 self.print_fit_to_screen(result)
