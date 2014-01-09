@@ -51,7 +51,7 @@ class Normalise(object):
         self.header1 = ["Jmax", "Vcmax", "Species", "id", "Filename"]
         self.header2 = ["Jmax", "Vcmax", "Jnorm", "Vnorm", "Rd", "Tav", \
                         "Tarrh", "R2", "n", "Species", "Leaf", "Curve",\
-                        "Filename"]
+                        "Season","Filename"]
     def main(self):
         """ Main processing loop to normalise the data """
         data_all = self.read_data(self.fname)
@@ -251,6 +251,7 @@ class Normalise(object):
                    subset["R2"][j], subset["n"][j], \
                    subset["Species"][j], subset["Leaf"][j], \
                    subset["Curve"][j], \
+                   subset["Season"][j], \
                    subset["Filename"][j]]
             fp2.writerow(row)
     

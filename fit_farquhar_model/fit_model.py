@@ -677,11 +677,12 @@ class FitEaDels(FitMe):
         if self.peaked:
             self.call_model = model.peaked_arrh
             self.header = ["Param", "Ea", "SE", "Hd", "SE", "delS", "delSSE", \
-                            "Var", "R2", "SSQ", "MSE", "DOF", "n", "Topt"]
+                            "Var", "R2", "SSQ", "MSE", "DOF", "n", "Topt",\
+                            "id"]
         else:
             self.call_model = model.arrh
             self.header = ["Param", "Ea", "SE", "Var", "R2", "SSQ", "MSE", "DOF", \
-                            "n", "Topt"]
+                            "n", "Topt", "id"]
         
     def main(self, print_to_screen):   
         """ Loop over all our A-Ci measured curves and fit the Farquhar model
@@ -769,7 +770,7 @@ class FitEaDels(FitMe):
             else:
                 Topt = -9999.9 # not calculated
             self.report_fits(wr, result, data, data["Jnorm"], peak_fit, 
-                             "Jmax", Topt)
+                             "Jmax", Topt, id)
            
             # Fit Vcmax vs T next 
             if self.peaked:
@@ -804,7 +805,7 @@ class FitEaDels(FitMe):
                 Topt = -9999.9 # not calculated
             
             self.report_fits(wr, result, data, data["Vnorm"], peak_fit, 
-                             "Vcmax", Topt)
+                             "Vcmax", Topt, id)
             
         fp.close()  
         
@@ -836,7 +837,7 @@ class FitEaDels(FitMe):
         
         return model_fit
     
-    def report_fits(self, f, result, data, obs, fit, pname, Topt):
+    def report_fits(self, f, result, data, obs, fit, pname, Topt, id):
         """ Save fitting results to a file... 
         
         Parameters
@@ -874,6 +875,7 @@ class FitEaDels(FitMe):
         row.append("%s" % (len(obs)-1))
         row.append("%s" % (len(fit)))
         row.append("%s" % (Topt))
+        row.append("%d" % (id))
         f.writerow(row)
         
     def residual(self, parameters, data, obs):

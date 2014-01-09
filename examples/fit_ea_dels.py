@@ -45,7 +45,7 @@ peaked = True
 data = read_data(infname)
 header = ["Jmax", "Vcmax", "Jnorm", "Vnorm", "Rd", "Tav", \
           "Tarrh", "R2", "n", "Species", "Leaf", "Curve", \
-          "Filename", "fitgroup"]
+          "Filename", "Season", "fitgroup"]
 if os.path.isfile(infname):
     os.remove(infname)
 fp = open(infname, 'wb')            
