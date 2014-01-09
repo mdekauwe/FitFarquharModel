@@ -788,13 +788,52 @@ class FitEaDels(FitMe):
                 
             result = minimize(self.residual, params, method="leastsq", 
                               args=(data, data["Vnorm"]))
+            
+            # Did we resolve the error bars during the fit? 
+            #
+            # From lmfit...
+            #
+            # In some cases, it may not be possible to estimate the errors 
+            # and correlations. For example, if a variable actually has no 
+            # practical effect on the fit, it will likely cause the 
+            # covariance matrix to be singular, making standard errors 
+            # impossible to estimate. Placing bounds on varied Parameters 
+            # makes it more likely that errors cannot be estimated, as 
+            # being near the maximum or minimum value makes the covariance 
+            # matrix singular. In these cases, the errorbars attribute of 
+            # the fit result (Minimizer object) will be False.
+            if (result.errorbars and 
+                np.isnan(result.params['Ea'].stderr) == False):
+                
+                self.succes_count += 1
+            else:
+                
+                # Failed errobar fitting, going to try and mess with 
+                # starting poisition...
+                for i in xrange(100):
+                    # Fit Jmax vs T first
+                    if self.peaked:
+                        (ea_guess, 
+                         dels_guess) = self.pick_random_starting_point()
+                        params = self.setup_model_params(hd_guess=200000.0, 
+                                                         ea_guess=ea_guess, 
+                                                         dels_guess=dels_guess)
+                    else:
+                        params = Parameters()
+                        ea_guess = np.random.uniform(20000.0, 80000.0)
+                        params.add('Ea', value=ea_guess, min=0.0)
+                    
+                    result = minimize(self.residual, params, method="leastsq", 
+                              args=(data, data["Vnorm"]))
+                    
+                    if result.errorbars:
+                        self.succes_count += 1
+                        break
+            
             if print_to_screen:
+                print fname, curve_num
                 self.print_fit_to_screen(result)
             
-            # Did we resolve the error bars during the fit? If yes then
-            # move onto the next A-Ci curve
-            if result.errorbars:
-                self.succes_count += 1
         
             (peak_fit) = self.forward_run(result, data)
             if self.peaked:
