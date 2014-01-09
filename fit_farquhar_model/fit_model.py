@@ -621,7 +621,7 @@ class FitJmaxVcmaxRd(FitMe):
                 if result.errorbars and np.isnan(result.params['Jmax'].stderr) == False:
                     self.succes_count += 1
                 else:
-                    print "Failed errobar fitting, going to try and mess with starting poisition..."
+                    #print "Failed errobar fitting, going to try and mess with starting poisition..."
                     for i in xrange(100):
                         (vcmax_guess, jmax_guess, 
                          rd_guess) = self.pick_random_starting_point(curve_data)
