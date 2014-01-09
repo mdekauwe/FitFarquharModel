@@ -598,13 +598,9 @@ class FitJmaxVcmaxRd(FitMe):
                                                  vcmax_guess=vcmax_guess, 
                                                  rd_guess=rd_guess)
                 
-                
                 result = minimize(self.residual, params,  
                                   args=(curve_data, curve_data["Photo"]))
                     
-               
-                
-                
                 # Did we resolve the error bars during the fit? 
                 #
                 # From lmfit...
@@ -618,10 +614,14 @@ class FitJmaxVcmaxRd(FitMe):
                 # being near the maximum or minimum value makes the covariance 
                 # matrix singular. In these cases, the errorbars attribute of 
                 # the fit result (Minimizer object) will be False.
-                if result.errorbars and np.isnan(result.params['Jmax'].stderr) == False:
+                if (result.errorbars and 
+                    np.isnan(result.params['Jmax'].stderr) == False):
+                    
                     self.succes_count += 1
                 else:
-                    #print "Failed errobar fitting, going to try and mess with starting poisition..."
+                    
+                    # Failed errobar fitting, going to try and mess with 
+                    # starting poisition...
                     for i in xrange(100):
                         (vcmax_guess, jmax_guess, 
                          rd_guess) = self.pick_random_starting_point(curve_data)
@@ -634,6 +634,7 @@ class FitJmaxVcmaxRd(FitMe):
                         if result.errorbars:
                             self.succes_count += 1
                             break
+                
                 if print_to_screen:
                     print fname, curve_num
                     self.print_fit_to_screen(result)
