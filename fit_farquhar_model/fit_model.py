@@ -33,7 +33,7 @@ class FitMe(object):
     to be subclased.
     """
     def __init__(self, model=None, ofname=None, results_dir=None, 
-                 data_dir=None, plot_dir=None):
+                 data_dir=None, plot_dir=None, Niter=500):
         """
         Parameters
         ----------
@@ -47,6 +47,8 @@ class FitMe(object):
             input directory path where measured A-Ci files live
         plot_dir : string
             directory to save plots of various fitting routines
+        Niter : int
+            number of different attempts to refit code
         """
         
         self.results_dir = results_dir
@@ -58,6 +60,7 @@ class FitMe(object):
         self.succes_count = 0
         self.nfiles = 0
         self.deg2kelvin = 273.15
+        self.Niter = Niter
         
     def open_output_files(self, ofname):
         """
@@ -550,7 +553,7 @@ class FitJmaxVcmaxRd(FitMe):
     methods
     """
     def __init__(self, model=None, ofname=None, results_dir=None, 
-                 data_dir=None, plot_dir=None, Niter=500):
+                 data_dir=None, plot_dir=None):
         """
         Parameters
         ----------
@@ -564,14 +567,11 @@ class FitJmaxVcmaxRd(FitMe):
             input directory path where measured A-Ci files live
         plot_dir : string
             directory to save plots of various fitting routines
-        Niter : int
-            number of different attempts to refit code
         """        
         FitMe.__init__(self, model, ofname, results_dir, data_dir, plot_dir)
         self.header = ["Jmax", "JSE", "Vcmax", "VSE", "Rd", "RSE", "Tav", \
                        "Var", "R2", "SSQ", "MSE", "DOF", "n", "Species", "Season", \
                        "Leaf", "Curve", "Filename", "id"]
-        self.Niter = Niter
            
     def main(self, print_to_screen, infname_tag="*.csv"):   
         """ Loop over all our A-Ci measured curves and fit the Farquhar model
@@ -622,7 +622,7 @@ class FitJmaxVcmaxRd(FitMe):
                     
                     # Failed errobar fitting, going to try and mess with 
                     # starting poisition...
-                    for i in xrange(100):
+                    for i in xrange(self.Niter):
                         (vcmax_guess, jmax_guess, 
                          rd_guess) = self.pick_random_starting_point()
                     
@@ -698,7 +698,6 @@ class FitEaDels(FitMe):
         wr = self.write_file_hdr(fp, self.header)
         
         # Loop over all the measured data and fit the model params.
-        
         for id in np.unique(all_data["fitgroup"]):
             data = all_data[np.where(all_data["fitgroup"] == id)]
             
@@ -738,7 +737,7 @@ class FitEaDels(FitMe):
                 
                 # Failed errobar fitting, going to try and mess with 
                 # starting poisition...
-                for i in xrange(100):
+                for i in xrange(self.Niter):
                     # Fit Jmax vs T first
                     if self.peaked:
                         (ea_guess, 
@@ -759,7 +758,6 @@ class FitEaDels(FitMe):
                         break
             
             if print_to_screen:
-                print fname, curve_num
                 self.print_fit_to_screen(result)
         
             (peak_fit) = self.forward_run(result, data)
@@ -810,7 +808,7 @@ class FitEaDels(FitMe):
                 
                 # Failed errobar fitting, going to try and mess with 
                 # starting poisition...
-                for i in xrange(100):
+                for i in xrange(self.Niter):
                     # Fit Jmax vs T first
                     if self.peaked:
                         (ea_guess, 
@@ -831,7 +829,6 @@ class FitEaDels(FitMe):
                         break
             
             if print_to_screen:
-                print fname, curve_num
                 self.print_fit_to_screen(result)
             
         
@@ -1056,13 +1053,39 @@ class FitK25EaDels(FitMe):
             params = self.setup_model_params(peaked=self.peaked)
             result = minimize(self.residual, params, method="leastsq", 
                               args=(data, data["Jmax"]))
+            
+            # Did we resolve the error bars during the fit? 
+            #
+            # From lmfit...
+            #
+            # In some cases, it may not be possible to estimate the errors 
+            # and correlations. For example, if a variable actually has no 
+            # practical effect on the fit, it will likely cause the 
+            # covariance matrix to be singular, making standard errors 
+            # impossible to estimate. Placing bounds on varied Parameters 
+            # makes it more likely that errors cannot be estimated, as 
+            # being near the maximum or minimum value makes the covariance 
+            # matrix singular. In these cases, the errorbars attribute of 
+            # the fit result (Minimizer object) will be False.
+            if (result.errorbars and 
+                np.isnan(result.params['K25'].stderr) == False):
+                self.succes_count += 1
+            else:
+                
+                # Failed errobar fitting, going to try and mess with 
+                # starting poisition...
+                for i in xrange(self.Niter):
+                    # Fit Jmax vs T first
+                    params = self.setup_model_params(peaked=self.peaked)
+                    result = minimize(self.residual, params, method="leastsq", 
+                                      args=(data, data["Jmax"]))
+                    
+                    if result.errorbars:
+                        self.succes_count += 1
+                        break
+            
             if print_to_screen:
                 self.print_fit_to_screen(result)
-            
-            # Did we resolve the error bars during the fit? If yes then
-            # move onto the next A-Ci curve
-            if result.errorbars:
-                self.succes_count += 1
         
             (peak_fit) = self.forward_run(result, data)
             if self.peaked:
@@ -1079,13 +1102,38 @@ class FitK25EaDels(FitMe):
             params = self.setup_model_params(peaked=self.peaked)
             result = minimize(self.residual, params, method="leastsq", 
                               args=(data, data["Vcmax"]))
+            # Did we resolve the error bars during the fit? 
+            #
+            # From lmfit...
+            #
+            # In some cases, it may not be possible to estimate the errors 
+            # and correlations. For example, if a variable actually has no 
+            # practical effect on the fit, it will likely cause the 
+            # covariance matrix to be singular, making standard errors 
+            # impossible to estimate. Placing bounds on varied Parameters 
+            # makes it more likely that errors cannot be estimated, as 
+            # being near the maximum or minimum value makes the covariance 
+            # matrix singular. In these cases, the errorbars attribute of 
+            # the fit result (Minimizer object) will be False.
+            if (result.errorbars and 
+                np.isnan(result.params['K25'].stderr) == False):
+                self.succes_count += 1
+            else:
+                
+                # Failed errobar fitting, going to try and mess with 
+                # starting poisition...
+                for i in xrange(self.Niter):
+                    # Fit Vcmax vs T next 
+                    params = self.setup_model_params(peaked=self.peaked)
+                    result = minimize(self.residual, params, method="leastsq", 
+                                      args=(data, data["Vcmax"]))
+                    
+                    if result.errorbars:
+                        self.succes_count += 1
+                        break
+            
             if print_to_screen:
                 self.print_fit_to_screen(result)
-            
-            # Did we resolve the error bars during the fit? If yes then
-            # move onto the next A-Ci curve
-            if result.errorbars:
-                self.succes_count += 1
         
             (peak_fit) = self.forward_run(result, data)
             if self.peaked:
