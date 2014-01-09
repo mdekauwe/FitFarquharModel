@@ -37,7 +37,7 @@ ofname = "ea_results.csv"
 results_dir = "results"
 data_dir = "data"
 model = FarquharC3()
-peaked = False
+peaked = True
 ############################
 
 

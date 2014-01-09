@@ -41,7 +41,7 @@ for Tleaf in np.arange(15.0, 40.0, 5.0):
     Hdv = 200000.0
     Hdj = 200000.0
     Q10 = 2.0
-    add_noise = False
+    add_noise = True
     
     (An, Acn, Ajn) = model.calc_photosynthesis(Ci=Ci, Tleaf=Tleaf, Par=None, 
                                               Jmax=None, Vcmax=None, 
