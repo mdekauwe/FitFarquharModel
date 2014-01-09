@@ -374,7 +374,8 @@ class FitMe(object):
         ax2.set_ylim(10,-10)
         
         fig.savefig(ofname)
-        plt.clf()    
+        plt.close(fig)
+        
         """
         # Plots confidence regions for two fixed parameters.
         ofname = "%s/%s_%s_%s_%s_jmax_vcmax_conf_surface.png" % \
@@ -425,6 +426,28 @@ class FitMe(object):
         print "\nOverall fitted %.1f%% of the data\n" % (total_fits)
         fp.close()
     
+    def pick_random_starting_point(self, data):
+        """ random pick starting point for parameter values 
+        
+        Parameters
+        ----------
+        data : array
+            model driving data
+        grid_size : int
+            hardwired, number of samples
+        
+        Returns: 
+        --------
+        retval * 3 : float
+            Three starting guesses for Jmax, Vcmax and Rd
+        """
+        # Shuffle arrays so that our combination of parameters is random
+        Vcmax = np.random.uniform(5.0, 350) 
+        Jmax = np.random.uniform(5.0, 550) 
+        Rd = np.random.uniform(0.0, 6.0)
+        
+        return Vcmax, Jmax, Rd
+        
     def pick_starting_point(self, data, grid_size=100):
         """ Figure out a good starting parameter guess
         
@@ -527,7 +550,7 @@ class FitJmaxVcmaxRd(FitMe):
     methods
     """
     def __init__(self, model=None, ofname=None, results_dir=None, 
-                 data_dir=None, plot_dir=None):
+                 data_dir=None, plot_dir=None, Niter=500):
         """
         Parameters
         ----------
@@ -541,12 +564,15 @@ class FitJmaxVcmaxRd(FitMe):
             input directory path where measured A-Ci files live
         plot_dir : string
             directory to save plots of various fitting routines
+        Niter : int
+            number of different attempts to refit code
         """        
         FitMe.__init__(self, model, ofname, results_dir, data_dir, plot_dir)
         self.header = ["Jmax", "JSE", "Vcmax", "VSE", "Rd", "RSE", "Tav", \
                        "Var", "R2", "SSQ", "MSE", "DOF", "n", "Species", "Season", \
                        "Leaf", "Curve", "Filename", "id"]
-                       
+        self.Niter = Niter
+           
     def main(self, print_to_screen, infname_tag="*.csv"):   
         """ Loop over all our A-Ci measured curves and fit the Farquhar model
         parameters to this data 
@@ -568,15 +594,16 @@ class FitJmaxVcmaxRd(FitMe):
                 curve_data = data[np.where(data["Curve"]==curve_num)]
                 (vcmax_guess, jmax_guess, 
                     rd_guess) = self.pick_starting_point(curve_data)
-                
                 params = self.setup_model_params(jmax_guess=jmax_guess, 
                                                  vcmax_guess=vcmax_guess, 
                                                  rd_guess=rd_guess)
-                result = minimize(self.residual, params, method="leastsq", 
-                                  args=(curve_data, curve_data["Photo"]))
                 
-                if print_to_screen:
-                    self.print_fit_to_screen(result)
+                
+                result = minimize(self.residual, params,  
+                                  args=(curve_data, curve_data["Photo"]))
+                    
+               
+                
                 
                 # Did we resolve the error bars during the fit? 
                 #
@@ -591,9 +618,26 @@ class FitJmaxVcmaxRd(FitMe):
                 # being near the maximum or minimum value makes the covariance 
                 # matrix singular. In these cases, the errorbars attribute of 
                 # the fit result (Minimizer object) will be False.
-                if result.errorbars:
+                if result.errorbars and np.isnan(result.params['Jmax'].stderr) == False:
                     self.succes_count += 1
-                
+                else:
+                    print "Failed errobar fitting, going to try and mess with starting poisition..."
+                    for i in xrange(100):
+                        (vcmax_guess, jmax_guess, 
+                         rd_guess) = self.pick_random_starting_point(curve_data)
+                    
+                        params = self.setup_model_params(jmax_guess=jmax_guess, 
+                                                     vcmax_guess=vcmax_guess, 
+                                                     rd_guess=rd_guess)
+                        result = minimize(self.residual, params,  
+                                         args=(curve_data, curve_data["Photo"]))
+                        if result.errorbars:
+                            self.succes_count += 1
+                            break
+                if print_to_screen:
+                    print fname, curve_num
+                    self.print_fit_to_screen(result)
+                    
                 # Need to run the Farquhar model with the fitted params for
                 # plotting...
                 (An, Anc, Anj) = self.forward_run(result, curve_data)
