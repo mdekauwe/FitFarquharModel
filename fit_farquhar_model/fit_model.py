@@ -1384,11 +1384,11 @@ class FitK25EaDels(FitMe):
             delS = np.random.uniform(550.0, 700.0)
             k25 = np.random.uniform(50.0, 250.0)
         
-            return K25, Ea, delS  
+            return k25, Ea, delS  
         else:
             Ea = np.random.uniform(20000.0, 80000.0) 
             delS = np.random.uniform(550.0, 700.0)
             k25 = np.random.uniform(50.0, 250.0)
         
-            return K25, Ea
+            return k25, Ea
      
