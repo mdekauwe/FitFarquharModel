@@ -1238,7 +1238,7 @@ class FitK25EaDels(FitMe):
         row.append("%s" % (len(fit)-1))
         row.append("%s" % (len(fit)))
         row.append("%s" % (Topt))
-        row.append("%d" % (id))
+        row.append("%s" % (id))
         f.writerow(row)
         
     def residual(self, parameters, data, obs):
