@@ -1075,7 +1075,15 @@ class FitK25EaDels(FitMe):
             data = all_data[np.where(all_data["fitgroup"] == id)]
             
             # Fit Jmax vs T first
-            params = self.setup_model_params(peaked=self.peaked)
+            if self.peaked:
+                (k25_guess, 
+                 ea_guess, 
+                 dels_guess) = self.pick_starting_point(data, data["Vnorm"])
+                params = self.setup_model_params(k25_guess, ea_guess, dels_guess)
+            else:
+                (k25_guess, 
+                 ea_guess) = self.pick_starting_point(data, data["Vnorm"])
+                params = self.setup_model_params(k25_guess, ea_guess)
             result = minimize(self.residual, params, method="leastsq", 
                               args=(data, data["Jmax"]))
             
@@ -1101,7 +1109,15 @@ class FitK25EaDels(FitMe):
                 # starting poisition...
                 for i in xrange(self.Niter):
                     # Fit Jmax vs T first
-                    params = self.setup_model_params(peaked=self.peaked)
+                    if self.peaked:
+                        (k25_guess, 
+                         ea_guess, 
+                         dels_guess) = self.pick_starting_point(data, data["Vnorm"])
+                        params = self.setup_model_params(k25_guess, ea_guess, dels_guess)
+                    else:
+                        (k25_guess, 
+                         ea_guess) = self.pick_starting_point(data, data["Vnorm"])
+                        params = self.setup_model_params(k25_guess, ea_guess)
                     result = minimize(self.residual, params, method="leastsq", 
                                       args=(data, data["Jmax"]))
                     
@@ -1124,7 +1140,15 @@ class FitK25EaDels(FitMe):
                              "Jmax", Topt, id)
            
             # Fit Vcmax vs T next 
-            params = self.setup_model_params(peaked=self.peaked)
+            if self.peaked:
+                (k25_guess, 
+                 ea_guess, 
+                 dels_guess) = self.pick_starting_point(data, data["Vnorm"])
+                params = self.setup_model_params(k25_guess, ea_guess, dels_guess)
+            else:
+                (k25_guess, 
+                 ea_guess) = self.pick_starting_point(data, data["Vnorm"])
+                params = self.setup_model_params(k25_guess, ea_guess)
             result = minimize(self.residual, params, method="leastsq", 
                               args=(data, data["Vcmax"]))
             # Did we resolve the error bars during the fit? 
@@ -1149,7 +1173,15 @@ class FitK25EaDels(FitMe):
                 # starting poisition...
                 for i in xrange(self.Niter):
                     # Fit Vcmax vs T next 
-                    params = self.setup_model_params(peaked=self.peaked)
+                    if self.peaked:
+                        (k25_guess, 
+                         ea_guess, 
+                         dels_guess) = self.pick_starting_point(data, data["Vnorm"])
+                        params = self.setup_model_params(k25_guess, ea_guess, dels_guess)
+                    else:
+                        (k25_guess, 
+                         ea_guess) = self.pick_starting_point(data, data["Vnorm"])
+                        params = self.setup_model_params(k25_guess, ea_guess)
                     result = minimize(self.residual, params, method="leastsq", 
                                       args=(data, data["Vcmax"]))
                     
@@ -1272,7 +1304,7 @@ class FitK25EaDels(FitMe):
             
         return (obs - model)
 
-    def setup_model_params(self, peaked):
+    def setup_model_params(self, k25_guess, ea_guess, dels_guess=None):
         """ Setup lmfit Parameters object
         
         Parameters
@@ -1285,19 +1317,50 @@ class FitK25EaDels(FitMe):
             lmfit object containing parameters to fit
         """
         params = Parameters()
-        if peaked:
-            k25_guess = np.random.uniform(50.0, 250.0)
-            ea_guess = np.random.uniform(20000.0, 80000.0)
-            dels_guess = np.random.uniform(550.0, 700.0)
+        if self.peaked:
             params.add('K25', value=k25_guess, min=0.0)
             params.add('Ea', value=ea_guess, min=0.0, max=199999.9)
             params.add('delS', value=dels_guess, min=0.0, max=800.0)  
             params.add('Hd', value=200000.0, vary=False)
         else:
             params = Parameters()
-            k25_guess = np.random.uniform(50.0, 250.0)
-            ea_guess = np.random.uniform(20000.0, 80000.0)
             params.add('K25', value=k25_guess, min=0.0)
             params.add('Ea', value=ea_guess, min=0.0, max=199999.9)
         
         return params
+        
+    def pick_starting_point(self, data, obs, grid_size=50):
+        """ High-density grid search to overcome issues with ending up in a 
+        local minima. Values that yield the lowest RMSE (without minimisation)
+        are used as the starting point for the minimisation.
+        
+        Reference:
+        ----------
+        Dubois et al (2007) Optimizing the statistical estimation of the 
+        parameters of the Farquhar-von Caemmerer-Berry model of photosynthesis. 
+        New Phytologist, 176, 402--414
+        """
+        # Shuffle arrays so that our combination of parameters is random
+        Hd = 200000.0
+        Ea = np.linspace(20000.0, 80000.0, grid_size) 
+        delS = np.linspace(550.0, 700.0, grid_size)
+        k25 = np.linspace(50.0, 250.0, grid_size)
+      
+        if self.peaked:
+            p1, p2, p3 = np.ix_(k25, Ea, delS)
+            model = self.call_model(p1, p2, data["Tav"][:,None,None,None], p3, Hd)
+            rmse = np.sqrt(((obs[:,None,None,None]- model)**2).mean(0))
+            ndx = np.where(rmse.min()== rmse)
+            (idx, jdx, kdx) = ndx 
+            
+            return k25[idx].squeeze(), Ea[jdx].squeeze(), delS[kdx].squeeze()                                  
+        else:
+            p1, p2 = np.ix_(k25, Ea)
+            model = self.call_model(K25, Ea, data["Tav"][:,None,None])
+            rmse = np.sqrt(((obs[:,None,None]- model)**2).mean(0))
+            ndx = np.where(rmse.min()== rmse)
+            (idx, jdx) = ndx 
+        
+            return k25[idx].squeeze(), Ea[jdx].squeeze()
+        
+     
