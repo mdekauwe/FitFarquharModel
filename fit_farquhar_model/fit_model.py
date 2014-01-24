@@ -1020,7 +1020,9 @@ class FitEaDels(FitMe):
             params.add('Ea', value=ea_guess, min=0.0, max=199999.9)
         
         return params
+
     
+
    
     
 class FitK25EaDels(FitMe):
@@ -1323,7 +1325,6 @@ class FitK25EaDels(FitMe):
             params.add('delS', value=dels_guess, min=0.0, max=800.0)  
             params.add('Hd', value=200000.0, vary=False)
         else:
-            params = Parameters()
             params.add('K25', value=k25_guess, min=0.0)
             params.add('Ea', value=ea_guess, min=0.0, max=199999.9)
         
