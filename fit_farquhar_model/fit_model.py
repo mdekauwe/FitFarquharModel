@@ -1113,11 +1113,11 @@ class FitK25EaDels(FitMe):
                     # Fit Jmax vs T first
                     if self.peaked:
                         (k25_guess, ea_guess, 
-                         dels_guess) = pick_random_starting_point() 
+                         dels_guess) = self.pick_random_starting_point() 
                         params = self.setup_model_params(k25_guess, ea_guess, 
                                                          dels_guess)
                     else:
-                        (k25_guess, ea_guess) = pick_random_starting_point()
+                        (k25_guess, ea_guess) = self.pick_random_starting_point()
                         params = self.setup_model_params(k25_guess, ea_guess)
                     result = minimize(self.residual, params, method="leastsq", 
                                       args=(data, data["Jmax"]))
@@ -1176,11 +1176,11 @@ class FitK25EaDels(FitMe):
                     # Fit Vcmax vs T next 
                     if self.peaked:
                         (k25_guess, ea_guess, 
-                         dels_guess) = pick_random_starting_point() 
+                         dels_guess) = self.pick_random_starting_point() 
                         params = self.setup_model_params(k25_guess, ea_guess, 
                                                          dels_guess)
                     else:
-                        (k25_guess, ea_guess) = pick_random_starting_point()
+                        (k25_guess, ea_guess) = self.pick_random_starting_point()
                         params = self.setup_model_params(k25_guess, ea_guess)
                     result = minimize(self.residual, params, method="leastsq", 
                                       args=(data, data["Vcmax"]))
