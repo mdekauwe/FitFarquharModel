@@ -702,66 +702,12 @@ class FitEaDels(FitMe):
             data = all_data[np.where(all_data["fitgroup"] == id)]
             
             # Fit Jmax vs T first
-            if self.peaked:
-                (ea_guess, 
-                dels_guess) = self.pick_starting_point(data, data["Jnorm"])  
-                params = self.setup_model_params(peaked=self.peaked, 
-                                                 hd_guess=200000.0, 
-                                                 ea_guess=ea_guess, 
-                                                 dels_guess=dels_guess)
-            else:
-                params = Parameters()
-                ea_guess = np.random.uniform(20000.0, 80000.0)
-                params.add('Ea', value=ea_guess, min=0.0)
-            
-            result = minimize(self.residual, params, method="leastsq", 
-                              args=(data, data["Jnorm"]))
-            
-            # Did we resolve the error bars during the fit? 
-            #
-            # From lmfit...
-            #
-            # In some cases, it may not be possible to estimate the errors 
-            # and correlations. For example, if a variable actually has no 
-            # practical effect on the fit, it will likely cause the 
-            # covariance matrix to be singular, making standard errors 
-            # impossible to estimate. Placing bounds on varied Parameters 
-            # makes it more likely that errors cannot be estimated, as 
-            # being near the maximum or minimum value makes the covariance 
-            # matrix singular. In these cases, the errorbars attribute of 
-            # the fit result (Minimizer object) will be False.
-            if (result.errorbars and 
-                np.isnan(result.params['Ea'].stderr) == False):
-                
-                self.succes_count += 1
-            else:
-                
-                # Failed errobar fitting, going to try and mess with 
-                # starting poisition...
-                for i in xrange(self.Niter):
-                    # Fit Jmax vs T first
-                    if self.peaked:
-                        (ea_guess, 
-                         dels_guess) = self.pick_random_starting_point()
-                        params = self.setup_model_params(peaked=self.peaked, 
-                                                 hd_guess=200000.0, 
-                                                 ea_guess=ea_guess, 
-                                                 dels_guess=dels_guess)
-                    else:
-                        params = Parameters()
-                        ea_guess = np.random.uniform(20000.0, 80000.0)
-                        params.add('Ea', value=ea_guess, min=0.0)
-                    
-                    result = minimize(self.residual, params, method="leastsq", 
-                              args=(data, data["Jnorm"]))
-                    
-                    if result.errorbars:
-                        self.succes_count += 1
-                        break
-            
+            params = self.setup_model_params(data, obs=data["Jnorm"], 
+                                             grid_search=True)
+            result = self.do_minimisation(params, data, data["Jnorm"])
             if print_to_screen:
                 self.print_fit_to_screen(result)
-        
+            
             (peak_fit) = self.forward_run(result, data)
             if self.peaked:
                 Topt = (self.calc_Topt(result.params["Hd"].value, 
@@ -773,69 +719,13 @@ class FitEaDels(FitMe):
                              "Jmax", Topt, id)
            
             # Fit Vcmax vs T next 
-            if self.peaked:
-                (ea_guess, 
-                dels_guess) = self.pick_starting_point(data, data["Vnorm"])
-                params = self.setup_model_params(peaked=self.peaked, 
-                                                 hd_guess=200000.0, 
-                                                 ea_guess=ea_guess, 
-                                                 dels_guess=dels_guess)
-            else:
-                params = Parameters()
-                if ea_guess is not None:
-                    params = Parameters()
-                    ea_guess = np.random.uniform(20000.0, 80000.0)
-                    params.add('Ea', value=ea_guess, min=0.0)
+            params = self.setup_model_params(data, obs=data["Vnorm"], 
+                                             grid_search=True)
                 
-            result = minimize(self.residual, params, method="leastsq", 
-                              args=(data, data["Vnorm"]))
-            
-            # Did we resolve the error bars during the fit? 
-            #
-            # From lmfit...
-            #
-            # In some cases, it may not be possible to estimate the errors 
-            # and correlations. For example, if a variable actually has no 
-            # practical effect on the fit, it will likely cause the 
-            # covariance matrix to be singular, making standard errors 
-            # impossible to estimate. Placing bounds on varied Parameters 
-            # makes it more likely that errors cannot be estimated, as 
-            # being near the maximum or minimum value makes the covariance 
-            # matrix singular. In these cases, the errorbars attribute of 
-            # the fit result (Minimizer object) will be False.
-            if (result.errorbars and 
-                np.isnan(result.params['Ea'].stderr) == False):
-                
-                self.succes_count += 1
-            else:
-                
-                # Failed errobar fitting, going to try and mess with 
-                # starting poisition...
-                for i in xrange(self.Niter):
-                    # Fit Jmax vs T first
-                    if self.peaked:
-                        (ea_guess, 
-                         dels_guess) = self.pick_random_starting_point()
-                        params = self.setup_model_params(peaked=self.peaked, 
-                                                 hd_guess=200000.0, 
-                                                 ea_guess=ea_guess, 
-                                                 dels_guess=dels_guess)
-                    else:
-                        params = Parameters()
-                        ea_guess = np.random.uniform(20000.0, 80000.0)
-                        params.add('Ea', value=ea_guess, min=0.0)
-                    
-                    result = minimize(self.residual, params, method="leastsq", 
-                              args=(data, data["Vnorm"]))
-                    
-                    if result.errorbars:
-                        self.succes_count += 1
-                        break
-            
+            result = self.do_minimisation(params, data, data["Vnorm"])
             if print_to_screen:
                 self.print_fit_to_screen(result)
             
-        
             (peak_fit) = self.forward_run(result, data)
             if self.peaked:
                 Topt = (self.calc_Topt(result.params["Hd"].value, 
@@ -848,7 +738,48 @@ class FitEaDels(FitMe):
                              "Vcmax", Topt, id)
             
         fp.close()  
+    
+    
+    def do_minimisation(self, params, data, obs):
+        result = minimize(self.residual, params, method="leastsq", 
+                              args=(data, obs))
+            
+        # Did we resolve the error bars during the fit? 
+        #
+        # From lmfit...
+        #
+        # In some cases, it may not be possible to estimate the errors 
+        # and correlations. For example, if a variable actually has no 
+        # practical effect on the fit, it will likely cause the 
+        # covariance matrix to be singular, making standard errors 
+        # impossible to estimate. Placing bounds on varied Parameters 
+        # makes it more likely that errors cannot be estimated, as 
+        # being near the maximum or minimum value makes the covariance 
+        # matrix singular. In these cases, the errorbars attribute of 
+        # the fit result (Minimizer object) will be False.
+        if (result.errorbars and 
+            np.isnan(result.params['Ea'].stderr) == False):
+            
+            self.succes_count += 1
+        else:
+            
+            # Failed errobar fitting, going to try and mess with 
+            # starting poisition...
+            for i in xrange(self.Niter):
+                # Fit Jmax vs T first
+                params = self.setup_model_params(data, obs=obs, 
+                                                 grid_search=False)
+                
+                result = minimize(self.residual, params, method="leastsq", 
+                          args=(data, obs))
+                
+                if result.errorbars:
+                    self.succes_count += 1
+                    break
         
+        return result
+    
+      
     def forward_run(self, result, data):
         """ Run peaked Arrhenius model with fitted parameters and return result 
         
@@ -988,10 +919,9 @@ class FitEaDels(FitMe):
         delS = np.linspace(550.0, 700.0, grid_size)
      
         p1, p2 = np.ix_(Ea, delS)
-       
-        if self.peaked:
-            # First arg is 1.0, as this is calculated at the normalised temp
-            model = self.call_model(1.0, p1, data["Tav"][:,None,None], p2, Hd)                                  
+        
+        # First arg is 1.0, as this is calculated at the normalised temp
+        model = self.call_model(1.0, p1, data["Tav"][:,None,None], p2, Hd)                                  
         
         rmse = np.sqrt(((obs[:,None,None]- model)**2).mean(0))
         ndx = np.where(rmse.min()== rmse)
@@ -999,7 +929,7 @@ class FitEaDels(FitMe):
         
         return Ea[idx].squeeze(), delS[jdx].squeeze()
 
-    def setup_model_params(self, peaked, hd_guess, ea_guess, dels_guess):
+    def setup_model_params(self, data, obs, grid_search=True):
         """ Setup lmfit Parameters object
         
         Parameters
@@ -1011,8 +941,15 @@ class FitEaDels(FitMe):
         params : object
             lmfit object containing parameters to fit
         """
+        if grid_search and self.peaked:
+            (ea_guess, 
+             dels_guess) = self.pick_starting_point(data, obs)  
+        else:
+            ea_guess = np.random.uniform(20000.0, 80000.0)
+            dels_guess = np.random.uniform(550.0, 700.0)
+        
         params = Parameters()
-        if peaked:
+        if self.peaked:
             params.add('Ea', value=ea_guess, min=0.0, max=199999.9)
             params.add('delS', value=dels_guess, min=0.0, max=800.0)  
             params.add('Hd', value=200000.0, vary=False)
@@ -1025,370 +962,3 @@ class FitEaDels(FitMe):
 
    
     
-class FitK25EaDels(FitMe):
-    """ Fit the model parameters K25j, K25v, Eaj, Eav, Dels to the measured 
-        A-Ci data, i.e. not fitting normalised data!!!
-    """
-    def __init__(self, model=None, infname=None, ofname=None, results_dir=None, 
-                 data_dir=None, peaked=True):
-        """
-        Parameters
-        ----------
-        model : object
-            model that we are fitting measurements against...
-        ofname : string
-            output filename for writing fitting result.
-        results_dir : string
-            output directory path for the result to be written
-        data_dir : string
-            input directory path where measured A-Ci files live
-        plot_dir : string
-            directory to save plots of various fitting routines
-        """
-        
-        self.infname = infname
-        FitMe.__init__(self, model=model, ofname=ofname, 
-                       results_dir=results_dir, data_dir=data_dir)
-       
-        self.peaked = peaked
-        if self.peaked:
-            self.call_model = model.peaked_arrh
-            self.header = ["Param", "K25", "SE", "Ea", "SE", "Hd", "SE", \
-                            "delS", "delSSE", "Var", "R2", "SSQ", "MSE", "DOF", \
-                            "n", "Topt", "ID"]
-        else:
-            self.call_model = model.arrh
-            self.header = ["Param", "K25", "SE", "Ea", "SE", "Var", "R2", "SSQ", \
-                            "MSE", "DOF", "n", "Topt", "ID"]
-        
-    def main(self, print_to_screen):   
-        """ Loop over all our A-Ci measured curves and fit the Farquhar model
-        parameters to this data 
-        
-        Parameters
-        ----------
-        print_to_screen : logical
-            print fitting result to screen? Default is no!
-        """
-        all_data = self.read_data(self.infname, infile_type="meas")
-        fp = self.open_output_files(self.ofname)
-        wr = self.write_file_hdr(fp, self.header)
-        
-        # Loop over all the measured data and fit the model params.
-        for id in np.unique(all_data["fitgroup"]):
-            data = all_data[np.where(all_data["fitgroup"] == id)]
-            
-            # Fit Jmax vs T first
-            if self.peaked:
-                (k25_guess, 
-                 ea_guess, 
-                 dels_guess) = self.pick_starting_point(data, data["Vnorm"])
-                params = self.setup_model_params(k25_guess, ea_guess, dels_guess)
-            else:
-                (k25_guess, 
-                 ea_guess) = self.pick_starting_point(data, data["Vnorm"])
-                params = self.setup_model_params(k25_guess, ea_guess)
-            result = minimize(self.residual, params, method="leastsq", 
-                              args=(data, data["Jmax"]))
-            
-            # Did we resolve the error bars during the fit? 
-            #
-            # From lmfit...
-            #
-            # In some cases, it may not be possible to estimate the errors 
-            # and correlations. For example, if a variable actually has no 
-            # practical effect on the fit, it will likely cause the 
-            # covariance matrix to be singular, making standard errors 
-            # impossible to estimate. Placing bounds on varied Parameters 
-            # makes it more likely that errors cannot be estimated, as 
-            # being near the maximum or minimum value makes the covariance 
-            # matrix singular. In these cases, the errorbars attribute of 
-            # the fit result (Minimizer object) will be False.
-            if (result.errorbars and 
-                np.isnan(result.params['K25'].stderr) == False):
-                self.succes_count += 1
-            else:
-                
-                # Failed errobar fitting, going to try and mess with 
-                # starting poisition...
-                for i in xrange(self.Niter):
-                    # Fit Jmax vs T first
-                    if self.peaked:
-                        (k25_guess, ea_guess, 
-                         dels_guess) = self.pick_random_starting_point() 
-                        params = self.setup_model_params(k25_guess, ea_guess, 
-                                                         dels_guess)
-                    else:
-                        (k25_guess, ea_guess) = self.pick_random_starting_point()
-                        params = self.setup_model_params(k25_guess, ea_guess)
-                    result = minimize(self.residual, params, method="leastsq", 
-                                      args=(data, data["Jmax"]))
-                    
-                    if result.errorbars:
-                        self.succes_count += 1
-                        break
-            
-            if print_to_screen:
-                self.print_fit_to_screen(result)
-        
-            (peak_fit) = self.forward_run(result, data)
-            if self.peaked:
-                Topt = (self.calc_Topt(result.params["Hd"].value, 
-                                       result.params["Ea"].value, 
-                                       result.params["delS"].value))
-            else:
-                Topt = -9999.9 # not calculated
-            
-            self.report_fits(wr, result, data, data["Jmax"], peak_fit, 
-                             "Jmax", Topt, id)
-           
-            # Fit Vcmax vs T next 
-            if self.peaked:
-                (k25_guess, 
-                 ea_guess, 
-                 dels_guess) = self.pick_starting_point(data, data["Vnorm"])
-                params = self.setup_model_params(k25_guess, ea_guess, dels_guess)
-            else:
-                (k25_guess, 
-                 ea_guess) = self.pick_starting_point(data, data["Vnorm"])
-                params = self.setup_model_params(k25_guess, ea_guess)
-            result = minimize(self.residual, params, method="leastsq", 
-                              args=(data, data["Vcmax"]))
-            # Did we resolve the error bars during the fit? 
-            #
-            # From lmfit...
-            #
-            # In some cases, it may not be possible to estimate the errors 
-            # and correlations. For example, if a variable actually has no 
-            # practical effect on the fit, it will likely cause the 
-            # covariance matrix to be singular, making standard errors 
-            # impossible to estimate. Placing bounds on varied Parameters 
-            # makes it more likely that errors cannot be estimated, as 
-            # being near the maximum or minimum value makes the covariance 
-            # matrix singular. In these cases, the errorbars attribute of 
-            # the fit result (Minimizer object) will be False.
-            if (result.errorbars and 
-                np.isnan(result.params['K25'].stderr) == False):
-                self.succes_count += 1
-            else:
-                
-                # Failed errobar fitting, going to try and mess with 
-                # starting poisition...
-                for i in xrange(self.Niter):
-                    # Fit Vcmax vs T next 
-                    if self.peaked:
-                        (k25_guess, ea_guess, 
-                         dels_guess) = self.pick_random_starting_point() 
-                        params = self.setup_model_params(k25_guess, ea_guess, 
-                                                         dels_guess)
-                    else:
-                        (k25_guess, ea_guess) = self.pick_random_starting_point()
-                        params = self.setup_model_params(k25_guess, ea_guess)
-                    result = minimize(self.residual, params, method="leastsq", 
-                                      args=(data, data["Vcmax"]))
-                    
-                    if result.errorbars:
-                        self.succes_count += 1
-                        break
-            
-            if print_to_screen:
-                self.print_fit_to_screen(result)
-        
-            (peak_fit) = self.forward_run(result, data)
-            if self.peaked:
-                Topt = (self.calc_Topt(result.params["Hd"].value, 
-                                       result.params["Ea"].value, 
-                                       result.params["delS"].value))
-            else:
-                Topt = -9999.9 # not calculated
-            
-            self.report_fits(wr, result, data, data["Vcmax"], peak_fit, 
-                             "Vcmax", Topt, id)
-            
-        fp.close()  
-        
-    def forward_run(self, result, data):
-        """ Run peaked Arrhenius model with fitted parameters and return result 
-        
-        Parameters
-        ----------
-        result : object
-            fitting result, param, std. error etc.
-        data : object
-            input A-Ci curve information
-        
-        Returns
-        --------
-        model_fit : array
-            fitted result
-        """
-        Ea = result.params['Ea'].value
-        K25 = result.params['K25'].value
-        
-        if self.peaked:
-            Hd = result.params['Hd'].value
-            delS = result.params['delS'].value
-            model_fit = self.call_model(K25, Ea, data["Tav"], delS, Hd)                                         
-        else:
-            model_fit = self.call_model(K25, Ea, data["Tav"])     
-        
-        return model_fit
-    
-    def report_fits(self, f, result, data, obs, fit, pname, Topt, id):
-        """ Save fitting results to a file... 
-        
-        Parameters
-        ----------
-        f : object
-            file pointer
-        result: object
-            fitting result, param, std. error etc.
-        data : object
-            input A-Ci curve information
-        obs : array
-            A-Ci data to fit model against
-        fit : array
-            best model fit to optimised parameters
-        fname : string
-            filename to append to output file
-        pname : string 
-            param_name
-        Topt : float
-            Optimum temperature [deg C]
-        """
-        pearsons_r = stats.pearsonr(obs, fit)[0]
-        diff_sq = (obs-fit)**2
-        ssq = np.sum(diff_sq)
-        mean_sq_err = np.mean(diff_sq)
-        
-        row = [pname]
-        for name, par in result.params.items():
-            row.append("%s" % (par.value))
-            row.append("%s" % (par.stderr))
-        row.append("%s" % ((obs-fit).var()))
-        row.append("%s" % (pearsons_r**2))
-        row.append("%s" % (ssq))
-        row.append("%s" % (mean_sq_err))
-        row.append("%s" % (len(fit)-1))
-        row.append("%s" % (len(fit)))
-        row.append("%s" % (Topt))
-        row.append("%s" % (id))
-        f.writerow(row)
-        
-    def residual(self, parameters, data, obs):
-        """ simple function to quantify how good the fit was for the fitting
-        routine. Could use something better? RMSE?
-        
-        Parameters
-        ----------
-        params : object
-            List of parameters to be fit, initial guess, ranges etc. This is
-            an lmfit object
-        data: array
-            data to run farquhar model with
-        obs : array
-            A-Ci data to fit model against
-        
-        Returns: 
-        --------
-        residual : array
-            residual of fit between model and obs, based on current parameter
-            set
-        """
-        Ea = parameters["Ea"].value
-        K25 = parameters['K25'].value
-        if self.peaked:
-            Hd = parameters["Hd"].value
-            delS = parameters["delS"].value
-            model = self.call_model(K25, Ea, data["Tav"], delS, Hd)                                         
-        else:
-            model = self.call_model(K25, Ea, data["Tav"])   
-            
-        return (obs - model)
-
-    def setup_model_params(self, k25_guess, ea_guess, dels_guess=None):
-        """ Setup lmfit Parameters object
-        
-        Parameters
-        ----------
-        
-        
-        Returns
-        -------
-        params : object
-            lmfit object containing parameters to fit
-        """
-        params = Parameters()
-        if self.peaked:
-            params.add('K25', value=k25_guess, min=0.0)
-            params.add('Ea', value=ea_guess, min=0.0, max=199999.9)
-            params.add('delS', value=dels_guess, min=0.0, max=800.0)  
-            params.add('Hd', value=200000.0, vary=False)
-        else:
-            params.add('K25', value=k25_guess, min=0.0)
-            params.add('Ea', value=ea_guess, min=0.0, max=199999.9)
-        
-        return params
-        
-    def pick_starting_point(self, data, obs, grid_size=50):
-        """ High-density grid search to overcome issues with ending up in a 
-        local minima. Values that yield the lowest RMSE (without minimisation)
-        are used as the starting point for the minimisation.
-        
-        Reference:
-        ----------
-        Dubois et al (2007) Optimizing the statistical estimation of the 
-        parameters of the Farquhar-von Caemmerer-Berry model of photosynthesis. 
-        New Phytologist, 176, 402--414
-        """
-        # Shuffle arrays so that our combination of parameters is random
-        Hd = 200000.0
-        Ea = np.linspace(20000.0, 80000.0, grid_size) 
-        delS = np.linspace(550.0, 700.0, grid_size)
-        k25 = np.linspace(50.0, 250.0, grid_size)
-      
-        if self.peaked:
-            p1, p2, p3 = np.ix_(k25, Ea, delS)
-            model = self.call_model(p1, p2, data["Tav"][:,None,None,None], p3, Hd)
-            rmse = np.sqrt(((obs[:,None,None,None]- model)**2).mean(0))
-            ndx = np.where(rmse.min()== rmse)
-            (idx, jdx, kdx) = ndx 
-            
-            return k25[idx].squeeze(), Ea[jdx].squeeze(), delS[kdx].squeeze()                                  
-        else:
-            p1, p2 = np.ix_(k25, Ea)
-            model = self.call_model(K25, Ea, data["Tav"][:,None,None])
-            rmse = np.sqrt(((obs[:,None,None]- model)**2).mean(0))
-            ndx = np.where(rmse.min()== rmse)
-            (idx, jdx) = ndx 
-        
-            return k25[idx].squeeze(), Ea[jdx].squeeze()
-    
-    def pick_random_starting_point(self):
-        """ random pick starting point for parameter values 
-        
-        Parameters
-        ----------
-        data : array
-            model driving data
-        grid_size : int
-            hardwired, number of samples
-        
-        Returns: 
-        --------
-        retval * 3 : float
-            Three starting guesses for Jmax, Vcmax and Rd
-        """
-        if self.peaked:
-            Ea = np.random.uniform(20000.0, 80000.0) 
-            delS = np.random.uniform(550.0, 700.0)
-            k25 = np.random.uniform(50.0, 250.0)
-        
-            return k25, Ea, delS  
-        else:
-            Ea = np.random.uniform(20000.0, 80000.0) 
-            delS = np.random.uniform(550.0, 700.0)
-            k25 = np.random.uniform(50.0, 250.0)
-        
-            return k25, Ea
-     
