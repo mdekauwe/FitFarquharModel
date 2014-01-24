@@ -705,7 +705,8 @@ class FitEaDels(FitMe):
             if self.peaked:
                 (ea_guess, 
                 dels_guess) = self.pick_starting_point(data, data["Jnorm"])  
-                params = self.setup_model_params(hd_guess=200000.0, 
+                params = self.setup_model_params(peaked=self.peaked, 
+                                                 hd_guess=200000.0, 
                                                  ea_guess=ea_guess, 
                                                  dels_guess=dels_guess)
             else:
@@ -742,9 +743,10 @@ class FitEaDels(FitMe):
                     if self.peaked:
                         (ea_guess, 
                          dels_guess) = self.pick_random_starting_point()
-                        params = self.setup_model_params(hd_guess=200000.0, 
-                                                         ea_guess=ea_guess, 
-                                                         dels_guess=dels_guess)
+                        params = self.setup_model_params(peaked=self.peaked, 
+                                                 hd_guess=200000.0, 
+                                                 ea_guess=ea_guess, 
+                                                 dels_guess=dels_guess)
                     else:
                         params = Parameters()
                         ea_guess = np.random.uniform(20000.0, 80000.0)
@@ -774,7 +776,8 @@ class FitEaDels(FitMe):
             if self.peaked:
                 (ea_guess, 
                 dels_guess) = self.pick_starting_point(data, data["Vnorm"])
-                params = self.setup_model_params(hd_guess=200000.0, 
+                params = self.setup_model_params(peaked=self.peaked, 
+                                                 hd_guess=200000.0, 
                                                  ea_guess=ea_guess, 
                                                  dels_guess=dels_guess)
             else:
@@ -813,9 +816,10 @@ class FitEaDels(FitMe):
                     if self.peaked:
                         (ea_guess, 
                          dels_guess) = self.pick_random_starting_point()
-                        params = self.setup_model_params(hd_guess=200000.0, 
-                                                         ea_guess=ea_guess, 
-                                                         dels_guess=dels_guess)
+                        params = self.setup_model_params(peaked=self.peaked, 
+                                                 hd_guess=200000.0, 
+                                                 ea_guess=ea_guess, 
+                                                 dels_guess=dels_guess)
                     else:
                         params = Parameters()
                         ea_guess = np.random.uniform(20000.0, 80000.0)
@@ -911,7 +915,7 @@ class FitEaDels(FitMe):
         row.append("%s" % (len(obs)-1))
         row.append("%s" % (len(fit)))
         row.append("%s" % (Topt))
-        row.append("%d" % (id))
+        row.append("%s" % (id))
         f.writerow(row)
         
     def residual(self, parameters, data, obs):
@@ -995,7 +999,28 @@ class FitEaDels(FitMe):
         
         return Ea[idx].squeeze(), delS[jdx].squeeze()
 
-
+    def setup_model_params(self, peaked, hd_guess, ea_guess, dels_guess):
+        """ Setup lmfit Parameters object
+        
+        Parameters
+        ----------
+        
+        
+        Returns
+        -------
+        params : object
+            lmfit object containing parameters to fit
+        """
+        params = Parameters()
+        if peaked:
+            params.add('Ea', value=ea_guess, min=0.0, max=199999.9)
+            params.add('delS', value=dels_guess, min=0.0, max=800.0)  
+            params.add('Hd', value=200000.0, vary=False)
+        else:
+            params.add('Ea', value=ea_guess, min=0.0, max=199999.9)
+        
+        return params
+        
 class FitK25EaDels(FitMe):
     """ Fit the model parameters K25j, K25v, Eaj, Eav, Dels to the measured 
         A-Ci data, i.e. not fitting normalised data!!!
