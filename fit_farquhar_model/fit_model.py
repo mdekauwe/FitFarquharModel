@@ -1020,7 +1020,9 @@ class FitEaDels(FitMe):
             params.add('Ea', value=ea_guess, min=0.0, max=199999.9)
         
         return params
-        
+    
+   
+    
 class FitK25EaDels(FitMe):
     """ Fit the model parameters K25j, K25v, Eaj, Eav, Dels to the measured 
         A-Ci data, i.e. not fitting normalised data!!!
@@ -1110,13 +1112,12 @@ class FitK25EaDels(FitMe):
                 for i in xrange(self.Niter):
                     # Fit Jmax vs T first
                     if self.peaked:
-                        (k25_guess, 
-                         ea_guess, 
-                         dels_guess) = self.pick_starting_point(data, data["Vnorm"])
-                        params = self.setup_model_params(k25_guess, ea_guess, dels_guess)
+                        (k25_guess, ea_guess, 
+                         dels_guess) = pick_random_starting_point() 
+                        params = self.setup_model_params(k25_guess, ea_guess, 
+                                                         dels_guess)
                     else:
-                        (k25_guess, 
-                         ea_guess) = self.pick_starting_point(data, data["Vnorm"])
+                        (k25_guess, ea_guess) = pick_random_starting_point()
                         params = self.setup_model_params(k25_guess, ea_guess)
                     result = minimize(self.residual, params, method="leastsq", 
                                       args=(data, data["Jmax"]))
@@ -1174,13 +1175,12 @@ class FitK25EaDels(FitMe):
                 for i in xrange(self.Niter):
                     # Fit Vcmax vs T next 
                     if self.peaked:
-                        (k25_guess, 
-                         ea_guess, 
-                         dels_guess) = self.pick_starting_point(data, data["Vnorm"])
-                        params = self.setup_model_params(k25_guess, ea_guess, dels_guess)
+                        (k25_guess, ea_guess, 
+                         dels_guess) = pick_random_starting_point() 
+                        params = self.setup_model_params(k25_guess, ea_guess, 
+                                                         dels_guess)
                     else:
-                        (k25_guess, 
-                         ea_guess) = self.pick_starting_point(data, data["Vnorm"])
+                        (k25_guess, ea_guess) = pick_random_starting_point()
                         params = self.setup_model_params(k25_guess, ea_guess)
                     result = minimize(self.residual, params, method="leastsq", 
                                       args=(data, data["Vcmax"]))
@@ -1362,5 +1362,32 @@ class FitK25EaDels(FitMe):
             (idx, jdx) = ndx 
         
             return k25[idx].squeeze(), Ea[jdx].squeeze()
+    
+    def pick_random_starting_point(self):
+        """ random pick starting point for parameter values 
         
+        Parameters
+        ----------
+        data : array
+            model driving data
+        grid_size : int
+            hardwired, number of samples
+        
+        Returns: 
+        --------
+        retval * 3 : float
+            Three starting guesses for Jmax, Vcmax and Rd
+        """
+        if self.peaked:
+            Ea = np.random.uniform(20000.0, 80000.0) 
+            delS = np.random.uniform(550.0, 700.0)
+            k25 = np.random.uniform(50.0, 250.0)
+        
+            return K25, Ea, delS  
+        else:
+            Ea = np.random.uniform(20000.0, 80000.0) 
+            delS = np.random.uniform(550.0, 700.0)
+            k25 = np.random.uniform(50.0, 250.0)
+        
+            return K25, Ea
      
