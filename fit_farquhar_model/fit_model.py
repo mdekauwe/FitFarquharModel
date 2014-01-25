@@ -941,9 +941,9 @@ class FitEaDels(FitMe):
             (ea_guess, 
              dels_guess) = self.pick_starting_point(data, obs)  
         else:
-            ea_guess = np.random.uniform(20000.0, 80000.0)
-            dels_guess = np.random.uniform(550.0, 700.0)
-        
+            (ea_guess, 
+             dels_guess) = self.pick_random_starting_point()
+            
         params = Parameters()
         if self.peaked:
             params.add('Ea', value=ea_guess, min=0.0, max=199999.9)
