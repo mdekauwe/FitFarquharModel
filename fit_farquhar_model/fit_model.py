@@ -702,9 +702,7 @@ class FitEaDels(FitMe):
             data = all_data[np.where(all_data["fitgroup"] == id)]
             
             # Fit Jmax vs T first
-            params = self.setup_model_params(data, obs=data["Jnorm"], 
-                                             grid_search=True)
-            result = self.do_minimisation(params, data, data["Jnorm"])
+            result = self.do_minimisation(data, data["Jnorm"])
             if print_to_screen:
                 self.print_fit_to_screen(result)
             
@@ -719,10 +717,7 @@ class FitEaDels(FitMe):
                              "Jmax", Topt, id)
            
             # Fit Vcmax vs T next 
-            params = self.setup_model_params(data, obs=data["Vnorm"], 
-                                             grid_search=True)
-                
-            result = self.do_minimisation(params, data, data["Vnorm"])
+            result = self.do_minimisation(data, data["Vnorm"])
             if print_to_screen:
                 self.print_fit_to_screen(result)
             
@@ -740,7 +735,8 @@ class FitEaDels(FitMe):
         fp.close()  
     
     
-    def do_minimisation(self, params, data, obs):
+    def do_minimisation(self, data, obs):
+        params = self.setup_model_params(data, obs, grid_search=True)
         result = minimize(self.residual, params, method="leastsq", 
                               args=(data, obs))
             
