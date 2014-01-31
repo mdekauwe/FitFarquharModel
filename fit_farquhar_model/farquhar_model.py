@@ -21,9 +21,9 @@ class FarquharC3(object):
     carboxylation (Ac) and the regeneration of ribulose-1,5-bisphosphate (RuBP) 
     catalysed by the enzyme RUBISCO (Aj). This class returns the net leaf 
     photosynthesis (An) which is the minimum of this two limiting processes 
-    less the rate of mitochondrial (dark) respiration (Rd). We are ignoring the
-    the "export" limitation (Ap) which could occur under high levels of 
-    irradiance.
+    less the rate of mitochondrial respiration in the light (Rd). We are 
+    ignoring the the "export" limitation (Ap) which could occur under high 
+    levels of irradiance.
     
     Model assumes conductance between intercellular space and the site of 
     carboxylation is zero. The models parameters Vcmax, Jmax, Rd along with
@@ -143,7 +143,7 @@ class FarquharC3(object):
         Vcmax25 : float
             max rate of rubisco activity at 25 deg or 298 K
         Rd : float
-            Dark (mitochondrial) respiration [umol m-2 time unit-1]
+            Day "light" respiration [umol m-2 time unit-1]
         Q10 : float
             ratio of respiration at a given temperature divided by respiration 
             at a temperature 10 degrees lower
@@ -267,7 +267,7 @@ class FarquharC3(object):
         Vcmax : float
             max rate of rubisco activity at measurement temperature [deg K]
         Rd : float
-            Dark (mitochondrial) respiration [umol m-2 time unit-1]
+            Day "light" respiration [umol m-2 time unit-1]
         Jmax25 : float
             potential rate of electron transport at 25 deg or 298 K
         Vcmax25 : float

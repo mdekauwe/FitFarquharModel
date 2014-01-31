@@ -758,7 +758,6 @@ class FitEaDels(FitMe):
             
             self.succes_count += 1
         else:
-            
             # Failed errobar fitting, going to try and mess with 
             # starting poisition...
             for i in xrange(self.Niter):
@@ -930,7 +929,12 @@ class FitEaDels(FitMe):
         
         Parameters
         ----------
-        
+        data : array
+            driving data
+        obs : array
+            observed responses
+        grid_search : logical
+            try and optimise starting position first?
         
         Returns
         -------
