@@ -279,7 +279,7 @@ class FitMe(object):
         #Vcmax = params['Vcmax'].value
         #Rd = params['Rd'].value  
         
-        #print params['Vcmax25_2'].value, params['Vcmax25_13'].value
+        #print params['Jmax25_2'].value, params['Jmax25_3'].value
         Jmax25 = 0.0
         Vcmax25 = 0.0
         Rd25 = 0.0
@@ -294,8 +294,8 @@ class FitMe(object):
             col_id = "f_%d" % (i)
         
             Jmax25 += params['Jmax25_%d' % (i)].value * data[col_id]
-            Vcmax25 = params['Vcmax25_%d' % (i)].value * data[col_id]
-            Rd25 = params['Rd25_%d' % (i)].value * data[col_id]
+            Vcmax25 += params['Vcmax25_%d' % (i)].value * data[col_id]
+            Rd25 += params['Rd25_%d' % (i)].value * data[col_id]
         Eaj = params['Eaj'].value
         delSj = params['delSj'].value
         Hdj = params['Hdj'].value
