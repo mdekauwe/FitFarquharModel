@@ -113,7 +113,7 @@ class FitMe(object):
                 # Test sensitivity, are we falling into local mins?
                 all_results = []
                 all_rmse = []
-                for kk in xrange(30):
+                for kk in xrange(10):
                     
                     for i in np.unique(leaf_data["Curve"]):
                         
@@ -133,13 +133,14 @@ class FitMe(object):
                 
                     rmse = np.sqrt(np.mean((obs- An)**2))
                     
-                    all_results.append(result)
-                    all_rmse.append(rmse)
+                    if result.errorbars:
+                        all_results.append(result)
+                        all_rmse.append(rmse)
                 
                 
-                    #self.print_fit_to_screen(result)
-                    print kk, rmse
-                
+                        #self.print_fit_to_screen(result)
+                        print kk, rmse
+                        
                 all_rmse = np.asarray(all_rmse)
                 
                 idx = all_rmse.argmin()
@@ -315,13 +316,19 @@ class FitMe(object):
         
         
         
-        
-        
         for i in np.unique(data["Curve"]):
             col_id = "f_%d" % (i)
             Jmax25 += params['Jmax25_%d' % (i)].value * data[col_id]
+            #print Jmax25
+            
+            #print
+            
             Vcmax25 += params['Vcmax25_%d' % (i)].value * data[col_id]
             Rd25 += params['Rd25_%d' % (i)].value * data[col_id]
+        
+        #print data['f_2'] * params['Jmax25_2'].value
+        
+        
         
         Eaj = params['Eaj'].value
         delSj = params['delSj'].value
