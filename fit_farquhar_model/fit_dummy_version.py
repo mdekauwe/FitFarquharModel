@@ -90,8 +90,8 @@ class FitMe(object):
                 
                 params = Parameters()
                 for i in np.unique(leaf_data["Curve"]):
-                    params.add('Jmax25_%d' % (i), value=np.random.uniform(5.0, 550) , min=0.0)
-                    params.add('Vcmax25_%d' % (i), value=np.random.uniform(5.0, 350) , min=0.0)
+                    params.add('Jmax25_%d' % (i), value=np.random.uniform(5.0, 550) , min=0.0, max=600.0)
+                    params.add('Vcmax25_%d' % (i), value=np.random.uniform(5.0, 350) , min=0.0, max=600.0)
                     params.add('Rd25_%d' % (i), value=np.random.uniform(0.0, 6.0), min=0.0)
                 params.add('Eaj', value=np.random.uniform(20000.0, 80000.0), min=0.0, max=199999.9)
                 params.add('delSj', value=np.random.uniform(550.0, 700.0), min=0.0, max=800.0)  
