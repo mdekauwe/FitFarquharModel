@@ -316,19 +316,13 @@ class FitMe(object):
         
         
         
+        
+        
         for i in np.unique(data["Curve"]):
             col_id = "f_%d" % (i)
             Jmax25 += params['Jmax25_%d' % (i)].value * data[col_id]
-            #print Jmax25
-            
-            #print
-            
             Vcmax25 += params['Vcmax25_%d' % (i)].value * data[col_id]
             Rd25 += params['Rd25_%d' % (i)].value * data[col_id]
-        
-        #print data['f_2'] * params['Jmax25_2'].value
-        
-        
         
         Eaj = params['Eaj'].value
         delSj = params['delSj'].value
