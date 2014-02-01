@@ -55,7 +55,7 @@ class FarquharC3(object):
                  Eo=36380.0, Egamma=37830.0, theta_hyperbol=0.9995, 
                  theta_J=0.7, force_vcmax_fit_pts=None,
                  alpha=None, quantum_yield=0.3, absorptance=0.8,
-                 change_over_pt=None):
+                 change_over_pt=None, model_Rd_arrh=False):
         """
         Parameters
         ----------
@@ -119,11 +119,13 @@ class FarquharC3(object):
             
         self.force_vcmax_fit_pts = force_vcmax_fit_pts
         self.change_over_pt = change_over_pt
+        self.model_Rd_arrh = model_Rd_arrh
         
     def calc_photosynthesis(self, Ci=None, Tleaf=None, Par=None, Jmax=None, 
                             Vcmax=None, Jmax25=None, Vcmax25=None, Rd=None, 
-                            Q10=None, Eaj=None, Eav=None, deltaSj=None, 
-                            deltaSv=None, r25=None, Hdv=200000.0, Hdj=200000.0):
+                            Rd25=None, Q10=None, Eaj=None, Eav=None, 
+                            deltaSj=None, deltaSv=None, Hdv=200000.0, 
+                            Hdj=200000.0, Ear=None):
         """
         Parameters
         ----------
@@ -159,7 +161,7 @@ class FarquharC3(object):
             Deactivation energy for Vcmax [J mol-1]
         Hdj : float
             Deactivation energy for Jmax [J mol-1]
-        r25 : float
+        Rd25 : float
             Estimate of respiration rate at the reference temperature 25 deg C
              or 298 K [deg K]
         Par : float
@@ -175,7 +177,7 @@ class FarquharC3(object):
         Ajn : float
             Net RuBP-regeneration-limited leaf assimilation rate [umol m-2 s-1]
         """
-        self.check_supplied_args(Jmax, Vcmax, Rd, Jmax25, Vcmax25, r25)
+        self.check_supplied_args(Jmax, Vcmax, Rd, Jmax25, Vcmax25, Rd25)
         
         # Michaelis-Menten constant for O2/CO2, Arrhenius temp dependancy
         Kc = self.arrh(self.Kc25, self.Ec, Tleaf)
@@ -185,9 +187,13 @@ class FarquharC3(object):
         # Effect of temp on CO2 compensation point 
         gamma_star = self.arrh(self.gamstar25, self.Egamma, Tleaf)
         
-        # Calculations at 25 degrees C or the measurement temperature.
-        if r25 is not None: 
-            Rd = self.resp(Tleaf, Q10, r25, Tref=25.0)
+        # Calculations at 25 degrees C or the measurement temperature
+        if Rd25 is not None: 
+            if self.model_Rd_arrh:
+                Rd = self.arrh(Rd25, Ear, Tleaf)
+            else:
+                Rd = self.resp(Tleaf, Q10, Rd25, Tref=25.0)
+            
         
         if Vcmax25 is not None:    
             # Effect of temperature on Vcmax and Jamx
@@ -253,7 +259,7 @@ class FarquharC3(object):
         
         return An, Acn, Ajn
          
-    def check_supplied_args(self, Jmax, Vcmax, Rd, Jmax25, Vcmax25, r25):
+    def check_supplied_args(self, Jmax, Vcmax, Rd, Jmax25, Vcmax25, Rd25):
         """ Check the user supplied arguments, either they supply the values
         at 25 deg C, or the supply Jmax and Vcmax at the measurement temp. It
         is of course possible they accidentally supply both or a random 
@@ -272,7 +278,7 @@ class FarquharC3(object):
             potential rate of electron transport at 25 deg or 298 K
         Vcmax25 : float
             max rate of rubisco activity at 25 deg or 298 K    
-        r25 : float
+        Rd25 : float
             Estimate of respiration rate at the reference temperature 25 deg C
              or 298 K [deg K]
         
@@ -281,12 +287,12 @@ class FarquharC3(object):
         Nothing
         """
         try:
-            if (r25 is not None and Jmax25 is not None and 
+            if (Rd25 is not None and Jmax25 is not None and 
                 Vcmax25 is not None and Vcmax is None and 
                 Jmax is None and Rd is None):
                 
                 return
-            elif (r25 is None and Jmax25 is None and 
+            elif (Rd25 is None and Jmax25 is None and 
                   Vcmax25 is None and Vcmax is not None and 
                   Jmax is not None and Rd is not None):
                 
@@ -354,12 +360,12 @@ class FarquharC3(object):
         return arg1 * arg2 / arg3
    
         
-    def resp(self, Tleaf, Q10, r25, Tref=25.0):
+    def resp(self, Tleaf, Q10, Rd25, Tref=25.0):
         """ Calculate leaf respiration accounting for temperature dependence.
         
         Parameters:
         ----------
-        r25 : float
+        Rd25 : float
             Estimate of respiration rate at the reference temperature 25 deg C
             or or 298 K
         Tref : float
@@ -377,7 +383,7 @@ class FarquharC3(object):
         -----------
         Tjoelker et al (2001) GCB, 7, 223-230.
         """
-        return r25 * Q10**(((Tleaf - self.deg2kelvin) - Tref) / 10.0)
+        return Rd25 * Q10**(((Tleaf - self.deg2kelvin) - Tref) / 10.0)
     
     def quadratic(self, a=None, b=None, c=None):
         """ minimilist quadratic solution as root for J solution should always

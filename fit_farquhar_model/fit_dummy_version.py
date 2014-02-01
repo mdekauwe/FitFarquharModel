@@ -305,7 +305,7 @@ class FitMe(object):
         (An, Anc, Anj) = self.call_model(Ci=data["Ci"], Tleaf=data["Tleaf"], Par=None, Jmax=None, 
                                         Vcmax=None, Jmax25=Jmax25, Vcmax25=Vcmax25, Rd=None, 
                                         Q10=None, Eaj=Eaj, Eav=Eav, deltaSj=delSj, 
-                                        deltaSv=delSv, r25=Rd25, Ear=Ear, Hdv=200000.0, Hdj=200000.0)
+                                        deltaSv=delSv, Rd25=Rd25, Ear=Ear, Hdv=200000.0, Hdj=200000.0)
         
         
         
@@ -718,8 +718,8 @@ if __name__ == "__main__":
     results_dir = "/Users/mdekauwe/Desktop/results"
     data_dir = "/Users/mdekauwe/Desktop/data"
     plot_dir = "/Users/mdekauwe/Desktop/plots"
-    from farquhar_model_test import FarquharC3
-    model = FarquharC3(peaked_Jmax=True, peaked_Vcmax=True)
+    from farquhar_model import FarquharC3
+    model = FarquharC3(peaked_Jmax=True, peaked_Vcmax=True, model_Rd_arrh=True)
     
     F = FitMe(model, ofname, results_dir, data_dir, plot_dir)
     F.main(print_to_screen=False) 
