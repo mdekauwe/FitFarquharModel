@@ -82,29 +82,24 @@ class FitMe(object):
             
             
             for leaf_num in np.unique(data["Leaf"]):
-                
+                print leaf_num
                 leaf_data = data[data["Leaf"]==leaf_num]
                 
                 num_curves = len(np.unique(leaf_data["Curve"]))
                 
-                Vcmax25_guess = np.random.uniform(5.0, 350) 
-                Jmax25_guess = np.random.uniform(5.0, 550) 
-                Rd25_guess = np.random.uniform(0.0, 6.0)
-                ea_guess = np.random.uniform(20000.0, 80000.0)
-                dels_guess = np.random.uniform(550.0, 700.0)
-        
+                
                 params = Parameters()
                 for i in np.unique(leaf_data["Curve"]):
-                    params.add('Jmax25_%d' % (i), value=Jmax25_guess, min=0.0)
-                    params.add('Vcmax25_%d' % (i), value=Vcmax25_guess, min=0.0)
-                    params.add('Rd25_%d' % (i), value=Rd25_guess, min=0.0)
-                params.add('Eaj', value=ea_guess, min=0.0, max=199999.9)
-                params.add('delSj', value=dels_guess, min=0.0, max=800.0)  
+                    params.add('Jmax25_%d' % (i), value=np.random.uniform(5.0, 550) , min=0.0)
+                    params.add('Vcmax25_%d' % (i), value=np.random.uniform(5.0, 350) , min=0.0)
+                    params.add('Rd25_%d' % (i), value=np.random.uniform(0.0, 6.0), min=0.0)
+                params.add('Eaj', value=np.random.uniform(20000.0, 80000.0), min=0.0, max=199999.9)
+                params.add('delSj', value=np.random.uniform(550.0, 700.0), min=0.0, max=800.0)  
                 params.add('Hdj', value=200000.0, vary=False)
-                params.add('Eav', value=ea_guess, min=0.0, max=199999.9)
-                params.add('delSv', value=dels_guess, min=0.0, max=800.0)  
+                params.add('Eav', value=np.random.uniform(20000.0, 80000.0), min=0.0, max=199999.9)
+                params.add('delSv', value=np.random.uniform(550.0, 700.0), min=0.0, max=800.0)  
                 params.add('Hdv', value=200000.0, vary=False)
-                params.add('Ear', value=ea_guess, min=0.0, max=199999.9)
+                params.add('Ear', value=np.random.uniform(20000.0, 80000.0), min=0.0, max=199999.9)
                 
                 
                 print num_curves
@@ -284,7 +279,7 @@ class FitMe(object):
         #Vcmax = params['Vcmax'].value
         #Rd = params['Rd'].value  
         
-        
+        #print params['Vcmax25_2'].value, params['Vcmax25_13'].value
         Jmax25 = 0.0
         Vcmax25 = 0.0
         Rd25 = 0.0
