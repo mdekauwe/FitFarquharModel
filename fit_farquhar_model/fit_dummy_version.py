@@ -82,46 +82,68 @@ class FitMe(object):
             
             
             for leaf_num in np.unique(data["Leaf"]):
-                print leaf_num
                 leaf_data = data[data["Leaf"]==leaf_num]
+                obs = leaf_data["Photo"]
                 
                 num_curves = len(np.unique(leaf_data["Curve"]))
-                
-                
-                params = Parameters()
-                for i in np.unique(leaf_data["Curve"]):
-                    params.add('Jmax25_%d' % (i), value=np.random.uniform(5.0, 550) , min=0.0, max=600.0)
-                    params.add('Vcmax25_%d' % (i), value=np.random.uniform(5.0, 350) , min=0.0, max=600.0)
-                    params.add('Rd25_%d' % (i), value=np.random.uniform(0.0, 6.0), min=0.0)
-                params.add('Eaj', value=np.random.uniform(20000.0, 80000.0), min=0.0, max=199999.9)
-                params.add('delSj', value=np.random.uniform(550.0, 700.0), min=0.0, max=800.0)  
-                params.add('Hdj', value=200000.0, vary=False)
-                params.add('Eav', value=np.random.uniform(20000.0, 80000.0), min=0.0, max=199999.9)
-                params.add('delSv', value=np.random.uniform(550.0, 700.0), min=0.0, max=800.0)  
-                params.add('Hdv', value=200000.0, vary=False)
-                params.add('Ear', value=np.random.uniform(20000.0, 80000.0), min=0.0, max=199999.9)
-                
-                
-                print num_curves
-                print np.unique(leaf_data["Curve"])
-                print np.unique(data["Leaf"])
-                #print leaf_data["Photo"]
-                
-                for i in np.unique(leaf_data["Curve"]):
                     
-                    col_id = "f_%d" % (i)
+                all_results = []
+                all_rmse = []
+                for kk in xrange(30):
                     
-                    # first fill column with zeros
-                    x = leaf_data["Curve"]
-                    x = np.where(x==i, 1.0, 0.0)
-                    leaf_data[col_id] = x
+                    
+                    
                 
-               
+                    params = Parameters()
+                    for i in np.unique(leaf_data["Curve"]):
+                        params.add('Jmax25_%d' % (i), value=np.random.uniform(5.0, 550) , min=0.0, max=600.0)
+                        params.add('Vcmax25_%d' % (i), value=np.random.uniform(5.0, 350) , min=0.0, max=600.0)
+                        params.add('Rd25_%d' % (i), value=np.random.uniform(0.0, 6.0), min=0.0)
+                    params.add('Eaj', value=np.random.uniform(20000.0, 80000.0), min=0.0, max=199999.9)
+                    params.add('delSj', value=np.random.uniform(550.0, 700.0), min=0.0, max=800.0)  
+                    params.add('Hdj', value=200000.0, vary=False)
+                    params.add('Eav', value=np.random.uniform(20000.0, 80000.0), min=0.0, max=199999.9)
+                    params.add('delSv', value=np.random.uniform(550.0, 700.0), min=0.0, max=800.0)  
+                    params.add('Hdv', value=200000.0, vary=False)
+                    params.add('Ear', value=np.random.uniform(20000.0, 80000.0), min=0.0, max=199999.9)
                 
-                obs = leaf_data["Photo"]
-                result = minimize(self.residual, params, args=(leaf_data, obs))
                 
-                self.print_fit_to_screen(result)
+                
+                    #print leaf_data["Photo"]
+                
+                    for i in np.unique(leaf_data["Curve"]):
+                    
+                        col_id = "f_%d" % (i)
+                    
+                        # first fill column with zeros
+                        x = leaf_data["Curve"]
+                        x = np.where(x==i, 1.0, 0.0)
+                        leaf_data[col_id] = x
+                
+                    
+                    result = minimize(self.residual, params, args=(leaf_data, obs))
+                    (An, Anc, Anj) = self.forward_run(result, leaf_data)
+                
+                    rmse = np.sqrt(np.mean((obs- An)**2))
+                    
+                    all_results.append(result)
+                    all_rmse.append(rmse)
+                
+                
+                    #self.print_fit_to_screen(result)
+                    print kk, rmse
+                
+                all_rmse = np.asarray(all_rmse)
+                
+                idx = all_rmse.argmin()
+                
+                print
+                print 
+                best_result = all_results[idx]
+                self.print_fit_to_screen(best_result)
+        
+                print 
+                print idx, all_rmse[idx]
                 sys.exit()
                 
                 
@@ -399,17 +421,31 @@ class FitMe(object):
         Ajn : float
             Net RuBP-regeneration-limited leaf assimilation rate [umol m-2 s-1]
         """
-        Jmax = result.params['Jmax'].value
-        Vcmax = result.params['Vcmax'].value
-        Rd = result.params['Rd'].value  
-        if hasattr(data, "Par"):
-             (An, Anc, Anj) = self.call_model(Ci=data["Ci"], Tleaf=data["Tleaf"],
-                                              Par=data["Par"], Jmax=Jmax, 
-                                              Vcmax=Vcmax, Rd=Rd)
-        else:
-            (An, Anc, Anj) = self.call_model(Ci=data["Ci"], Tleaf=data["Tleaf"], 
-                                             Jmax=Jmax, Vcmax=Vcmax, Rd=Rd)
-            
+        Jmax25 = np.zeros(len(data))
+        Vcmax25 = np.zeros(len(data))
+        Rd25 = np.zeros(len(data))
+        
+        for i in np.unique(data["Curve"]):
+            col_id = "f_%d" % (i)
+            Jmax25 += result.params['Jmax25_%d' % (i)].value * data[col_id]
+            Vcmax25 += result.params['Vcmax25_%d' % (i)].value * data[col_id]
+            Rd25 += result.params['Rd25_%d' % (i)].value * data[col_id]
+        
+        Eaj = result.params['Eaj'].value
+        delSj = result.params['delSj'].value
+        Hdj = result.params['Hdj'].value
+        Eav = result.params['Eav'].value
+        delSv = result.params['delSv'].value
+        Hdv = result.params['Hdv'].value
+        Ear = result.params['Ear'].value
+        
+        (An, Anc, Anj) = self.call_model(Ci=data["Ci"], Tleaf=data["Tleaf"], Par=None, Jmax=None, 
+                                        Vcmax=None, Jmax25=Jmax25, Vcmax25=Vcmax25, Rd=None, 
+                                        Q10=None, Eaj=Eaj, Eav=Eav, deltaSj=delSj, 
+                                        deltaSv=delSv, Rd25=Rd25, Ear=Ear, Hdv=200000.0, Hdj=200000.0)
+        
+        
+        
         return (An, Anc, Anj)
                 
     def setup_model_params(self, jmax_guess=None, vcmax_guess=None, 
