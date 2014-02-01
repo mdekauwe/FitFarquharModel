@@ -290,11 +290,10 @@ class FitMe(object):
         
         for i in np.unique(data["Curve"]):
             col_id = "f_%d" % (i)
-            
-            
             Jmax25 += params['Jmax25_%d' % (i)].value * data[col_id]
             Vcmax25 += params['Vcmax25_%d' % (i)].value * data[col_id]
             Rd25 += params['Rd25_%d' % (i)].value * data[col_id]
+        
         Eaj = params['Eaj'].value
         delSj = params['delSj'].value
         Hdj = params['Hdj'].value
@@ -302,7 +301,6 @@ class FitMe(object):
         delSv = params['delSv'].value
         Hdv = params['Hdv'].value
         Ear = params['Ear'].value
-        
         
         (An, Anc, Anj) = self.call_model(Ci=data["Ci"], Tleaf=data["Tleaf"], Par=None, Jmax=None, 
                                         Vcmax=None, Jmax25=Jmax25, Vcmax25=Vcmax25, Rd=None, 
