@@ -283,13 +283,6 @@ class FitMe(object):
         Jmax25 = np.zeros(len(data))
         Vcmax25 = np.zeros(len(data))
         Rd25 = np.zeros(len(data))
-        Eaj = np.zeros(len(data))
-        delSj = np.zeros(len(data))
-        Hdj = np.zeros(len(data))
-        Eav = np.zeros(len(data))
-        delSv = np.zeros(len(data))
-        Hdv = np.zeros(len(data))
-        Ear = np.zeros(len(data))
         
         
         
