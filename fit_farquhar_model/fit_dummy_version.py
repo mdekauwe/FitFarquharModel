@@ -280,19 +280,25 @@ class FitMe(object):
         #Rd = params['Rd'].value  
         
         #print params['Jmax25_2'].value, params['Jmax25_3'].value
-        Jmax25 = 0.0
-        Vcmax25 = 0.0
-        Rd25 = 0.0
-        Eaj = 0.0
-        delSj = 0.0
-        Hdj = 0.0
-        Eav = 0.0
-        delSv = 0.0
-        Hdv = 0.0
-        Ear = 0.0
+        Jmax25 = np.zeros(len(data))
+        Vcmax25 = np.zeros(len(data))
+        Rd25 = np.zeros(len(data))
+        Eaj = np.zeros(len(data))
+        delSj = np.zeros(len(data))
+        Hdj = np.zeros(len(data))
+        Eav = np.zeros(len(data))
+        delSv = np.zeros(len(data))
+        Hdv = np.zeros(len(data))
+        Ear = np.zeros(len(data))
+        
+        
+        
+        
+        
         for i in np.unique(data["Curve"]):
             col_id = "f_%d" % (i)
-        
+            
+            
             Jmax25 += params['Jmax25_%d' % (i)].value * data[col_id]
             Vcmax25 += params['Vcmax25_%d' % (i)].value * data[col_id]
             Rd25 += params['Rd25_%d' % (i)].value * data[col_id]
