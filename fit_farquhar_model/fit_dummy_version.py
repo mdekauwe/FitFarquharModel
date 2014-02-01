@@ -86,40 +86,47 @@ class FitMe(object):
                 obs = leaf_data["Photo"]
                 
                 num_curves = len(np.unique(leaf_data["Curve"]))
-                    
+                
+                params = Parameters()
+                for i in np.unique(leaf_data["Curve"]):
+                    params.add('Jmax25_%d' % (i), value=np.random.uniform(5.0, 550) , min=0.0, max=600.0)
+                    params.add('Vcmax25_%d' % (i), value=np.random.uniform(5.0, 350) , min=0.0, max=600.0)
+                    params.add('Rd25_%d' % (i), value=np.random.uniform(0.0, 6.0), min=0.0)
+                params.add('Eaj', value=np.random.uniform(20000.0, 80000.0), min=0.0, max=199999.9)
+                params.add('delSj', value=np.random.uniform(550.0, 700.0), min=0.0, max=800.0)  
+                params.add('Hdj', value=200000.0, vary=False)
+                params.add('Eav', value=np.random.uniform(20000.0, 80000.0), min=0.0, max=199999.9)
+                params.add('delSv', value=np.random.uniform(550.0, 700.0), min=0.0, max=800.0)  
+                params.add('Hdv', value=200000.0, vary=False)
+                params.add('Ear', value=np.random.uniform(20000.0, 80000.0), min=0.0, max=199999.9)
+                
+                for i in np.unique(leaf_data["Curve"]):
+                    col_id = "f_%d" % (i)
+                
+                    # first fill column with zeros
+                    x = leaf_data["Curve"]
+                    x = np.where(x==i, 1.0, 0.0)
+                    leaf_data[col_id] = x
+                
+                
+                
+                # Test sensitivity, are we falling into local mins?
                 all_results = []
                 all_rmse = []
                 for kk in xrange(30):
                     
-                    
-                    
-                
-                    params = Parameters()
                     for i in np.unique(leaf_data["Curve"]):
-                        params.add('Jmax25_%d' % (i), value=np.random.uniform(5.0, 550) , min=0.0, max=600.0)
-                        params.add('Vcmax25_%d' % (i), value=np.random.uniform(5.0, 350) , min=0.0, max=600.0)
-                        params.add('Rd25_%d' % (i), value=np.random.uniform(0.0, 6.0), min=0.0)
-                    params.add('Eaj', value=np.random.uniform(20000.0, 80000.0), min=0.0, max=199999.9)
-                    params.add('delSj', value=np.random.uniform(550.0, 700.0), min=0.0, max=800.0)  
-                    params.add('Hdj', value=200000.0, vary=False)
-                    params.add('Eav', value=np.random.uniform(20000.0, 80000.0), min=0.0, max=199999.9)
-                    params.add('delSv', value=np.random.uniform(550.0, 700.0), min=0.0, max=800.0)  
-                    params.add('Hdv', value=200000.0, vary=False)
-                    params.add('Ear', value=np.random.uniform(20000.0, 80000.0), min=0.0, max=199999.9)
-                
-                
-                
-                    #print leaf_data["Photo"]
-                
-                    for i in np.unique(leaf_data["Curve"]):
+                        
+                        params['Jmax25_%d' % (i)].value = np.random.uniform(5.0, 550)
+                        params['Vcmax25_%d' % (i)].value = np.random.uniform(5.0, 350)
+                        params['Rd25_%d' % (i)].value = np.random.uniform(0.0, 6.0)
                     
-                        col_id = "f_%d" % (i)
+                    params['Eaj'].value = np.random.uniform(20000.0, 80000.0)
+                    params['delSj'].value = np.random.uniform(550.0, 700.0)
+                    params['Eav'].value = np.random.uniform(20000.0, 80000.0)
+                    params['delSv'].value = np.random.uniform(550.0, 700.0)
+                    params['Ear'].value = np.random.uniform(20000.0, 80000.0)
                     
-                        # first fill column with zeros
-                        x = leaf_data["Curve"]
-                        x = np.where(x==i, 1.0, 0.0)
-                        leaf_data[col_id] = x
-                
                     
                     result = minimize(self.residual, params, args=(leaf_data, obs))
                     (An, Anc, Anj) = self.forward_run(result, leaf_data)
