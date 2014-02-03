@@ -605,23 +605,10 @@ class FitMe(object):
           1167-1179.
         """
         return (Hd / (delS - RGAS * np.log(Ha / (Hd - Ha)))) - self.deg2kelvin
+            
 
+if __name__ == "__main__":
 
-def profile_main():
-    """ profile code """
-    import cProfile, pstats
-    prof = cProfile.Profile()
-    prof = prof.runctx("test()", globals(), locals())
-    print "<pre>"
-    stats = pstats.Stats(prof)
-    stats.sort_stats("cumulative")  # Or cumulative
-    stats.print_stats(500)  # 80 = how many to print
-    # The rest is optional.
-    # stats.print_callees()
-    # stats.print_callers()
-    print "</pre>"
-
-def test():
     ofname = "fitting_results.csv"
     results_dir = "/Users/mdekauwe/Desktop/results"
     data_dir = "/Users/mdekauwe/Desktop/data"
@@ -630,18 +617,4 @@ def test():
     model = FarquharC3(peaked_Jmax=True, peaked_Vcmax=True, model_Q10=True)
     
     F = FitMe(model, ofname, results_dir, data_dir, plot_dir)
-    F.main(print_to_screen=True)         
-
-if __name__ == "__main__":
-
-    #ofname = "fitting_results.csv"
-    #results_dir = "/Users/mdekauwe/Desktop/results"
-    #data_dir = "/Users/mdekauwe/Desktop/data"
-    #plot_dir = "/Users/mdekauwe/Desktop/plots"
-    #from farquhar_model import FarquharC3
-    #model = FarquharC3(peaked_Jmax=True, peaked_Vcmax=True, model_Q10=True)
-    
-    #F = FitMe(model, ofname, results_dir, data_dir, plot_dir)
-    #F.main(print_to_screen=True) 
-    
-    profile_main()
+    F.main(print_to_screen=True) 
