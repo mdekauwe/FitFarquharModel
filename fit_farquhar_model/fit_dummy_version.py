@@ -52,7 +52,7 @@ class FitMe(object):
     of the fit result (Minimizer object) will be False. 
     """
     def __init__(self, model=None, ofname=None, results_dir=None, 
-                 data_dir=None, plot_dir=None, num_iter=10, peaked=True, 
+                 data_dir=None, plot_dir=None, num_iter=5, peaked=True, 
                  delimiter=","):
         """
         Parameters
@@ -103,6 +103,7 @@ class FitMe(object):
                 # Test sensitivity, are we falling into local mins?
                 lowest_rmse = self.high_number
                 for i, iter in enumerate(xrange(self.num_iter)): 
+                    print group, i, iter
                     # pick new initial parameter guesses, but dont rebuild 
                     # params object
                     if i > 0:
@@ -110,7 +111,8 @@ class FitMe(object):
                 
                     result = minimize(self.residual, params, args=(dfr,))
                     (An, Anc, Anj) = self.forward_run(result, dfr)
-                
+                    
+                    
                     # Successful fit?
                     # See comment above about why errorbars might not be 
                     # resolved.
@@ -476,12 +478,15 @@ class FitMe(object):
         for name, par in result.params.items():
             if name in ('Hdj', 'Hdv'):
                 continue
-            else:
-                if (par.value * threshold > par.max or 
-                    fabs(par.stderr - 0.00000000) < 0.00001):
-                    bad = True
-                    break
+            elif fabs(par.stderr - 0.00000000) < 0.00001:
+                bad = True
+                break
                 
+            #if (par.value * threshold > par.max or 
+            #    fabs(par.stderr - 0.00000000) < 0.00001):
+            #    bad = True
+            #    break
+            
         return bad
 
     
