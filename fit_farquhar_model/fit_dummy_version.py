@@ -97,14 +97,14 @@ class FitMe(object):
         """
         for fname in glob.glob(os.path.join(self.data_dir, infname_tag)):
             df = self.read_data(fname)
-            
             for group in np.unique(df["fitgroup"]):
                 dfr = df[df["fitgroup"]==group]
+                dfr.index = range(len(dfr)) # need to reindex slice
                 (params, dfr) = self.setup_model_params(dfr)
                 # Test sensitivity, are we falling into local mins?
                 lowest_rmse = self.high_number
                 for i, iter in enumerate(xrange(self.num_iter)): 
-                    print group, i, iter
+                    print group, i
                     # pick new initial parameter guesses, but dont rebuild 
                     # params object
                     if i > 0:
@@ -113,11 +113,11 @@ class FitMe(object):
                     result = minimize(self.residual, params, args=(dfr,))
                     (An, Anc, Anj) = self.forward_run(result, dfr)
                     
-                    
                     # Successful fit?
                     # See comment above about why errorbars might not be 
                     # resolved.
-                    if result.errorbars and self.check_params(result):
+                    #if result.errorbars and self.check_params(result):
+                    if result.errorbars:
                         rmse = np.sqrt(np.mean((dfr["Photo"] - An)**2))
                         if rmse < lowest_rmse:
                             lowest_rmse = rmse
@@ -194,11 +194,13 @@ class FitMe(object):
         params : object
             lmfit object containing parameters to fit
         """
+        """
         params = Parameters()
         # Need to loop over all the leaves, fitting separate Jmax25, Vcmax25 
         # and Rd25 parameter values by leaf
+        
         for leaf_num in np.unique(df["Leaf"]):
-            
+             
             (Jmax25_guess, Vcmax25_guess, 
              Rd25_guess, Eaj_guess, 
              Eav_guess, Ear_guess, 
@@ -226,7 +228,38 @@ class FitMe(object):
         params.add('delSv', value=delSv_guess, min=0.0, max=800.0)  
         params.add('Hdv', value=200000.0, vary=False)
         params.add('Ear', value=Ear_guess, min=0.0, max=199999.9)
-                
+        """     
+        
+        params = Parameters()
+        # Need to loop over all the leaves, fitting separate Jmax25, Vcmax25 
+        # and Rd25 parameter values by leaf
+        
+        for leaf_num in np.unique(df["Leaf"]):
+             
+            (Jmax25_guess, Vcmax25_guess, 
+             Rd25_guess, Eaj_guess, 
+             Eav_guess, Ear_guess, 
+             delSj_guess, delSv_guess) = self.pick_random_starting_point()
+            
+            params.add('Jmax25_%d' % (leaf_num), value=Jmax25_guess)
+            params.add('Vcmax25_%d' % (leaf_num), value=Vcmax25_guess)
+            params.add('Rd25_%d' % (leaf_num), value=Rd25_guess)
+        
+            # Need to build dummy variable identifier for each leaf.
+            col_id = "f_%d" % (leaf_num)
+            temp = df["Leaf"]
+            temp = np.where(temp==leaf_num, 1.0, 0.0)
+            df[col_id] = temp
+        
+        # Temp dependancy values do not vary by leaf, so only need one set of 
+        # params.
+        params.add('Eaj', value=Eaj_guess)
+        params.add('delSj', value=delSj_guess)  
+        params.add('Hdj', value=200000.0, vary=False)
+        params.add('Eav', value=Eav_guess)
+        params.add('delSv', value=delSv_guess)  
+        params.add('Hdv', value=200000.0, vary=False)
+        params.add('Ear', value=Ear_guess)
         return params, df
     
     def change_param_values(self, df, params):
@@ -411,8 +444,6 @@ class FitMe(object):
         remaining_header = ["Tav", "Var", "R2", "SSQ", "MSE", "DOF", "n", \
                             "Species", "Season", "Leaf", "Filename", \
                             "Topt_J", "Topt_V", "id"]
-        
-        #print df["Species"]
         
         pearsons_r = stats.pearsonr(df["Photo"], An_fit)[0]
         diff_sq = (df["Photo"]-An_fit)**2
