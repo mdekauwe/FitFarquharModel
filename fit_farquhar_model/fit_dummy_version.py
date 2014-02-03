@@ -194,7 +194,7 @@ class FitMe(object):
         params : object
             lmfit object containing parameters to fit
         """
-        """
+        
         params = Parameters()
         # Need to loop over all the leaves, fitting separate Jmax25, Vcmax25 
         # and Rd25 parameter values by leaf
@@ -228,38 +228,8 @@ class FitMe(object):
         params.add('delSv', value=delSv_guess, min=0.0, max=800.0)  
         params.add('Hdv', value=200000.0, vary=False)
         params.add('Ear', value=Ear_guess, min=0.0, max=199999.9)
-        """     
-        
-        params = Parameters()
-        # Need to loop over all the leaves, fitting separate Jmax25, Vcmax25 
-        # and Rd25 parameter values by leaf
-        
-        for leaf_num in np.unique(df["Leaf"]):
-             
-            (Jmax25_guess, Vcmax25_guess, 
-             Rd25_guess, Eaj_guess, 
-             Eav_guess, Ear_guess, 
-             delSj_guess, delSv_guess) = self.pick_random_starting_point()
             
-            params.add('Jmax25_%d' % (leaf_num), value=Jmax25_guess)
-            params.add('Vcmax25_%d' % (leaf_num), value=Vcmax25_guess)
-            params.add('Rd25_%d' % (leaf_num), value=Rd25_guess)
         
-            # Need to build dummy variable identifier for each leaf.
-            col_id = "f_%d" % (leaf_num)
-            temp = df["Leaf"]
-            temp = np.where(temp==leaf_num, 1.0, 0.0)
-            df[col_id] = temp
-        
-        # Temp dependancy values do not vary by leaf, so only need one set of 
-        # params.
-        params.add('Eaj', value=Eaj_guess)
-        params.add('delSj', value=delSj_guess)  
-        params.add('Hdj', value=200000.0, vary=False)
-        params.add('Eav', value=Eav_guess)
-        params.add('delSv', value=delSv_guess)  
-        params.add('Hdv', value=200000.0, vary=False)
-        params.add('Ear', value=Ear_guess)
         return params, df
     
     def change_param_values(self, df, params):
