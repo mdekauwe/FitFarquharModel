@@ -113,7 +113,7 @@ class FitMe(object):
                     # Successful fit?
                     # See comment above about why errorbars might not be 
                     # resolved.
-                    if result.errorbars:
+                    if result.errorbars and self.check_params(result):
                         rmse = np.sqrt(np.mean((dfr["Photo"] - An)**2))
                         if rmse < lowest_rmse:
                             lowest_rmse = rmse
@@ -122,7 +122,7 @@ class FitMe(object):
                         #self.print_fit_to_screen(best_result)
                         
                 # Pick the best fit...
-                if lowest_rmse < self.high_number:
+                if lowest_rmse < self.high_number and best_result.errorbars:
                     if print_to_screen:
                         self.print_fit_to_screen(best_result)
                         
@@ -406,6 +406,8 @@ class FitMe(object):
                             "Species", "Season", "Leaf", "Filename", \
                             "Topt_J", "Topt_V", "id"]
         
+        print df["Species"]
+        
         pearsons_r = stats.pearsonr(df["Photo"], An_fit)[0]
         diff_sq = (df["Photo"]-An_fit)**2
         ssq = np.sum(diff_sq)
@@ -458,7 +460,25 @@ class FitMe(object):
         for name, par in result.params.items():
             print '%s = %.8f +/- %.8f ' % (name, par.value, par.stderr)
         print 
+    
+    def check_params(self, result, threshold=1.05):
+        """ Check that fitted values aren't stuck against the "wall"
+        
+        Parameters
+        ----------
+        result : object
+            fitting result, param, std. error etc.
+        """
+        bad = False
+        for name, par in result.params.items():
+            if par.value * threshold > par.max:
+                bad = True
+                break
+        
+        return bad
 
+    
+    
     def make_plots(self, df, An_fit, Anc_fit, Anj_fit, result):
         """ Make some plots to show how good our fitted model is to the data 
         
