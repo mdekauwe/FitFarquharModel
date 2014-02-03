@@ -223,10 +223,10 @@ class FitMe(object):
         # params.
         params.add('Eaj', value=Eaj_guess, min=0.0, max=199999.9)
         params.add('delSj', value=delSj_guess, min=0.0, max=800.0)  
-        params.add('Hdj', value=200000.0, vary=False)
+        #params.add('Hdj', value=200000.0, vary=False)
         params.add('Eav', value=Eav_guess, min=0.0, max=199999.9)
         params.add('delSv', value=delSv_guess, min=0.0, max=800.0)  
-        params.add('Hdv', value=200000.0, vary=False)
+        #params.add('Hdv', value=200000.0, vary=False)
         params.add('Ear', value=Ear_guess, min=0.0, max=199999.9)
             
         
@@ -314,12 +314,13 @@ class FitMe(object):
         
         Eaj = params['Eaj'].value
         delSj = params['delSj'].value
-        Hdj = params['Hdj'].value
+        #Hdj = params['Hdj'].value
         Eav = params['Eav'].value
         delSv = params['delSv'].value
-        Hdv = params['Hdv'].value
+        #Hdv = params['Hdv'].value
         Ear = params['Ear'].value
-        
+        Hdv = 200000.00000000
+        Hdj = 200000.00000000
         if hasattr(df, "Par"):
             (An, Anc, Anj) = self.farq(Ci=df["Ci"], Tleaf=df["Tleaf"], 
                                        Par=df["Par"], Jmax=None, Vcmax=None, 
@@ -368,12 +369,13 @@ class FitMe(object):
         
         Eaj = result.params['Eaj'].value
         delSj = result.params['delSj'].value
-        Hdj = result.params['Hdj'].value
+        #Hdj = result.params['Hdj'].value
         Eav = result.params['Eav'].value
         delSv = result.params['delSv'].value
-        Hdv = result.params['Hdv'].value
+        #Hdv = result.params['Hdv'].value
         Ear = result.params['Ear'].value
-        
+        Hdv = 200000.00000000
+        Hdj = 200000.00000000
         if hasattr(df, "Par"):
             (An, Anc, Anj) = self.farq(Ci=df["Ci"], Tleaf=df["Tleaf"], 
                                        Par=df["Par"], Jmax=None, Vcmax=None, 
@@ -437,12 +439,21 @@ class FitMe(object):
         row.append("%s" % (df["Season"][0]))
         row.append("%s" % (df["Leaf"][0]))
         row.append("%s" % (fname))
-        Topt_J = (self.calc_Topt(result.params["Hdj"].value, 
+        
+        Hdv = 200000.00000000
+        Hdj = 200000.00000000
+        Topt_J = (self.calc_Topt(Hdj, 
                                  result.params["Eaj"].value, 
                                  result.params["delSj"].value))
-        Topt_V = (self.calc_Topt(result.params["Hdv"].value, 
+        Topt_V = (self.calc_Topt(Hdv, 
                                  result.params["Eav"].value, 
                                  result.params["delSv"].value))
+        #Topt_J = (self.calc_Topt(result.params["Hdj"].value, 
+        #                         result.params["Eaj"].value, 
+        #                         result.params["delSj"].value))
+        #Topt_V = (self.calc_Topt(result.params["Hdv"].value, 
+        #                         result.params["Eav"].value, 
+        #                         result.params["delSv"].value))
         row.append("%f" % (Topt_J))
         row.append("%f" % (Topt_V))
         row.append("%s%s%s" % (str(df["Species"][0]), \
@@ -533,12 +544,13 @@ class FitMe(object):
             Rd25 = result.params['Rd25_%d' % (i)].value        
             Eaj = result.params['Eaj'].value
             delSj = result.params['delSj'].value
-            Hdj = result.params['Hdj'].value
+            #Hdj = result.params['Hdj'].value
             Eav = result.params['Eav'].value
             delSv = result.params['delSv'].value
-            Hdv = result.params['Hdv'].value
+            #Hdv = result.params['Hdv'].value
             Ear = result.params['Ear'].value
-            
+            Hdv = 200000.00000000
+            Hdj = 200000.00000000
             (An, Anc, Anj) = self.farq(Ci=curve_df["Ci"], Tleaf=curve_df["Tleaf"], 
                                        Par=None, Jmax=None, Vcmax=None, 
                                        Jmax25=Jmax25, Vcmax25=Vcmax25, Rd=None, 
