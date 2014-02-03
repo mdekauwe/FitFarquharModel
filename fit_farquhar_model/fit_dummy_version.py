@@ -26,7 +26,7 @@ import sys
 import glob
 import numpy as np
 import csv
-from lmfit import minimize, Parameters, printfuncs, conf_interval
+from lmfit import minimize, Parameters
 from scipy import stats
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -34,7 +34,21 @@ import pandas as pd
 class FitMe(object):
     """
     Basic fitting class, contains some generic methods which are used by the
-    fitting routines, e.g. plotting, file reporting etc. 
+    fitting routines, e.g. plotting, file reporting etc.
+    
+    
+    Error bar fitting issue - from lmfit documentation...
+
+    In some cases, it may not be possible to estimate the 
+    errors  and correlations. For example, if a variable 
+    actually has no  practical effect on the fit, it will 
+    likely cause the  covariance matrix to be singular, 
+    making standard errors  impossible to estimate. Placing 
+    bounds on varied Parameters  makes it more likely that 
+    errors cannot be estimated, as  being near the maximum or 
+    minimum value makes the covariance 
+    matrix singular. In these cases, the errorbars attribute 
+    of the fit result (Minimizer object) will be False. 
     """
     def __init__(self, model=None, ofname=None, results_dir=None, 
                  data_dir=None, plot_dir=None, num_iter=10, peaked=True, 
@@ -69,7 +83,7 @@ class FitMe(object):
         self.delimiter = delimiter
         
         self.peaked = peaked
-        
+        self.high_number = 99999.9
         
     def main(self, print_to_screen, infname_tag="*.csv"):   
         """ Loop over all our A-Ci measured curves and fit the Farquhar model
@@ -80,19 +94,14 @@ class FitMe(object):
         print_to_screen : logical
             print fitting result to screen? Default is no!
         """
-        
-        
-        # Test sensitivity, are we falling into local mins?
-        results_store = []
-        rmse_store = []
         for fname in glob.glob(os.path.join(self.data_dir, infname_tag)):
             df = self.read_data(fname)
             (params, df) = self.setup_model_params(df)
             for group in np.unique(df["fitgroup"]):
                 dfr = df[df["fitgroup"]==group]
-                
+                # Test sensitivity, are we falling into local mins?
+                lowest_rmse = self.high_number
                 for i, iter in enumerate(xrange(self.num_iter)): 
-                
                     # pick new initial parameter guesses, but dont rebuild 
                     # params object
                     if i > 0:
@@ -101,51 +110,31 @@ class FitMe(object):
                     result = minimize(self.residual, params, args=(dfr,))
                     (An, Anc, Anj) = self.forward_run(result, dfr)
                 
-                    # Successful fit
-                    # Did we resolve the error bars during the fit? 
-                    #
-                    # From lmfit...
-                    #
-                    # In some cases, it may not be possible to estimate the 
-                    # errors  and correlations. For example, if a variable 
-                    # actually has no  practical effect on the fit, it will 
-                    # likely cause the  covariance matrix to be singular, 
-                    # making standard errors  impossible to estimate. Placing 
-                    # bounds on varied Parameters  makes it more likely that 
-                    # errors cannot be estimated, as  being near the maximum or 
-                    # minimum value makes the covariance 
-                    # matrix singular. In these cases, the errorbars attribute 
-                    # of the fit result (Minimizer object) will be False.
+                    # Successful fit?
+                    # See comment above about why errorbars might not be 
+                    # resolved.
                     if result.errorbars:
-                        results_store.append(result)
                         rmse = np.sqrt(np.mean((dfr["Photo"] - An)**2))
-                        rmse_store.append(rmse)
-                        self.print_fit_to_screen(best_result)
-                        print
-                        print result.errorbars
-                        print "===="
-                        print
+                        if rmse < lowest_rmse:
+                            lowest_rmse = rmse
+                            best_result = result
+                        
+                        #self.print_fit_to_screen(best_result)
                         
                 # Pick the best fit...
-                if len(results_store) > 0:
-                    rmse_store = np.asarray(rmse_store)
-                    idx = rmse_store.argmin()
-                    best_result = results_store[idx]
-                    print len(results_store) 
+                if lowest_rmse < self.high_number:
                     if print_to_screen:
                         self.print_fit_to_screen(best_result)
-                
-            
+                        
                     self.report_fits(best_result, os.path.basename(fname), 
                                      dfr, An)
-                
                     self.make_plots(dfr, An, Anc, Anj, best_result)
-          
+                else:
+                    print "Fit failed, fitgroup = %d" % (group)          
         
     def open_output_files(self):
         """
         Opens output file for recording fit information
-        
         
         Returns: 
         --------
@@ -232,7 +221,6 @@ class FitMe(object):
         params.add('Hdv', value=200000.0, vary=False)
         params.add('Ear', value=Ear_guess, min=0.0, max=199999.9)
                 
-         
         return params, df
     
     def change_param_values(self, df, params):
@@ -266,7 +254,6 @@ class FitMe(object):
         retval * 3 : float
             Three starting guesses for Jmax, Vcmax and Rd
         """
-        
         Jmax25 = np.random.uniform(5.0, 550) 
         Vcmax25 = np.random.uniform(5.0, 350) 
         Rd25 = np.random.uniform(0.0, 5.0)
@@ -460,8 +447,6 @@ class FitMe(object):
         # tidy up
         ofile.close()
                 
-         
-    
     def print_fit_to_screen(self, result):
         """ Print the fitting result to the terminal 
         
@@ -568,8 +553,6 @@ class FitMe(object):
         
             fig.savefig(ofname)
             plt.close(fig)
-        
-       
     
     def calc_Topt(self, Hd, Ha, delS, RGAS=8.314):
         """ Calculate the temperature optimum 
