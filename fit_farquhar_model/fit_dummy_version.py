@@ -97,9 +97,10 @@ class FitMe(object):
         """
         for fname in glob.glob(os.path.join(self.data_dir, infname_tag)):
             df = self.read_data(fname)
-            (params, df) = self.setup_model_params(df)
+            
             for group in np.unique(df["fitgroup"]):
                 dfr = df[df["fitgroup"]==group]
+                (params, dfr) = self.setup_model_params(dfr)
                 # Test sensitivity, are we falling into local mins?
                 lowest_rmse = self.high_number
                 for i, iter in enumerate(xrange(self.num_iter)): 
