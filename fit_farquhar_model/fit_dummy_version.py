@@ -763,7 +763,7 @@ if __name__ == "__main__":
     data_dir = "/Users/mdekauwe/Desktop/data"
     plot_dir = "/Users/mdekauwe/Desktop/plots"
     from farquhar_model import FarquharC3
-    model = FarquharC3(peaked_Jmax=True, peaked_Vcmax=True, model_Rd_arrh=True)
+    model = FarquharC3(peaked_Jmax=True, peaked_Vcmax=True, model_Q10=True)
     
     F = FitMe(model, ofname, results_dir, data_dir, plot_dir)
     F.main(print_to_screen=False) 

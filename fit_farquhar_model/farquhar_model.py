@@ -55,7 +55,7 @@ class FarquharC3(object):
                  Eo=36380.0, Egamma=37830.0, theta_hyperbol=0.9995, 
                  theta_J=0.7, force_vcmax_fit_pts=None,
                  alpha=None, quantum_yield=0.3, absorptance=0.8,
-                 change_over_pt=None, model_Rd_arrh=False):
+                 change_over_pt=None, model_Q10=False):
         """
         Parameters
         ----------
@@ -119,7 +119,7 @@ class FarquharC3(object):
             
         self.force_vcmax_fit_pts = force_vcmax_fit_pts
         self.change_over_pt = change_over_pt
-        self.model_Rd_arrh = model_Rd_arrh
+        self.model_Q10 = model_Q10
         
     def calc_photosynthesis(self, Ci=None, Tleaf=None, Par=None, Jmax=None, 
                             Vcmax=None, Jmax25=None, Vcmax25=None, Rd=None, 
@@ -189,7 +189,7 @@ class FarquharC3(object):
         
         # Calculations at 25 degrees C or the measurement temperature
         if Rd25 is not None: 
-            if self.model_Rd_arrh:
+            if self.model_Q10:
                 Rd = self.arrh(Rd25, Ear, Tleaf)
             else:
                 Rd = self.resp(Tleaf, Q10, Rd25, Tref=25.0)
