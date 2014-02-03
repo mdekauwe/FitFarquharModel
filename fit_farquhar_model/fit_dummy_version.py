@@ -203,7 +203,8 @@ class FitMe(object):
                         max=600.0)
             params.add('Vcmax25_%d' % (leaf_num), value=Vcmax25_guess , min=0.0, 
                         max=600.0)
-            params.add('Rd25_%d' % (leaf_num), value=Rd25_guess, min=0.0)
+            params.add('Rd25_%d' % (leaf_num), value=Rd25_guess, min=0.0, 
+                        max=6.0)
         
             # Need to build dummy variable identifier for each leaf.
             col_id = "f_%d" % (leaf_num)
@@ -406,7 +407,7 @@ class FitMe(object):
                             "Species", "Season", "Leaf", "Filename", \
                             "Topt_J", "Topt_V", "id"]
         
-        print df["Species"]
+        #print df["Species"]
         
         pearsons_r = stats.pearsonr(df["Photo"], An_fit)[0]
         diff_sq = (df["Photo"]-An_fit)**2
@@ -471,6 +472,7 @@ class FitMe(object):
         """
         bad = False
         for name, par in result.params.items():
+            print name, par.value * threshold, par.max
             if par.value * threshold > par.max:
                 bad = True
                 break
