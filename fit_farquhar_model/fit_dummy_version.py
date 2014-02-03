@@ -79,165 +79,98 @@ class FitMe(object):
         for fname in glob.glob(os.path.join(self.data_dir, infname_tag)):
             data = self.read_data(fname)
             data["Tleaf"] += self.deg2kelvin
+            obs = data["Photo"]
             
-            
+            params = Parameters()
             for leaf_num in np.unique(data["Leaf"]):
-                leaf_data = data[data["Leaf"]==leaf_num]
-                obs = leaf_data["Photo"]
                 
-                num_curves = len(np.unique(leaf_data["Curve"]))
-                
-                params = Parameters()
-                for i in np.unique(leaf_data["Curve"]):
-                    params.add('Jmax25_%d' % (i), value=np.random.uniform(5.0, 550) , min=0.0, max=600.0)
-                    params.add('Vcmax25_%d' % (i), value=np.random.uniform(5.0, 350) , min=0.0, max=600.0)
-                    params.add('Rd25_%d' % (i), value=np.random.uniform(0.0, 6.0), min=0.0)
-                params.add('Eaj', value=np.random.uniform(20000.0, 80000.0), min=0.0, max=199999.9)
-                params.add('delSj', value=np.random.uniform(550.0, 700.0), min=0.0, max=800.0)  
-                params.add('Hdj', value=200000.0, vary=False)
-                params.add('Eav', value=np.random.uniform(20000.0, 80000.0), min=0.0, max=199999.9)
-                params.add('delSv', value=np.random.uniform(550.0, 700.0), min=0.0, max=800.0)  
-                params.add('Hdv', value=200000.0, vary=False)
-                params.add('Ear', value=np.random.uniform(20000.0, 80000.0), min=0.0, max=199999.9)
-                
-                for i in np.unique(leaf_data["Curve"]):
-                    col_id = "f_%d" % (i)
-                
-                    # first fill column with zeros
-                    x = leaf_data["Curve"]
-                    x = np.where(x==i, 1.0, 0.0)
-                    leaf_data[col_id] = x
-                
-                
-                
-                # Test sensitivity, are we falling into local mins?
-                all_results = []
-                all_rmse = []
-                for kk in xrange(10):
-                    
-                    for i in np.unique(leaf_data["Curve"]):
-                        
-                        params['Jmax25_%d' % (i)].value = np.random.uniform(5.0, 550)
-                        params['Vcmax25_%d' % (i)].value = np.random.uniform(5.0, 350)
-                        params['Rd25_%d' % (i)].value = np.random.uniform(0.0, 6.0)
-                    
-                    params['Eaj'].value = np.random.uniform(20000.0, 80000.0)
-                    params['delSj'].value = np.random.uniform(550.0, 700.0)
-                    params['Eav'].value = np.random.uniform(20000.0, 80000.0)
-                    params['delSv'].value = np.random.uniform(550.0, 700.0)
-                    params['Ear'].value = np.random.uniform(20000.0, 80000.0)
-                    
-                    
-                    result = minimize(self.residual, params, args=(leaf_data, obs))
-                    (An, Anc, Anj) = self.forward_run(result, leaf_data)
-                
-                    rmse = np.sqrt(np.mean((obs- An)**2))
-                    
-                    if result.errorbars:
-                        all_results.append(result)
-                        all_rmse.append(rmse)
-                
-                
-                        #self.print_fit_to_screen(result)
-                        print kk, rmse
-                        
-                all_rmse = np.asarray(all_rmse)
-                
-                idx = all_rmse.argmin()
-                
-                print
-                print 
-                best_result = all_results[idx]
-                self.print_fit_to_screen(best_result)
+                params.add('Jmax25_%d' % (leaf_num), value=np.random.uniform(5.0, 550) , min=0.0, max=600.0)
+                params.add('Vcmax25_%d' % (leaf_num), value=np.random.uniform(5.0, 350) , min=0.0, max=600.0)
+                params.add('Rd25_%d' % (leaf_num), value=np.random.uniform(0.0, 4.0), min=0.0)
         
-                print 
-                print idx, all_rmse[idx]
-                sys.exit()
+                # first fill column with zeros
+                col_id = "f_%d" % (leaf_num)
+                x = data["Leaf"]
+                x = np.where(x==leaf_num, 1.0, 0.0)
+                data[col_id] = x
                 
+            params.add('Eaj', value=np.random.uniform(20000.0, 80000.0), min=0.0, max=199999.9)
+            params.add('delSj', value=np.random.uniform(550.0, 700.0), min=0.0, max=800.0)  
+            params.add('Hdj', value=200000.0, vary=False)
+            params.add('Eav', value=np.random.uniform(20000.0, 80000.0), min=0.0, max=199999.9)
+            params.add('delSv', value=np.random.uniform(550.0, 700.0), min=0.0, max=800.0)  
+            params.add('Hdv', value=200000.0, vary=False)
+            params.add('Ear', value=np.random.uniform(20000.0, 80000.0), min=0.0, max=199999.9)
                 
+             
+            
+            
+            result = minimize(self.residual, params, args=(data, obs))
+            (An, Anc, Anj) = self.forward_run(result, data)
+            
+            rmse = np.sqrt(np.mean((obs- An)**2))
                 
+            
+            self.print_fit_to_screen(result)
+            #print "iteration, rmse = ", kk, rmse
+            
+            
+            # Test sensitivity, are we falling into local mins?
+            all_results = []
+            all_rmse = []
+            for kk in xrange(10): 
                 
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                #if jmax_guess is not None:
-                #    params.add('Jmax', value=jmax_guess, min=0.0)
-                #if vcmax_guess is not None:
-                #    params.add('Vcmax', value=vcmax_guess, min=0.0)
-                #if rd_guess is not None:
-                #    params.add('Rd', value=rd_guess, min=0.0)
-                
-                
-                
-                
-                (vcmax_guess, jmax_guess, 
-                    rd_guess) = self.pick_starting_point(curve_data)
-                params = self.setup_model_params(jmax_guess=jmax_guess, 
-                                                 vcmax_guess=vcmax_guess, 
-                                                 rd_guess=rd_guess)
-                
-                result = minimize(self.residual, params,  
-                                  args=(curve_data, curve_data["Photo"]))
+                for leaf_num in np.unique(data["Leaf"]):
                     
-                # Did we resolve the error bars during the fit? 
-                #
-                # From lmfit...
-                #
-                # In some cases, it may not be possible to estimate the errors 
-                # and correlations. For example, if a variable actually has no 
-                # practical effect on the fit, it will likely cause the 
-                # covariance matrix to be singular, making standard errors 
-                # impossible to estimate. Placing bounds on varied Parameters 
-                # makes it more likely that errors cannot be estimated, as 
-                # being near the maximum or minimum value makes the covariance 
-                # matrix singular. In these cases, the errorbars attribute of 
-                # the fit result (Minimizer object) will be False.
-                if (result.errorbars and 
-                    np.isnan(result.params['Jmax'].stderr) == False):
-                    
-                    self.succes_count += 1
-                else:
-                    
-                    # Failed errobar fitting, going to try and mess with 
-                    # starting poisition...
-                    for i in xrange(self.Niter):
-                        (vcmax_guess, jmax_guess, 
-                         rd_guess) = self.pick_random_starting_point()
-                    
-                        params = self.setup_model_params(jmax_guess=jmax_guess, 
-                                                     vcmax_guess=vcmax_guess, 
-                                                     rd_guess=rd_guess)
-                        result = minimize(self.residual, params,  
-                                         args=(curve_data, curve_data["Photo"]))
-                        if result.errorbars:
-                            self.succes_count += 1
-                            break
+                    params['Jmax25_%d' % (leaf_num)].value = np.random.uniform(5.0, 550)
+                    params['Vcmax25_%d' % (leaf_num)].value = np.random.uniform(5.0, 350)
+                    params['Rd25_%d' % (leaf_num)].value = np.random.uniform(0.0, 4.0)
                 
-                if print_to_screen:
-                    print fname, curve_num
+                params['Eaj'].value = np.random.uniform(20000.0, 80000.0)
+                params['delSj'].value = np.random.uniform(550.0, 700.0)
+                params['Eav'].value = np.random.uniform(20000.0, 80000.0)
+                params['delSv'].value = np.random.uniform(550.0, 700.0)
+                params['Ear'].value = np.random.uniform(20000.0, 80000.0)
+                
+                
+                result = minimize(self.residual, params, args=(data, obs))
+                (An, Anc, Anj) = self.forward_run(result, data)
+            
+                rmse = np.sqrt(np.mean((obs- An)**2))
+                
+                if result.errorbars:
+                    all_results.append(result)
+                    all_rmse.append(rmse)
+            
+            
                     self.print_fit_to_screen(result)
-                    
-                # Need to run the Farquhar model with the fitted params for
-                # plotting...
-                (An, Anc, Anj) = self.forward_run(result, curve_data)
-                self.report_fits(wr, result, os.path.basename(fname), 
-                                 curve_data, An)
-                
-                self.make_plot(curve_data, curve_num, An, Anc, Anj, result)
-                self.nfiles += 1       
-        self.tidy_up(fp)    
+                    print "iteration, rmse = ", kk, rmse
+                    print len(all_rmse)
+                print len(all_rmse)
+            all_rmse = np.asarray(all_rmse)
+            idx = all_rmse.argmin()
+            
+            print
+            print 
+            best_result = all_results[idx]
+            self.print_fit_to_screen(best_result)
     
+            print 
+            print idx, all_rmse[idx]
+            sys.exit()
+            
+            
+            
+            
+            
+            
+                
+                
+                
+                
+                
+                
+                
         
     def open_output_files(self, ofname):
         """
@@ -316,10 +249,10 @@ class FitMe(object):
         
         
         
-        
-        
-        for i in np.unique(data["Curve"]):
+        for i in np.unique(data["Leaf"]):
+            
             col_id = "f_%d" % (i)
+            
             Jmax25 += params['Jmax25_%d' % (i)].value * data[col_id]
             Vcmax25 += params['Vcmax25_%d' % (i)].value * data[col_id]
             Rd25 += params['Rd25_%d' % (i)].value * data[col_id]
@@ -433,7 +366,7 @@ class FitMe(object):
         Vcmax25 = np.zeros(len(data))
         Rd25 = np.zeros(len(data))
         
-        for i in np.unique(data["Curve"]):
+        for i in np.unique(data["Leaf"]):
             col_id = "f_%d" % (i)
             Jmax25 += result.params['Jmax25_%d' % (i)].value * data[col_id]
             Vcmax25 += result.params['Vcmax25_%d' % (i)].value * data[col_id]
@@ -758,11 +691,11 @@ class FitMe(object):
 
 if __name__ == "__main__":
 
-    ofname = "/Users/mdekauwe/Desktop/fitting_results.csv"
-    results_dir = "/Users/mdekauwe/Desktop/results"
-    data_dir = "/Users/mdekauwe/Desktop/data"
-    plot_dir = "/Users/mdekauwe/Desktop/plots"
-    from farquhar_model import FarquharC3
+    ofname = "fitting_results.csv"
+    results_dir = "results"
+    data_dir = "data"
+    plot_dir = "plots"
+    from farq_model import FarquharC3
     model = FarquharC3(peaked_Jmax=True, peaked_Vcmax=True, model_Q10=True)
     
     F = FitMe(model, ofname, results_dir, data_dir, plot_dir)
