@@ -1,8 +1,13 @@
 #!/usr/bin/env python
 
 """
-Using the Levenberg-Marquardt algorithm  to fit Jmax, Vcmax, Rd, Eaj, Eav,
-deltaSj and deltaSv.
+Using the Levenberg-Marquardt algorithm  to fit Jmax25, Vcmax25, Rd25, Eaj, Eav, 
+Ear, deltaSj and deltaSv.
+
+Jmax25, Vcmax25 & Rd25 are fit seperately by leaf, thus accounting for 
+differences in leaf N. At the same time, Eaj, Eav, Ear, deltaSj and deltaSv are 
+fit together for the same species. To achieve this we utilise dummy variables,
+it will become more obvious below.
 
 The steps here are:
     1. Define a search grid to pick the starting point of the minimiser, in an
@@ -13,7 +18,7 @@ That's all folks.
 """
 
 __author__ = "Martin De Kauwe"
-__version__ = "1.0 (13.08.2012)"
+__version__ = "1.0 (03.02.2014)"
 __email__ = "mdekauwe@gmail.com"
 
 import os
@@ -21,19 +26,19 @@ import sys
 import glob
 import numpy as np
 import csv
-from lmfit import minimize, Parameters, printfuncs, conf_interval, conf_interval2d
+from lmfit import minimize, Parameters, printfuncs, conf_interval
 from scipy import stats
 import matplotlib.pyplot as plt
-
+import pandas as pd
 
 class FitMe(object):
     """
     Basic fitting class, contains some generic methods which are used by the
-    fitting routines, e.g. plotting, file reporting etc. This is intended
-    to be subclased.
+    fitting routines, e.g. plotting, file reporting etc. 
     """
     def __init__(self, model=None, ofname=None, results_dir=None, 
-                 data_dir=None, plot_dir=None, Niter=500):
+                 data_dir=None, plot_dir=None, num_iter=10, peaked=True, 
+                 delimiter=","):
         """
         Parameters
         ----------
@@ -47,7 +52,7 @@ class FitMe(object):
             input directory path where measured A-Ci files live
         plot_dir : string
             directory to save plots of various fitting routines
-        Niter : int
+        num_iter : int
             number of different attempts to refit code
         """
         
@@ -56,130 +61,91 @@ class FitMe(object):
             self.ofname = os.path.join(self.results_dir, ofname)
         self.data_dir = data_dir 
         self.plot_dir = plot_dir    
-        self.call_model = model.calc_photosynthesis
+        self.farq = model.calc_photosynthesis
         self.succes_count = 0
         self.nfiles = 0
         self.deg2kelvin = 273.15
-        self.Niter = Niter
-    
+        self.num_iter = num_iter
+        self.delimiter = delimiter
+        
+        self.peaked = peaked
+        
+        
     def main(self, print_to_screen, infname_tag="*.csv"):   
         """ Loop over all our A-Ci measured curves and fit the Farquhar model
-        parameters to this data 
+        parameters to these data. 
         
         Parameters
         ----------
         print_to_screen : logical
             print fitting result to screen? Default is no!
         """
-        # open files and write header information
-        fp = self.open_output_files(self.ofname)
-        #wr = self.write_file_hdr(fp, self.header)
-    
-        # Loop over all the measured data and fit the model params.
+        
+        
+        # Test sensitivity, are we falling into local mins?
+        results_store = []
+        rmse_store = []
         for fname in glob.glob(os.path.join(self.data_dir, infname_tag)):
-            data = self.read_data(fname)
-            data["Tleaf"] += self.deg2kelvin
-            obs = data["Photo"]
-            
-            params = Parameters()
-            for leaf_num in np.unique(data["Leaf"]):
+            df = self.read_data(fname)
+            (params, df) = self.setup_model_params(df)
+            for group in np.unique(df["fitgroup"]):
+                dfr = df[df["fitgroup"]==group]
                 
-                params.add('Jmax25_%d' % (leaf_num), value=np.random.uniform(5.0, 550) , min=0.0, max=600.0)
-                params.add('Vcmax25_%d' % (leaf_num), value=np.random.uniform(5.0, 350) , min=0.0, max=600.0)
-                params.add('Rd25_%d' % (leaf_num), value=np.random.uniform(0.0, 4.0), min=0.0)
+                for i, iter in enumerate(xrange(self.num_iter)): 
+                
+                    # pick new initial parameter guesses, but dont rebuild 
+                    # params object
+                    if i > 0:
+                        params = self.change_param_values(dfr, params)
+                
+                    result = minimize(self.residual, params, args=(dfr,))
+                    (An, Anc, Anj) = self.forward_run(result, dfr)
+                
+                    # Successful fit
+                    # Did we resolve the error bars during the fit? 
+                    #
+                    # From lmfit...
+                    #
+                    # In some cases, it may not be possible to estimate the 
+                    # errors  and correlations. For example, if a variable 
+                    # actually has no  practical effect on the fit, it will 
+                    # likely cause the  covariance matrix to be singular, 
+                    # making standard errors  impossible to estimate. Placing 
+                    # bounds on varied Parameters  makes it more likely that 
+                    # errors cannot be estimated, as  being near the maximum or 
+                    # minimum value makes the covariance 
+                    # matrix singular. In these cases, the errorbars attribute 
+                    # of the fit result (Minimizer object) will be False.
+                    if result.errorbars:
+                        results_store.append(result)
+                        rmse = np.sqrt(np.mean((dfr["Photo"] - An)**2))
+                        rmse_store.append(rmse)
+                        self.print_fit_to_screen(best_result)
+                        print
+                        print result.errorbars
+                        print "===="
+                        print
+                        
+                # Pick the best fit...
+                if len(results_store) > 0:
+                    rmse_store = np.asarray(rmse_store)
+                    idx = rmse_store.argmin()
+                    best_result = results_store[idx]
+                    print len(results_store) 
+                    if print_to_screen:
+                        self.print_fit_to_screen(best_result)
+                
+            
+                    self.report_fits(best_result, os.path.basename(fname), 
+                                     dfr, An)
+                
+                    self.make_plots(dfr, An, Anc, Anj, best_result)
+          
         
-                # first fill column with zeros
-                col_id = "f_%d" % (leaf_num)
-                x = data["Leaf"]
-                x = np.where(x==leaf_num, 1.0, 0.0)
-                data[col_id] = x
-                
-            params.add('Eaj', value=np.random.uniform(20000.0, 80000.0), min=0.0, max=199999.9)
-            params.add('delSj', value=np.random.uniform(550.0, 700.0), min=0.0, max=800.0)  
-            params.add('Hdj', value=200000.0, vary=False)
-            params.add('Eav', value=np.random.uniform(20000.0, 80000.0), min=0.0, max=199999.9)
-            params.add('delSv', value=np.random.uniform(550.0, 700.0), min=0.0, max=800.0)  
-            params.add('Hdv', value=200000.0, vary=False)
-            params.add('Ear', value=np.random.uniform(20000.0, 80000.0), min=0.0, max=199999.9)
-                
-             
-            
-            
-            result = minimize(self.residual, params, args=(data, obs))
-            (An, Anc, Anj) = self.forward_run(result, data)
-            
-            rmse = np.sqrt(np.mean((obs- An)**2))
-                
-            
-            self.print_fit_to_screen(result)
-            #print "iteration, rmse = ", kk, rmse
-            
-            
-            # Test sensitivity, are we falling into local mins?
-            all_results = []
-            all_rmse = []
-            for kk in xrange(10): 
-                
-                for leaf_num in np.unique(data["Leaf"]):
-                    
-                    params['Jmax25_%d' % (leaf_num)].value = np.random.uniform(5.0, 550)
-                    params['Vcmax25_%d' % (leaf_num)].value = np.random.uniform(5.0, 350)
-                    params['Rd25_%d' % (leaf_num)].value = np.random.uniform(0.0, 4.0)
-                
-                params['Eaj'].value = np.random.uniform(20000.0, 80000.0)
-                params['delSj'].value = np.random.uniform(550.0, 700.0)
-                params['Eav'].value = np.random.uniform(20000.0, 80000.0)
-                params['delSv'].value = np.random.uniform(550.0, 700.0)
-                params['Ear'].value = np.random.uniform(20000.0, 80000.0)
-                
-                
-                result = minimize(self.residual, params, args=(data, obs))
-                (An, Anc, Anj) = self.forward_run(result, data)
-            
-                rmse = np.sqrt(np.mean((obs- An)**2))
-                
-                if result.errorbars:
-                    all_results.append(result)
-                    all_rmse.append(rmse)
-            
-            
-                    self.print_fit_to_screen(result)
-                    print "iteration, rmse = ", kk, rmse
-                    print len(all_rmse)
-                print len(all_rmse)
-            all_rmse = np.asarray(all_rmse)
-            idx = all_rmse.argmin()
-            
-            print
-            print 
-            best_result = all_results[idx]
-            self.print_fit_to_screen(best_result)
-    
-            print 
-            print idx, all_rmse[idx]
-            sys.exit()
-            
-            
-            
-            
-            
-            
-                
-                
-                
-                
-                
-                
-                
-        
-    def open_output_files(self, ofname):
+    def open_output_files(self):
         """
         Opens output file for recording fit information
         
-        Parameters
-        ----------
-        ofname : string
-            output file name
         
         Returns: 
         --------
@@ -188,13 +154,13 @@ class FitMe(object):
         """
         if os.path.isfile(ofname):
             os.remove(ofname)
-            
-        try:
-            fp = open(ofname, 'wb')
-        except IOError:
-            raise IOError("Can't open %s file for write" % ofname)     
         
-        return fp
+        try:
+            ofile = open(self.ofname, 'wb')
+        except IOError:
+            raise IOError("Can't open %s file for write" % self.ofname)     
+        
+        return ofile
         
     def read_data(self, fname):
         """ Reads in the A-Ci data if infile_type="aci" is true, otherwise this
@@ -213,24 +179,120 @@ class FitMe(object):
         data : array
             numpy array containing the data
         """
-        import pandas as pd
-        df = pd.read_csv(fname)
         
+        df = pd.read_csv(fname, sep=self.delimiter, header=0)
+        
+        # change temperature to kelvins
+        df["Tleaf"] += self.deg2kelvin
+            
         return df
-                      
-    def residual(self, params, data, obs):
+    
+    def setup_model_params(self, df):
+        """ Setup lmfit Parameters object
+        
+        Parameters
+        ----------
+        df : dataframe
+            dataframe containing all the A-Ci curves.
+        
+        Returns
+        -------
+        params : object
+            lmfit object containing parameters to fit
+        """
+        params = Parameters()
+        # Need to loop over all the leaves, fitting separate Jmax25, Vcmax25 
+        # and Rd25 parameter values by leaf
+        for leaf_num in np.unique(df["Leaf"]):
+            
+            (Jmax25_guess, Vcmax25_guess, 
+             Rd25_guess, Eaj_guess, 
+             Eav_guess, Ear_guess, 
+             delSj_guess, delSv_guess) = self.pick_random_starting_point()
+            
+            params.add('Jmax25_%d' % (leaf_num), value=Jmax25_guess, min=0.0, 
+                        max=600.0)
+            params.add('Vcmax25_%d' % (leaf_num), value=Vcmax25_guess , min=0.0, 
+                        max=600.0)
+            params.add('Rd25_%d' % (leaf_num), value=Rd25_guess, min=0.0)
+        
+            # Need to build dummy variable identifier for each leaf.
+            col_id = "f_%d" % (leaf_num)
+            temp = df["Leaf"]
+            temp = np.where(temp==leaf_num, 1.0, 0.0)
+            df[col_id] = temp
+        
+        # Temp dependancy values do not vary by leaf, so only need one set of 
+        # params.
+        params.add('Eaj', value=Eaj_guess, min=0.0, max=199999.9)
+        params.add('delSj', value=delSj_guess, min=0.0, max=800.0)  
+        params.add('Hdj', value=200000.0, vary=False)
+        params.add('Eav', value=Eav_guess, min=0.0, max=199999.9)
+        params.add('delSv', value=delSv_guess, min=0.0, max=800.0)  
+        params.add('Hdv', value=200000.0, vary=False)
+        params.add('Ear', value=Ear_guess, min=0.0, max=199999.9)
+                
+         
+        return params, df
+    
+    def change_param_values(self, df, params):
+        """ pick new guesses for parameter values """
+        for leaf_num in np.unique(df["Leaf"]):
+            
+            (Jmax25_guess, Vcmax25_guess, 
+             Rd25_guess, Eaj_guess, 
+             Eav_guess, Ear_guess, 
+             delSj_guess, delSv_guess) = self.pick_random_starting_point()
+            
+            params['Jmax25_%d' % (leaf_num)].value = Jmax25_guess
+            params['Vcmax25_%d' % (leaf_num)].value = Vcmax25_guess
+            params['Rd25_%d' % (leaf_num)].value = Rd25_guess
+            params['Eaj'].value = Eaj_guess
+            params['Eav'].value = Eav_guess
+            params['Ear'].value = Ear_guess
+            params['delSj'].value = delSj_guess
+            params['delSv'].value = delSv_guess
+        
+        return params
+        
+    def pick_random_starting_point(self):
+        """ random pick starting point for parameter values 
+        
+        Parameters
+        ----------
+        
+        Returns: 
+        --------
+        retval * 3 : float
+            Three starting guesses for Jmax, Vcmax and Rd
+        """
+        
+        Jmax25 = np.random.uniform(5.0, 550) 
+        Vcmax25 = np.random.uniform(5.0, 350) 
+        Rd25 = np.random.uniform(0.0, 5.0)
+        Eaj = np.random.uniform(20000.0, 80000.0)
+        Eav = np.random.uniform(20000.0, 80000.0)
+        Ear = np.random.uniform(20000.0, 80000.0)
+        delSj = np.random.uniform(550.0, 700.0)
+        delSv = np.random.uniform(550.0, 700.0)
+        if not self.peaked:
+            delSj = None
+            delSv = None
+        
+        return Jmax25, Vcmax25, Rd25, Eaj, Eav, Ear, delSj, delSv
+    
+                  
+    def residual(self, params, df):
         """ simple function to quantify how good the fit was for the fitting
-        routine. Could use something better? RMSE?
+        routine. 
         
         Parameters
         ----------
         params : object
             List of parameters to be fit, initial guess, ranges etc. This is
             an lmfit object
-        data: array
-            data to run farquhar model with
-        obs : array
-            A-Ci data to fit model against
+        df: dataframe
+            df containing all the A-Ci curve and temp data 
         
         Returns: 
         --------
@@ -238,24 +300,21 @@ class FitMe(object):
             residual of fit between model and obs, based on current parameter
             set
         """
-        #Jmax = params['Jmax'].value
-        #Vcmax = params['Vcmax'].value
-        #Rd = params['Rd'].value  
+        # Need to employ dummy variables to fit model parameters
+        # e.g. Jmax = Jmax_leaf1 * f1 + Jmax_leaf2 * f2 etc
+        # where f1=1 for matching leaf data and 0 elsewhere, ditto f2.
+         
+        # These parameter values need to be arrays
+        Jmax25 = np.zeros(len(df))
+        Vcmax25 = np.zeros(len(df))
+        Rd25 = np.zeros(len(df))
         
-        #print params['Jmax25_2'].value, params['Jmax25_3'].value
-        Jmax25 = np.zeros(len(data))
-        Vcmax25 = np.zeros(len(data))
-        Rd25 = np.zeros(len(data))
-        
-        
-        
-        for i in np.unique(data["Leaf"]):
-            
+        # Need to build dummy variables.
+        for i in np.unique(df["Leaf"]):
             col_id = "f_%d" % (i)
-            
-            Jmax25 += params['Jmax25_%d' % (i)].value * data[col_id]
-            Vcmax25 += params['Vcmax25_%d' % (i)].value * data[col_id]
-            Rd25 += params['Rd25_%d' % (i)].value * data[col_id]
+            Jmax25 += params['Jmax25_%d' % (i)].value * df[col_id]
+            Vcmax25 += params['Vcmax25_%d' % (i)].value * df[col_id]
+            Rd25 += params['Rd25_%d' % (i)].value * df[col_id]
         
         Eaj = params['Eaj'].value
         delSj = params['delSj'].value
@@ -265,93 +324,32 @@ class FitMe(object):
         Hdv = params['Hdv'].value
         Ear = params['Ear'].value
         
-        (An, Anc, Anj) = self.call_model(Ci=data["Ci"], Tleaf=data["Tleaf"], Par=None, Jmax=None, 
-                                        Vcmax=None, Jmax25=Jmax25, Vcmax25=Vcmax25, Rd=None, 
-                                        Q10=None, Eaj=Eaj, Eav=Eav, deltaSj=delSj, 
-                                        deltaSv=delSv, Rd25=Rd25, Ear=Ear, Hdv=200000.0, Hdj=200000.0)
+        if hasattr(df, "Par"):
+            (An, Anc, Anj) = self.farq(Ci=df["Ci"], Tleaf=df["Tleaf"], 
+                                       Par=df["Par"], Jmax=None, Vcmax=None, 
+                                       Jmax25=Jmax25, Vcmax25=Vcmax25, Rd=None, 
+                                       Q10=None, Eaj=Eaj, Eav=Eav, 
+                                       deltaSj=delSj, deltaSv=delSv, Rd25=Rd25, 
+                                       Ear=Ear, Hdv=Hdv, Hdj=Hdj)
+        else:
+            (An, Anc, Anj) = self.farq(Ci=df["Ci"], Tleaf=df["Tleaf"], 
+                                       Par=None, Jmax=None, Vcmax=None, 
+                                       Jmax25=Jmax25, Vcmax25=Vcmax25, Rd=None, 
+                                       Q10=None, Eaj=Eaj, Eav=Eav, 
+                                       deltaSj=delSj, deltaSv=delSv, Rd25=Rd25, 
+                                       Ear=Ear, Hdv=Hdv, Hdj=Hdj)
         
-        
-        
-        #if hasattr(data, "Par"):
-        #     (An, Anc, Anj) = self.call_model(Ci=data["Ci"], Tleaf=data["Tleaf"],
-        #                                      Par=data["Par"], Jmax=Jmax, 
-        #                                      Vcmax=Vcmax, Rd=Rd)
-        #else:
-        #    
-        #    (An, Anc, Anj) = self.call_model(Ci=data["Ci"], Tleaf=data["Tleaf"], 
-        #                                     Jmax=Jmax, Vcmax=Vcmax, Rd=Rd)
-        return (obs - An)
+        return (df["Photo"] - An)
     
-    def report_fits(self, f, result, fname, data, An_fit):
-        """ Save fitting results to a file... 
-        
-        Parameters
-        ----------
-        f : object
-            file pointer
-        result: object
-            fitting result, param, std. error etc.
-        obs : array
-            A-Ci data to fit model against
-        fname : string
-            filename to append to output file
-        data : object
-            input A-Ci curve information
-        An_fit : array
-            best model fit using optimised parameters, Net leaf assimilation 
-            rate [umol m-2 s-1]
-        """
-        pearsons_r = stats.pearsonr(data["Photo"], An_fit)[0]
-        diff_sq = (data["Photo"]-An_fit)**2
-        ssq = np.sum(diff_sq)
-        mean_sq_err = np.mean(diff_sq)
-        row = []
-        for name, par in result.params.items():
-            row.append("%s" % (par.value))
-            row.append("%s" % (par.stderr))
-        row.append("%s" % (np.mean(data["Tleaf"] - self.deg2kelvin)))
-        row.append("%s" % ((data["Photo"]-An_fit).var()))
-        row.append("%s" % (pearsons_r**2))
-        row.append("%s" % (ssq))
-        row.append("%s" % (mean_sq_err))
-        row.append("%s" % (len(An_fit)-1))
-        row.append("%s" % (len(An_fit)))
-        row.append("%s" % (data["Species"][0]))
-        row.append("%s" % (data["Season"][0]))
-        row.append("%s" % (data["Leaf"][0]))
-        row.append("%s" % (data["Curve"][0]))
-        row.append("%s" % (fname))
-        row.append("%s%s%s" % (str(data["Species"][0]), \
-                               str(data["Season"][0]), \
-                               str(data["Leaf"][0])))
-        f.writerow(row)
-        
-        """
-        fname2 = os.path.join(self.results_dir, 
-                                "fitted_conf_int_j_v_rd.txt")
-        f2 = open(fname2, "w")
-        try:
-            ci = conf_interval(result, sigmas=[0.95])
-            
-            print >>f2, "\t\t95%\t\t0.00%\t\t95%"
-            for k, v in ci.iteritems():
-                print >>f2,"%s\t\t%f\t%f\t%f" % (k, round(ci[k][0][1], 3), \
-                                                 round(ci[k][1][1], 3), \
-                                                 round(ci[k][2][1], 3))
-        
-        except ValueError:
-            print >>f2, "Oops!  Some problem fitting confidence intervals..."    
-        f2.close()
-        """
-    def forward_run(self, result, data):
+    def forward_run(self, result, df):
         """ Run farquhar model with fitted parameters and return result 
         
         Parameters
         ----------
         result : object
             fitting result, param, std. error etc.
-        data : object
-            input A-Ci curve information
+         df: dataframe
+            df containing all the A-Ci curve and temp data 
         
         Returns
         --------
@@ -362,15 +360,15 @@ class FitMe(object):
         Ajn : float
             Net RuBP-regeneration-limited leaf assimilation rate [umol m-2 s-1]
         """
-        Jmax25 = np.zeros(len(data))
-        Vcmax25 = np.zeros(len(data))
-        Rd25 = np.zeros(len(data))
+        Jmax25 = np.zeros(len(df))
+        Vcmax25 = np.zeros(len(df))
+        Rd25 = np.zeros(len(df))
         
-        for i in np.unique(data["Leaf"]):
+        for i in np.unique(df["Leaf"]):
             col_id = "f_%d" % (i)
-            Jmax25 += result.params['Jmax25_%d' % (i)].value * data[col_id]
-            Vcmax25 += result.params['Vcmax25_%d' % (i)].value * data[col_id]
-            Rd25 += result.params['Rd25_%d' % (i)].value * data[col_id]
+            Jmax25 += result.params['Jmax25_%d' % (i)].value * df[col_id]
+            Vcmax25 += result.params['Vcmax25_%d' % (i)].value * df[col_id]
+            Rd25 += result.params['Rd25_%d' % (i)].value * df[col_id]
         
         Eaj = result.params['Eaj'].value
         delSj = result.params['delSj'].value
@@ -380,62 +378,89 @@ class FitMe(object):
         Hdv = result.params['Hdv'].value
         Ear = result.params['Ear'].value
         
-        (An, Anc, Anj) = self.call_model(Ci=data["Ci"], Tleaf=data["Tleaf"], Par=None, Jmax=None, 
-                                        Vcmax=None, Jmax25=Jmax25, Vcmax25=Vcmax25, Rd=None, 
-                                        Q10=None, Eaj=Eaj, Eav=Eav, deltaSj=delSj, 
-                                        deltaSv=delSv, Rd25=Rd25, Ear=Ear, Hdv=200000.0, Hdj=200000.0)
-        
-        
+        if hasattr(df, "Par"):
+            (An, Anc, Anj) = self.farq(Ci=df["Ci"], Tleaf=df["Tleaf"], 
+                                       Par=df["Par"], Jmax=None, Vcmax=None, 
+                                       Jmax25=Jmax25, Vcmax25=Vcmax25, Rd=None, 
+                                       Q10=None, Eaj=Eaj, Eav=Eav, 
+                                       deltaSj=delSj, deltaSv=delSv, Rd25=Rd25, 
+                                       Ear=Ear, Hdv=Hdv, Hdj=Hdj)
+        else:
+            (An, Anc, Anj) = self.farq(Ci=df["Ci"], Tleaf=df["Tleaf"], 
+                                       Par=None, Jmax=None, Vcmax=None, 
+                                       Jmax25=Jmax25, Vcmax25=Vcmax25, Rd=None, 
+                                       Q10=None, Eaj=Eaj, Eav=Eav, 
+                                       deltaSj=delSj, deltaSv=delSv, Rd25=Rd25, 
+                                       Ear=Ear, Hdv=Hdv, Hdj=Hdj)
         
         return (An, Anc, Anj)
-                
-    def setup_model_params(self, jmax_guess=None, vcmax_guess=None, 
-                           rd_guess=None, hd_guess=None, ea_guess=None, 
-                           dels_guess=None):
-        """ Setup lmfit Parameters object
+    
+    def report_fits(self, result, fname, df, An_fit):
+        """ Save fitting results to a file... 
         
         Parameters
         ----------
-        jmax_guess : value
-            initial parameter guess, if nothing is passed, i.e. it is None,
-            then parameter is not fitted
-        vcmax_guess : value
-            initial parameter guess, if nothing is passed, i.e. it is None,
-            then parameter is not fitted
-        rd_guess : value
-            initial parameter guess, if nothing is passed, i.e. it is None,
-            then parameter is not fitted
-        hd_guess : value
-            initial parameter guess, if nothing is passed, i.e. it is None,
-            then parameter is not fitted
-        ea_guess : value
-            initial parameter guess, if nothing is passed, i.e. it is None,
-            then parameter is not fitted
-        dels_guess : value
-            initial parameter guess, if nothing is passed, i.e. it is None,
-            then parameter is not fitted
-        
-        Returns
-        -------
-        params : object
-            lmfit object containing parameters to fit
+        result: object
+            fitting result, param, std. error etc.
+        fname : string
+            filename to append to output file
+        df : object
+            dataframe containing all the A-Ci curve information
+        An_fit : array
+            best model fit using optimised parameters, Net leaf assimilation 
+            rate [umol m-2 s-1]
         """
-        params = Parameters()
-        if jmax_guess is not None:
-            params.add('Jmax', value=jmax_guess, min=0.0)
-        if vcmax_guess is not None:
-            params.add('Vcmax', value=vcmax_guess, min=0.0)
-        if rd_guess is not None:
-            params.add('Rd', value=rd_guess, min=0.0)
+        # open files and write header information
+        ofile = self.open_output_files()
+        writer = csv.writer(ofile, delimiter=',', quoting=csv.QUOTE_NONE, 
+                        escapechar=' ')
         
-        if ea_guess is not None:
-            params.add('Ea', value=ea_guess, min=0.0)
-        if hd_guess is not None:
-            params.add('Hd', value=hd_guess, vary=False)
-        if dels_guess is not None:
-            params.add('delS', value=dels_guess, min=0.0, max=700.0)
+        remaining_header = ["Tav", "Var", "R2", "SSQ", "MSE", "DOF", "n", \
+                            "Species", "Season", "Leaf", "Filename", \
+                            "Topt_J", "Topt_V", "id"]
         
-        return params
+        pearsons_r = stats.pearsonr(df["Photo"], An_fit)[0]
+        diff_sq = (df["Photo"]-An_fit)**2
+        ssq = np.sum(diff_sq)
+        mean_sq_err = np.mean(diff_sq)
+        row = []
+        header = []
+        for name, par in result.params.items():
+            header.append("%s" % (name))
+            header.append("%s" % ("SE"))
+            row.append("%s" % (par.value))
+            row.append("%s" % (par.stderr))
+        row.append("%s" % (np.mean(df["Tleaf"] - self.deg2kelvin)))
+        row.append("%s" % ((df["Photo"]-An_fit).var()))
+        row.append("%s" % (pearsons_r**2))
+        row.append("%s" % (ssq))
+        row.append("%s" % (mean_sq_err))
+        row.append("%s" % (len(An_fit)-1))
+        row.append("%s" % (len(An_fit)))
+        row.append("%s" % (df["Species"][0]))
+        row.append("%s" % (df["Season"][0]))
+        row.append("%s" % (df["Leaf"][0]))
+        row.append("%s" % (fname))
+        Topt_J = (self.calc_Topt(result.params["Hdj"].value, 
+                                 result.params["Eaj"].value, 
+                                 result.params["delSj"].value))
+        Topt_V = (self.calc_Topt(result.params["Hdv"].value, 
+                                 result.params["Eav"].value, 
+                                 result.params["delSv"].value))
+        row.append("%f" % (Topt_J))
+        row.append("%f" % (Topt_V))
+        row.append("%s%s%s" % (str(df["Species"][0]), \
+                               str(df["Season"][0]), \
+                               str(df["Leaf"][0])))
+        
+        header = header + remaining_header
+        writer.writerow(header)
+        writer.writerow(row)
+        
+        # tidy up
+        ofile.close()
+                
+         
     
     def print_fit_to_screen(self, result):
         """ Print the fitting result to the terminal 
@@ -448,8 +473,8 @@ class FitMe(object):
         for name, par in result.params.items():
             print '%s = %.8f +/- %.8f ' % (name, par.value, par.stderr)
         print 
-    
-    def make_plot(self, data, curve_num, An_fit, Anc_fit, Anj_fit, result):
+
+    def make_plots(self, df, An_fit, Anc_fit, Anj_fit, result):
         """ Make some plots to show how good our fitted model is to the data 
         
         * Plots A-Ci model fits vs. data
@@ -457,7 +482,7 @@ class FitMe(object):
         
         Parameters
         ----------
-        data : object
+        df : dataframe
             input A-Ci curve information 
         curve_num : int
             unique identifier to distinguish A-Ci curve
@@ -473,190 +498,78 @@ class FitMe(object):
         result : object
             fitting result, param, std. error etc.
         """
-        species = data["Species"][0]
-        season = data["Season"][0]
+        species = df["Species"][0]
+        season = df["Season"][0]
         season = "all"
-        leaf = data["Leaf"][0]
-        ofname = "%s/%s_%s_%s_%s_fit_and_residual.png" % \
-                 (self.plot_dir, species, season, leaf, curve_num)
-        residuals = data["Photo"] - An_fit  
+        leaf = df["Leaf"][0]
         
-        colour_list=['red', 'blue', 'green', 'yellow', 'orange', 'blueviolet',\
-                     'darkmagenta', 'cyan', 'indigo', 'palegreen', 'salmon',\
-                     'pink', 'darkgreen', 'darkblue']
+        for curve_num in np.unique(df["Curve"]):
+            curve_df = df[df["Curve"]==curve_num]
+            i = curve_df["Leaf"].values[0]
+            
+            col_id = "f_%d" % (i)
+            
+            Jmax25 = result.params['Jmax25_%d' % (i)].value
+            Vcmax25 = result.params['Vcmax25_%d' % (i)].value
+            Rd25 = result.params['Rd25_%d' % (i)].value        
+            Eaj = result.params['Eaj'].value
+            delSj = result.params['delSj'].value
+            Hdj = result.params['Hdj'].value
+            Eav = result.params['Eav'].value
+            delSv = result.params['delSv'].value
+            Hdv = result.params['Hdv'].value
+            Ear = result.params['Ear'].value
+            
+            (An, Anc, Anj) = self.farq(Ci=curve_df["Ci"], Tleaf=curve_df["Tleaf"], 
+                                       Par=None, Jmax=None, Vcmax=None, 
+                                       Jmax25=Jmax25, Vcmax25=Vcmax25, Rd=None, 
+                                       Q10=None, Eaj=Eaj, Eav=Eav, 
+                                       deltaSj=delSj, deltaSv=delSv, Rd25=Rd25, 
+                                       Ear=Ear, Hdv=Hdv, Hdj=Hdj)
+            residuals = curve_df["Photo"] - An
+              
+            ofname = "%s/%s_%s_%s_%s_fit_and_residual.png" % \
+                     (self.plot_dir, species, season, leaf, curve_num)
+            
         
-        plt.rcParams['figure.subplot.hspace'] = 0.05
-        plt.rcParams['figure.subplot.wspace'] = 0.05
-        plt.rcParams['font.size'] = 10
-        plt.rcParams['legend.fontsize'] = 10
-        plt.rcParams['xtick.labelsize'] = 10.0
-        plt.rcParams['ytick.labelsize'] = 10.0
-        plt.rcParams['axes.labelsize'] = 10.0
+            
+            plt.rcParams['figure.subplot.hspace'] = 0.05
+            plt.rcParams['figure.subplot.wspace'] = 0.05
+            plt.rcParams['font.size'] = 10
+            plt.rcParams['legend.fontsize'] = 10
+            plt.rcParams['xtick.labelsize'] = 10.0
+            plt.rcParams['ytick.labelsize'] = 10.0
+            plt.rcParams['axes.labelsize'] = 10.0
         
-        fig = plt.figure() 
+            fig = plt.figure() 
         
-        ax = fig.add_subplot(211)
-        ax2 = fig.add_subplot(212)
+            ax = fig.add_subplot(211)
+            ax2 = fig.add_subplot(212)
         
-        ax.plot(data["Ci"], data["Photo"], 
-                ls="", lw=1.5, marker="o", c="black")
-        ax.plot(data["Ci"], An_fit, '-', c="black", linewidth=3, 
-                label="An-Rd")
-        ax.plot(data["Ci"], Anc_fit, '-', c="red", linewidth=1, 
-                label="Ac-Rd")
-        ax.plot(data["Ci"], Anj_fit, '-', c="blue", linewidth=1, 
-                label="Aj-Rd")
-        ax.set_ylabel("A$_n$", weight="bold")
-        ax.axes.get_xaxis().set_visible(False)
-        ax.set_xlim(0, 1600)
-        ax.legend(numpoints=1, loc="best")
+            ax.plot(curve_df["Ci"], curve_df["Photo"], 
+                    ls="", lw=1.5, marker="o", c="black")
+            ax.plot(curve_df["Ci"], An, '-', c="red", linewidth=2, 
+                    label="An")
+            ax.plot(curve_df["Ci"], Anc, '--', c="green", linewidth=1, 
+                    label="Anc")
+            ax.plot(curve_df["Ci"], Anj, '--', c="blue", linewidth=1, 
+                    label="Anj")
+            ax.set_ylabel("Assimilation Rate")
+            ax.axes.get_xaxis().set_visible(False)
+            ax.set_xlim(0, 1600)
+            ax.legend(numpoints=1, loc="best")
 
-        ax2.plot(data["Ci"], residuals, "ko")
-        ax2.axhline(y=0.0, ls="--", color='black')
-        ax2.set_xlabel('Ci', weight="bold")
-        ax2.set_ylabel("Residuals (Obs$-$Fit)", weight="bold")
-        ax2.set_xlim(0, 1500)
-        ax2.set_ylim(10,-10)
+            ax2.plot(curve_df["Ci"], residuals, "ko")
+            ax2.axhline(y=0.0, ls="--", color='black')
+            ax2.set_xlabel('Ci')
+            ax2.set_ylabel("Residuals (Obs$-$Fit)")
+            ax2.set_xlim(0, 1500)
+            ax2.set_ylim(10,-10)
         
-        fig.savefig(ofname)
-        plt.close(fig)
+            fig.savefig(ofname)
+            plt.close(fig)
         
-        """
-        # Plots confidence regions for two fixed parameters.
-        ofname = "%s/%s_%s_%s_%s_jmax_vcmax_conf_surface.png" % \
-                 (self.plot_dir, species, season, leaf, curve_num)
-        
-        fig = plt.figure() 
-        ax = fig.add_subplot(111)
-        x, y, grid = conf_interval2d(result, 'Jmax', 'Vcmax', 30, 30)
-        plt.contourf(x, y, grid, np.linspace(0,1,11))
-        plt.xlabel('Jmax')
-        plt.ylabel('Vcmax')
-        plt.colorbar()
-        fig.savefig(ofname)
-        plt.clf()
-        """
-        
-    def write_file_hdr(self, fname, header):  
-        """ Write CSV file header 
-        
-        Parameters
-        ----------
-        fname : string
-            output filename
-        header : list/array
-            List/array containing information for header for output CSV file
-        
-        Returns
-        -------
-        wr : object
-            output file pointer
-        """
-        
-        wr = csv.writer(fname, delimiter=',', quoting=csv.QUOTE_NONE, 
-                        escapechar=' ')
-        wr.writerow(header)
-        
-        return wr
-        
-    def tidy_up(self, fp=None):
-        """ Clean up at the end of fitting 
-        
-        Parameters
-        ----------
-        fp : object
-            file pointer
-        """
-        total_fits = float(self.succes_count) / self.nfiles * 100.0
-        print "\nOverall fitted %.1f%% of the data\n" % (total_fits)
-        fp.close()
-    
-    def pick_random_starting_point(self):
-        """ random pick starting point for parameter values 
-        
-        Parameters
-        ----------
-        data : array
-            model driving data
-        grid_size : int
-            hardwired, number of samples
-        
-        Returns: 
-        --------
-        retval * 3 : float
-            Three starting guesses for Jmax, Vcmax and Rd
-        """
-        # Shuffle arrays so that our combination of parameters is random
-        Vcmax = np.random.uniform(5.0, 350) 
-        Jmax = np.random.uniform(5.0, 550) 
-        Rd = np.random.uniform(0.0, 6.0)
-        
-        return Vcmax, Jmax, Rd
-        
-    def pick_starting_point(self, data, grid_size=100):
-        """ Figure out a good starting parameter guess
-        
-        High-density grid search to overcome issues with ending up in a 
-        local minima. Values that yield the lowest RMSE (without minimisation)
-        are used as the starting point for the minimisation. 
-        
-        Parameters
-        ----------
-        data : array
-            model driving data
-        grid_size : int
-            hardwired, number of samples
-        
-        Returns: 
-        --------
-        retval * 3 : float
-            Three starting guesses for Jmax, Vcmax and Rd
-        
-        Reference:
-        ----------
-        Dubois et al (2007) Optimizing the statistical estimation of the 
-        parameters of the Farquhar-von Caemmerer-Berry model of photosynthesis. 
-        New Phytologist, 176, 402--414
-        
-        """
-        
-        # Shuffle arrays so that our combination of parameters is random
-        Vcmax = np.linspace(5.0, 350, grid_size) 
-        Jmax = np.linspace(5.0, 550, grid_size) 
-        Rd = np.linspace(0.0, 6.0, grid_size)
-        
-        """
-        grid_size = 50
-        for v in np.linspace(5.0, 350, grid_size):
-            for j in np.linspace(5.0, 550, grid_size):
-                for r in np.linspace(1E-8, 10.5, grid_size):
-        
-                    (An, Anc, Anj) = self.call_model(data["Ci"], 
-                                                data["Tleaf"], 
-                                                Jmax=j, Vcmax=v, Rd=r)
-                    rmse = np.sqrt(np.mean((data["Photo"]- An)**2))
-                    for k in xrange(len(An)):
-                        
-    
-                        print v, j, r, An[k], data["Ci"][k], rmse
-        """
        
-        p1, p2, p3 = np.ix_(Jmax, Vcmax, Rd)
-        if hasattr(data, "Par"):
-            (An, Anc, Anj) = self.call_model(Ci=data["Ci"][:,None,None,None], 
-                                             Tleaf=data["Tleaf"][:,None,None,None], 
-                                             Par=data["Par"][:,None,None,None],
-                                             Jmax=p1, Vcmax=p2, Rd=p3)
-        else:
-            (An, Anc, Anj) = self.call_model(Ci=data["Ci"][:,None,None,None], 
-                                             Tleaf=data["Tleaf"][:,None,None,None], 
-                                             Jmax=p1, Vcmax=p2, Rd=p3)
-        
-        rmse = np.sqrt(((data["Photo"][:,None,None,None]- An)**2).mean(0))
-        ndx = np.where(rmse.min()== rmse)
-        (jidx, vidx, rdidx) = ndx
-        
-        return Vcmax[vidx].squeeze(), Jmax[jidx].squeeze(), Rd[rdidx].squeeze()
     
     def calc_Topt(self, Hd, Ha, delS, RGAS=8.314):
         """ Calculate the temperature optimum 
@@ -692,11 +605,11 @@ class FitMe(object):
 if __name__ == "__main__":
 
     ofname = "fitting_results.csv"
-    results_dir = "results"
-    data_dir = "data"
-    plot_dir = "plots"
-    from farq_model import FarquharC3
+    results_dir = "/Users/mdekauwe/Desktop/results"
+    data_dir = "/Users/mdekauwe/Desktop/data"
+    plot_dir = "/Users/mdekauwe/Desktop/plots"
+    from farquhar_model import FarquharC3
     model = FarquharC3(peaked_Jmax=True, peaked_Vcmax=True, model_Q10=True)
     
     F = FitMe(model, ofname, results_dir, data_dir, plot_dir)
-    F.main(print_to_screen=False) 
+    F.main(print_to_screen=True) 
