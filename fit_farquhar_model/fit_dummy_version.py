@@ -52,7 +52,7 @@ class FitMe(object):
     of the fit result (Minimizer object) will be False. 
     """
     def __init__(self, model=None, ofname=None, results_dir=None, 
-                 data_dir=None, plot_dir=None, num_iter=5, peaked=True, 
+                 data_dir=None, plot_dir=None, num_iter=20, peaked=True, 
                  delimiter=","):
         """
         Parameters
