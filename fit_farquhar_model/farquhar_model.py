@@ -190,9 +190,9 @@ class FarquharC3(object):
         # Calculations at 25 degrees C or the measurement temperature
         if Rd25 is not None: 
             if self.model_Q10:
-                Rd = self.arrh(Rd25, Ear, Tleaf)
-            else:
                 Rd = self.resp(Tleaf, Q10, Rd25, Tref=25.0)
+            else:
+                Rd = self.arrh(Rd25, Ear, Tleaf)
             
         
         if Vcmax25 is not None:    
