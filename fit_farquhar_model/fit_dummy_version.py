@@ -30,6 +30,7 @@ from lmfit import minimize, Parameters
 from scipy import stats
 import matplotlib.pyplot as plt
 import pandas as pd
+from math import fabs
 
 class FitMe(object):
     """
@@ -119,6 +120,7 @@ class FitMe(object):
                             lowest_rmse = rmse
                             best_result = result
                         
+                        #print rmse
                         #self.print_fit_to_screen(best_result)
                         
                 # Pick the best fit...
@@ -472,11 +474,14 @@ class FitMe(object):
         """
         bad = False
         for name, par in result.params.items():
-            print name, par.value * threshold, par.max
-            if par.value * threshold > par.max:
-                bad = True
-                break
-        print bad
+            if name in ('Hdj', 'Hdv'):
+                continue
+            else:
+                if (par.value * threshold > par.max or 
+                    fabs(par.stderr - 0.00000000) < 0.00001):
+                    bad = True
+                    break
+                
         return bad
 
     
