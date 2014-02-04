@@ -117,7 +117,6 @@ class FitMe(object):
                 
                     result = minimize(self.residual, params, args=(dfr,))
                     (An, Anc, Anj) = self.forward_run(result, dfr)
-                    
                     # Successful fit?
                     # See comment above about why errorbars might not be 
                     # resolved.
@@ -217,9 +216,23 @@ class FitMe(object):
                         max=600.0)
             params.add('Vcmax25_%d' % (leaf_num), value=Vcmax25_guess , min=0.0, 
                         max=600.0)
-            params.add('Rd25_%d' % (leaf_num), value=Rd25_guess, min=0.0, 
-                        max=6.0)
-        
+            
+            params.add('rdfac_%d' % (leaf_num), value=0.015 , min=0.005, max=0.03) 
+            params.add('Rd25_%d' % (leaf_num), value=Rd25_guess, expr='rdfac_%d * Vcmax25_%d' % (leaf_num, leaf_num))      
+            
+            #params.add('Rd25_%d' % (leaf_num), value=Rd25_guess, min=0.0, 
+            #            max=6.0)      
+            
+            
+          
+            
+            
+            
+            #params.add('Rd25_%d' % (leaf_num), value='Vcmax25_guess*0.015', 
+            #            min='Vcmax25_%d*0.005' % (leaf_num), 
+            #            max='Vcmax25_%d*0.03' % (leaf_num), vary=True)
+            
+            
             # Need to build dummy variable identifier for each leaf.
             col_id = "f_%d" % (leaf_num)
             temp = df["Leaf"]
@@ -236,7 +249,6 @@ class FitMe(object):
         #params.add('Hdv', value=200000.0, vary=False)
         params.add('Ear', value=Ear_guess, min=0.0, max=199999.9)
             
-        
         return params, df
     
     def change_param_values(self, df, params):
