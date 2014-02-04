@@ -95,6 +95,11 @@ class FitMe(object):
         print_to_screen : logical
             print fitting result to screen? Default is no!
         """
+        # open files and write header information
+        ofile = self.open_output_files()
+        writer = csv.writer(ofile, delimiter=',', quoting=csv.QUOTE_NONE, 
+                            escapechar=' ')
+                        
         for fname in glob.glob(os.path.join(self.data_dir, infname_tag)):
             df = self.read_data(fname)
             for group in np.unique(df["fitgroup"]):
@@ -131,12 +136,14 @@ class FitMe(object):
                     if print_to_screen:
                         self.print_fit_to_screen(best_result)
                         
-                    self.report_fits(best_result, os.path.basename(fname), 
+                    self.report_fits(writer, best_result, os.path.basename(fname), 
                                      dfr, An)
                     self.make_plots(dfr, An, Anc, Anj, best_result)
                 else:
                     print "Fit failed, fitgroup = %d" % (group)          
-        
+        # tidy up
+        ofile.close()
+         
     def open_output_files(self):
         """
         Opens output file for recording fit information
@@ -146,8 +153,8 @@ class FitMe(object):
         fp : object
             file pointer
         """
-        if os.path.isfile(ofname):
-            os.remove(ofname)
+        if os.path.isfile(self.ofname):
+            os.remove(self.ofname)
         
         try:
             ofile = open(self.ofname, 'wb')
@@ -393,7 +400,7 @@ class FitMe(object):
         
         return (An, Anc, Anj)
     
-    def report_fits(self, result, fname, df, An_fit):
+    def report_fits(self, writer, result, fname, df, An_fit):
         """ Save fitting results to a file... 
         
         Parameters
@@ -408,10 +415,7 @@ class FitMe(object):
             best model fit using optimised parameters, Net leaf assimilation 
             rate [umol m-2 s-1]
         """
-        # open files and write header information
-        ofile = self.open_output_files()
-        writer = csv.writer(ofile, delimiter=',', quoting=csv.QUOTE_NONE, 
-                        escapechar=' ')
+        
         
         remaining_header = ["Tav", "Var", "R2", "SSQ", "MSE", "DOF", "n", \
                             "Species", "Season", "Leaf", "Filename", \
@@ -464,8 +468,7 @@ class FitMe(object):
         writer.writerow(header)
         writer.writerow(row)
         
-        # tidy up
-        ofile.close()
+        
                 
     def print_fit_to_screen(self, result):
         """ Print the fitting result to the terminal 
