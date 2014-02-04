@@ -217,7 +217,7 @@ class FitMe(object):
             params.add('Vcmax25_%d' % (leaf_num), value=Vcmax25_guess , min=0.0, 
                         max=600.0)
             
-            params.add('rdfac_%d' % (leaf_num), value=0.015 , min=0.005, max=0.03) 
+            params.add('rdfac_%d' % (leaf_num), value=0.015, min=0.005, max=0.03) 
             params.add('Rd25_%d' % (leaf_num), value=Rd25_guess, 
                        expr='rdfac_%d * Vcmax25_%d' % (leaf_num, leaf_num))      
             
@@ -276,7 +276,7 @@ class FitMe(object):
         """
         Jmax25 = np.random.uniform(5.0, 550) 
         Vcmax25 = np.random.uniform(5.0, 350) 
-        Rd25 = 0.015 * Vcmax25g
+        Rd25 = 0.015 * Vcmax25
         #Rd25 = np.random.uniform(0.0, 5.0)
         Eaj = np.random.uniform(20000.0, 80000.0)
         Eav = np.random.uniform(20000.0, 80000.0)
