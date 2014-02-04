@@ -284,7 +284,8 @@ class FitMe(object):
         """
         Jmax25 = np.random.uniform(5.0, 550) 
         Vcmax25 = np.random.uniform(5.0, 350) 
-        Rd25 = np.random.uniform(0.0, 5.0)
+        Rd25 = 0.015 * Vcmax25
+        #Rd25 = np.random.uniform(0.0, 5.0)
         Eaj = np.random.uniform(20000.0, 80000.0)
         Eav = np.random.uniform(20000.0, 80000.0)
         Ear = np.random.uniform(20000.0, 80000.0)
@@ -330,7 +331,7 @@ class FitMe(object):
             Jmax25 += params['Jmax25_%d' % (i)].value * df[col_id]
             Vcmax25 += params['Vcmax25_%d' % (i)].value * df[col_id]
             Rd25 += params['Rd25_%d' % (i)].value * df[col_id]
-        
+
         Eaj = params['Eaj'].value
         delSj = params['delSj'].value
         #Hdj = params['Hdj'].value
