@@ -111,7 +111,7 @@ class FitMe(object):
                 
                 Num = 10000
                 MC = pymc.MCMC(self.make_model(dfr))
-                MC.sample(iter=Num)  
+                MC.sample(iter=Num, burn=Num*0.1, thin=2)  
                 #from pymc.Matplot import plot
                 #plot(MC)
                 #MC.Jmax25_1.summary()
