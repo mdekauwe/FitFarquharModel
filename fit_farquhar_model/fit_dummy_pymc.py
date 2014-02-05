@@ -101,7 +101,7 @@ class FitMe(object):
         ofile = self.open_output_files()
         writer = csv.writer(ofile, delimiter=',', quoting=csv.QUOTE_NONE, 
                             escapechar=' ')
-                        
+        
         for fname in glob.glob(os.path.join(self.data_dir, infname_tag)):
             df = self.read_data(fname)
             for group in np.unique(df["fitgroup"]):
@@ -109,25 +109,12 @@ class FitMe(object):
                 dfr.index = range(len(dfr)) # need to reindex slice
                 (dfr) = self.setup_model_params(dfr)
                 
-                Num = 10000
+                Num = 100000
                 MC = pymc.MCMC(self.make_model(dfr))
-                MC.sample(iter=Num, burn=Num*0.1, thin=2)  
-                #from pymc.Matplot import plot
-                #plot(MC)
-                #MC.Jmax25_1.summary()
-                print MC.summary()
-                #vars = []
-                #for index, i in enumerate(np.unique(df["Leaf"])):
-                    
-                    #print MC['Jmax25_%d' % (i)].summary()
-                #    vars.append('Jmax25_%d' % (i))
-                #    vars.append('Vcmax25_%d' % (i))
-                #    vars.append('rdfac_%d' % (i))
-                #print vars
-                
-                #vars =["rdfac_1", "Eaj","Eav","Eav","delSj","delSv"]
-                #MC.write_csv("/Users/mdekauwe/Desktop/MCMC.csv", variables=vars)
-    
+                MC.sample(iter=Num, burn=Num*0.1)  
+                MC.write_csv("/Users/mdekauwe/Desktop/MCMC.csv")
+
+        
     def make_model(self, df):
         """ Setup 'model factory' - which exposes various attributes to PYMC 
         call """
@@ -135,10 +122,11 @@ class FitMe(object):
         mdata = df["Photo"]
         Jvals = []
         Vcvals = []
+        
         for index, i in enumerate(np.unique(df["Leaf"])):
             Jvals.append(pymc.Uniform('Jmax25_%d' % (i), lower=5.0, upper=650.0))
             Vcvals.append(pymc.Uniform('Vcmax25_%d' % (i), lower=5.0, upper=350.0))
-        rdfac = pymc.Uniform('rdfac', lower=0.005, upper=0.03)
+        rdfac = pymc.Uniform('rdfac', lower=0.005, upper=0.04)
         Eaj = pymc.Uniform('Eaj', lower=0.0, upper=199999.9)
         Eav = pymc.Uniform('Eav', lower=0.0, upper=199999.9)
         Ear = pymc.Uniform('Ear', lower=0.0, upper=199999.9)        
@@ -152,16 +140,17 @@ class FitMe(object):
             # These parameter values need to be arrays
             Jmax25 = np.zeros(len(df))
             Vcmax25 = np.zeros(len(df))
-            Rd25 = np.zeros(len(df))
-        
+            #Rd25 = np.zeros(len(df))
+            vcmax_vals = np.zeros(0)
             # Need to build dummy variables.
             for index, i in enumerate(np.unique(df["Leaf"])):
                 col_id = "f_%d" % (i)
                 
                 Jmax25 += Jvals[index] * df[col_id]
                 Vcmax25 += Vcvals[index] * df[col_id]
-                Rd25 += Vcvals[index]*rdfac * df[col_id]
-
+                #Rd25 += Vcvals[index]*rdfac * df[col_id]
+                vcmax_vals = np.append(vcmax_vals, Vcvals[index])
+            Rd25 = rdfac * np.mean(vcmax_vals)
             Hdv = 200000.00000000
             Hdj = 200000.00000000
             
