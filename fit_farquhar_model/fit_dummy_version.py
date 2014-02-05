@@ -653,9 +653,13 @@ class FitMe(object):
 if __name__ == "__main__":
 
     ofname = "fitting_results.csv"
-    results_dir = "/Users/mdekauwe/Desktop/results"
-    data_dir = "/Users/mdekauwe/Desktop/data"
-    plot_dir = "/Users/mdekauwe/Desktop/plots"
+    #results_dir = "/Users/mdekauwe/Desktop/results"
+    #data_dir = "/Users/mdekauwe/Desktop/data"
+    #plot_dir = "/Users/mdekauwe/Desktop/plots"
+    
+    results_dir = "results"
+    data_dir = "data"
+    plot_dir = "plots"
     from farquhar_model import FarquharC3
     model = FarquharC3(peaked_Jmax=True, peaked_Vcmax=True, model_Q10=False)
     
