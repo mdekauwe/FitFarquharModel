@@ -560,7 +560,9 @@ class FitMe(object):
             
             Jmax25 = result.params['Jmax25_%d' % (i)].value
             Vcmax25 = result.params['Vcmax25_%d' % (i)].value
-            Rd25 = result.params['Rd25_%d' % (i)].value        
+            
+            Rd25 = result.params['rdfac'].value * Vcmax25
+            #Rd25 = result.params['Rd25_%d' % (i)].value        
             Eaj = result.params['Eaj'].value
             delSj = result.params['delSj'].value
             #Hdj = result.params['Hdj'].value
