@@ -122,11 +122,12 @@ class FitMe(object):
         mdata = df["Photo"]
         Jvals = []
         Vcvals = []
-        
+        Rdfacvals = []
         for index, i in enumerate(np.unique(df["Leaf"])):
             Jvals.append(pymc.Uniform('Jmax25_%d' % (i), lower=5.0, upper=650.0))
             Vcvals.append(pymc.Uniform('Vcmax25_%d' % (i), lower=5.0, upper=350.0))
-        rdfac = pymc.Uniform('rdfac', lower=0.005, upper=0.04)
+            Rdfacvals.append(pymc.Uniform('rdfac_%d' % (i), lower=0.005, upper=0.04))
+        
         Eaj = pymc.Uniform('Eaj', lower=0.0, upper=199999.9)
         Eav = pymc.Uniform('Eav', lower=0.0, upper=199999.9)
         Ear = pymc.Uniform('Ear', lower=0.0, upper=199999.9)        
@@ -134,26 +135,22 @@ class FitMe(object):
         delSv = pymc.Uniform('delSv', lower=550.0, upper=750.0)
         
         @pymc.deterministic
-        def func(Jvals=Jvals, Vcvals=Vcvals, rdfac=rdfac, Eaj=Eaj, Eav=Eav, 
+        def func(Jvals=Jvals, Vcvals=Vcvals, Rdfacvals=Rdfacvals, Eaj=Eaj, Eav=Eav, 
                  Ear=Ear, delSj=delSj, delSv=delSv): 
             
             # These parameter values need to be arrays
             Jmax25 = np.zeros(len(df))
             Vcmax25 = np.zeros(len(df))
-            #Rd25 = np.zeros(len(df))
-            vcmax_vals = np.zeros(0)
+            Rd25 = np.zeros(len(df))
             # Need to build dummy variables.
             for index, i in enumerate(np.unique(df["Leaf"])):
                 col_id = "f_%d" % (i)
                 
                 Jmax25 += Jvals[index] * df[col_id]
                 Vcmax25 += Vcvals[index] * df[col_id]
-                #Rd25 += Vcvals[index]*rdfac * df[col_id]
-                vcmax_vals = np.append(vcmax_vals, Vcvals[index])
-            Rd25 = rdfac * np.mean(vcmax_vals)
+                Rd25 += Vcvals[index]*Rdfacvals[index] * df[col_id]
             Hdv = 200000.00000000
             Hdj = 200000.00000000
-            
             
             (An, Anc, Anj) = self.farq(Ci=df["Ci"], Tleaf=df["Tleaf"], 
                                        Par=None, Jmax=None, Vcmax=None, 
