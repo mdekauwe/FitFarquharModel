@@ -217,9 +217,9 @@ class FitMe(object):
             params.add('Vcmax25_%d' % (leaf_num), value=Vcmax25_guess , min=0.0, 
                         max=600.0)
             
-            params.add('rdfac_%d' % (leaf_num), value=0.015, min=0.005, max=0.03) 
-            params.add('Rd25_%d' % (leaf_num), value=Rd25_guess, 
-                       expr='rdfac_%d * Vcmax25_%d' % (leaf_num, leaf_num))      
+            #params.add('rdfac_%d' % (leaf_num), value=0.015, min=0.005, max=0.03) 
+            #params.add('Rd25_%d' % (leaf_num), value=Rd25_guess, 
+            #           expr='rdfac_%d * Vcmax25_%d' % (leaf_num, leaf_num))      
             
             #params.add('Rd25_%d' % (leaf_num), value=Rd25_guess, min=0.0, 
             #            max=6.0)      
@@ -230,6 +230,10 @@ class FitMe(object):
             temp = df["Leaf"]
             temp = np.where(temp==leaf_num, 1.0, 0.0)
             df[col_id] = temp
+        
+        params.add('rdfac', value=0.015, min=0.005, max=0.03) 
+        #params.add('Rd25_%d' % (leaf_num), value=Rd25_guess, 
+        #               expr='rdfac_%d * Vcmax25_%d' % (leaf_num, leaf_num))    
         
         # Temp dependancy values do not vary by leaf, so only need one set of 
         # params.
@@ -248,13 +252,14 @@ class FitMe(object):
         for leaf_num in np.unique(df["Leaf"]):
             
             (Jmax25_guess, Vcmax25_guess, 
-             Rd25_guess, Eaj_guess, 
+             rfac_guess, Eaj_guess, 
              Eav_guess, Ear_guess, 
              delSj_guess, delSv_guess) = self.pick_random_starting_point()
             
             params['Jmax25_%d' % (leaf_num)].value = Jmax25_guess
             params['Vcmax25_%d' % (leaf_num)].value = Vcmax25_guess
-            params['Rd25_%d' % (leaf_num)].value = Rd25_guess
+            #params['Rd25_%d' % (leaf_num)].value = Rd25_guess
+            params['rdfac'].value = rfac_guess
             params['Eaj'].value = Eaj_guess
             params['Eav'].value = Eav_guess
             params['Ear'].value = Ear_guess
@@ -276,7 +281,8 @@ class FitMe(object):
         """
         Jmax25 = np.random.uniform(5.0, 550) 
         Vcmax25 = np.random.uniform(5.0, 350) 
-        Rd25 = 0.015 * Vcmax25
+        rfac_guess = np.random.uniform(0.005, 0.03) 
+        #Rd25 = 0.015 * Vcmax25
         #Rd25 = np.random.uniform(0.0, 5.0)
         Eaj = np.random.uniform(20000.0, 80000.0)
         Eav = np.random.uniform(20000.0, 80000.0)
@@ -287,7 +293,7 @@ class FitMe(object):
             delSj = None
             delSv = None
         
-        return Jmax25, Vcmax25, Rd25, Eaj, Eav, Ear, delSj, delSv
+        return Jmax25, Vcmax25, rfac_guess, Eaj, Eav, Ear, delSj, delSv
     
                   
     def residual(self, params, df):
@@ -315,15 +321,19 @@ class FitMe(object):
         # These parameter values need to be arrays
         Jmax25 = np.zeros(len(df))
         Vcmax25 = np.zeros(len(df))
-        Rd25 = np.zeros(len(df))
+        #Rd25 = np.zeros(len(df))
         
         # Need to build dummy variables.
+        vcmax_vals = np.zeros(0)
         for i in np.unique(df["Leaf"]):
             col_id = "f_%d" % (i)
             Jmax25 += params['Jmax25_%d' % (i)].value * df[col_id]
             Vcmax25 += params['Vcmax25_%d' % (i)].value * df[col_id]
-            Rd25 += params['Rd25_%d' % (i)].value * df[col_id]
-
+            vcmax_vals = np.append(vcmax_vals, params['Vcmax25_%d' % (i)].value)
+            #Rd25 += params['Rd25_%d' % (i)].value * df[col_id]
+        
+        Rd25 = params['rdfac'].value * vcmax_vals.mean()
+        
         Eaj = params['Eaj'].value
         delSj = params['delSj'].value
         #Hdj = params['Hdj'].value
@@ -371,14 +381,15 @@ class FitMe(object):
         """
         Jmax25 = np.zeros(len(df))
         Vcmax25 = np.zeros(len(df))
-        Rd25 = np.zeros(len(df))
-        
+        #Rd25 = np.zeros(len(df))
+        vcmax_vals = np.zeros(0)
         for i in np.unique(df["Leaf"]):
             col_id = "f_%d" % (i)
             Jmax25 += result.params['Jmax25_%d' % (i)].value * df[col_id]
             Vcmax25 += result.params['Vcmax25_%d' % (i)].value * df[col_id]
-            Rd25 += result.params['Rd25_%d' % (i)].value * df[col_id]
-        
+            #Rd25 += result.params['Rd25_%d' % (i)].value * df[col_id]
+            vcmax_vals = np.append(vcmax_vals, result.params['Vcmax25_%d' % (i)].value)
+        Rd25 = result.params['rdfac'].value * vcmax_vals.mean()
         Eaj = result.params['Eaj'].value
         delSj = result.params['delSj'].value
         #Hdj = result.params['Hdj'].value
