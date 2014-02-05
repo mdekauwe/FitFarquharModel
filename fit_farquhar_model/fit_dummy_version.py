@@ -281,7 +281,6 @@ class FitMe(object):
         """
         Jmax25 = np.random.uniform(5.0, 550) 
         Vcmax25 = np.random.uniform(5.0, 350) 
-        rfac_guess = np.random.uniform(0.005, 0.03) 
         Rd25 = 0.015 * Vcmax25
         #Rd25 = np.random.uniform(0.0, 5.0)
         Eaj = np.random.uniform(20000.0, 80000.0)
@@ -293,7 +292,7 @@ class FitMe(object):
             delSj = None
             delSv = None
         
-        return Jmax25, Vcmax25, Rd25_guess, Eaj, Eav, Ear, delSj, delSv
+        return Jmax25, Vcmax25, Rd25, Eaj, Eav, Ear, delSj, delSv
     
                   
     def residual(self, params, df):
@@ -328,7 +327,6 @@ class FitMe(object):
             col_id = "f_%d" % (i)
             Jmax25 += params['Jmax25_%d' % (i)].value * df[col_id]
             Vcmax25 += params['Vcmax25_%d' % (i)].value * df[col_id]
-            vcmax_vals = np.append(vcmax_vals, params['Vcmax25_%d' % (i)].value)
             Rd25 += params['Rd25_%d' % (i)].value * df[col_id]
         
         
