@@ -113,7 +113,8 @@ class FitMe(object):
                 MC = pymc.MCMC(self.make_model(dfr))
                 MC.sample(iter=Num, burn=Num*0.1)  
                 MC.write_csv("/Users/mdekauwe/Desktop/MCMC.csv")
-
+                
+                sys.exit()
         
     def make_model(self, df):
         """ Setup 'model factory' - which exposes various attributes to PYMC 
@@ -128,11 +129,11 @@ class FitMe(object):
             Vcvals.append(pymc.Uniform('Vcmax25_%d' % (i), lower=5.0, upper=350.0))
             
         Rdfrac = pymc.Uniform('Rdfrac', lower=0.005, upper=0.04)
-        Eaj = pymc.Uniform('Eaj', lower=0.0, upper=199999.9)
-        Eav = pymc.Uniform('Eav', lower=0.0, upper=199999.9)
-        Ear = pymc.Uniform('Ear', lower=0.0, upper=199999.9)        
-        delSj = pymc.Uniform('delSj', lower=550.0, upper=750.0)
-        delSv = pymc.Uniform('delSv', lower=550.0, upper=750.0)
+        Eaj = pymc.Uniform('Eaj', lower=20000.0, upper=199999.9)
+        Eav = pymc.Uniform('Eav', lower=20000.0, upper=199999.9)
+        Ear = pymc.Uniform('Ear', lower=20000.0, upper=199999.9)        
+        delSj = pymc.Uniform('delSj', lower=300.0, upper=800.0)
+        delSv = pymc.Uniform('delSv', lower=300.0, upper=800.0)
         
         @pymc.deterministic
         def func(Jvals=Jvals, Vcvals=Vcvals, Rdfrac=Rdfrac, Eaj=Eaj, Eav=Eav, 
