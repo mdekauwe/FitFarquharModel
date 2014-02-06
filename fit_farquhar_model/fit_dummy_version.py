@@ -224,7 +224,7 @@ class FitMe(object):
             params.add('Vcmax25_%d' % (leaf_num), value=Vcmax25_guess , min=0.0, 
                         max=600.0)
             
-            params.add('Rdfac_%d' % (leaf_num), value=0.015, min=0.005, max=0.03) 
+            #params.add('Rdfac_%d' % (leaf_num), value=0.015, min=0.005, max=0.03) 
             #params.add('Rd25_%d' % (leaf_num), value=Rd25_guess, 
             #           expr='rdfac_%d * Vcmax25_%d' % (leaf_num, leaf_num))      
             
@@ -238,7 +238,7 @@ class FitMe(object):
             temp = np.where(temp==leaf_num, 1.0, 0.0)
             df[col_id] = temp
         
-       
+        params.add('Rdfac', value=0.015, min=0.005, max=0.03) 
         
         # Temp dependancy values do not vary by leaf, so only need one set of 
         # params.
@@ -264,7 +264,8 @@ class FitMe(object):
             params['Jmax25_%d' % (leaf_num)].value = Jmax25_guess
             params['Vcmax25_%d' % (leaf_num)].value = Vcmax25_guess
             #params['Rd25_%d' % (leaf_num)].value = Rd25_guess
-            params['Rdfac_%d'% (leaf_num)].value = Rdfac_guess
+            #params['Rdfac_%d'% (leaf_num)].value = Rdfac_guess
+        params['Rdfac'].value = Rdfac_guess
         params['Eaj'].value = Eaj_guess
         params['Eav'].value = Eav_guess
         params['Ear'].value = Ear_guess
@@ -333,9 +334,10 @@ class FitMe(object):
             Jmax25 += params['Jmax25_%d' % (i)].value * df[col_id]
             Vcmax25 += params['Vcmax25_%d' % (i)].value * df[col_id]
             #Rd25 += params['Rd25_%d' % (i)].value * df[col_id]
-            Rd25 += (params['Rdfac_%d' % (i)].value * 
+            #Rd25 += (params['Rdfac_%d' % (i)].value * 
+            #         params['Vcmax25_%d' % (i)].value * df[col_id])
+            Rd25 += (params['Rdfac'].value * 
                      params['Vcmax25_%d' % (i)].value * df[col_id])
-        
         
         Eaj = params['Eaj'].value
         delSj = params['delSj'].value
