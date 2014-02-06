@@ -104,8 +104,17 @@ class FitMe(object):
         
         for fname in glob.glob(os.path.join(self.data_dir, infname_tag)):
             df = self.read_data(fname)
-            for group in np.unique(df["fitgroup"]):
-                dfr = df[df["fitgroup"]==group]
+            
+            # sort data by curve first...
+            df_sorted = pd.DataFrame()
+            for curve_num in np.unique(df["Curve"]):
+                curve_df = df[df["Curve"]==curve_num]
+                curve_df = curve_df.sort(['Ci'], ascending=True)
+                df_sorted = df_sorted.append(curve_df)
+            df_sorted.index = range(len(df_sorted)) # need to reindex slice
+            
+            for group in np.unique(df_sorted["fitgroup"]):
+                dfr = df_sorted[df_sorted["fitgroup"]==group]
                 dfr.index = range(len(dfr)) # need to reindex slice
                 (dfr) = self.setup_model_params(dfr)
                 
