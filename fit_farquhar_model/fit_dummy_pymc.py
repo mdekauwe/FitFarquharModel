@@ -109,7 +109,7 @@ class FitMe(object):
                 dfr.index = range(len(dfr)) # need to reindex slice
                 (dfr) = self.setup_model_params(dfr)
                 
-                Num = 100000
+                Num = 10000
                 MC = pymc.MCMC(self.make_model(dfr))
                 MC.sample(iter=Num, burn=Num*0.1)  
                 MC.write_csv("/Users/mdekauwe/Desktop/MCMC.csv")
@@ -122,12 +122,12 @@ class FitMe(object):
         mdata = df["Photo"]
         Jvals = []
         Vcvals = []
-        Rdfacvals = []
+        
         for index, i in enumerate(np.unique(df["Leaf"])):
             Jvals.append(pymc.Uniform('Jmax25_%d' % (i), lower=5.0, upper=650.0))
             Vcvals.append(pymc.Uniform('Vcmax25_%d' % (i), lower=5.0, upper=350.0))
-            Rdfacvals.append(pymc.Uniform('rdfac_%d' % (i), lower=0.005, upper=0.04))
-        
+            
+        Rdfrac = pymc.Uniform('Rdfrac', lower=0.005, upper=0.04)
         Eaj = pymc.Uniform('Eaj', lower=0.0, upper=199999.9)
         Eav = pymc.Uniform('Eav', lower=0.0, upper=199999.9)
         Ear = pymc.Uniform('Ear', lower=0.0, upper=199999.9)        
@@ -135,7 +135,7 @@ class FitMe(object):
         delSv = pymc.Uniform('delSv', lower=550.0, upper=750.0)
         
         @pymc.deterministic
-        def func(Jvals=Jvals, Vcvals=Vcvals, Rdfacvals=Rdfacvals, Eaj=Eaj, Eav=Eav, 
+        def func(Jvals=Jvals, Vcvals=Vcvals, Rdfrac=Rdfrac, Eaj=Eaj, Eav=Eav, 
                  Ear=Ear, delSj=delSj, delSv=delSv): 
             
             # These parameter values need to be arrays
@@ -148,7 +148,7 @@ class FitMe(object):
                 
                 Jmax25 += Jvals[index] * df[col_id]
                 Vcmax25 += Vcvals[index] * df[col_id]
-                Rd25 += Vcvals[index]*Rdfacvals[index] * df[col_id]
+                Rd25 += Vcvals[index] * Rdfrac * df[col_id]
             Hdv = 200000.00000000
             Hdj = 200000.00000000
             
@@ -245,13 +245,13 @@ class FitMe(object):
         for leaf_num in np.unique(df["Leaf"]):
             
             (Jmax25_guess, Vcmax25_guess, 
-             Rd25_guess, Eaj_guess, 
+             Rdfrac_guess, Eaj_guess, 
              Eav_guess, Ear_guess, 
              delSj_guess, delSv_guess) = self.pick_random_starting_point()
             
             params['Jmax25_%d' % (leaf_num)].value = Jmax25_guess
             params['Vcmax25_%d' % (leaf_num)].value = Vcmax25_guess
-            params['Rd25_%d' % (leaf_num)].value = Rd25_guess
+            params['Rdfrac'].value = Rdfrac_guess
             params['Eaj'].value = Eaj_guess
             params['Eav'].value = Eav_guess
             params['Ear'].value = Ear_guess
@@ -273,8 +273,9 @@ class FitMe(object):
         """
         Jmax25 = np.random.uniform(5.0, 550) 
         Vcmax25 = np.random.uniform(5.0, 350) 
-        Rd25 = 0.015 * Vcmax25
+        #Rd25 = 0.015 * Vcmax25
         #Rd25 = np.random.uniform(0.0, 5.0)
+        Rdfrac = np.random.uniform(0.005, 0.03) 
         Eaj = np.random.uniform(20000.0, 80000.0)
         Eav = np.random.uniform(20000.0, 80000.0)
         Ear = np.random.uniform(20000.0, 80000.0)
@@ -284,7 +285,7 @@ class FitMe(object):
             delSj = None
             delSv = None
         
-        return Jmax25, Vcmax25, Rd25, Eaj, Eav, Ear, delSj, delSv
+        return Jmax25, Vcmax25, Rdfrac, Eaj, Eav, Ear, delSj, delSv
     
                   
     def residual(self, params, df):
@@ -319,7 +320,7 @@ class FitMe(object):
             col_id = "f_%d" % (i)
             Jmax25 += params['Jmax25_%d' % (i)].value * df[col_id]
             Vcmax25 += params['Vcmax25_%d' % (i)].value * df[col_id]
-            Rd25 += params['Rd25_%d' % (i)].value * df[col_id]
+            Rd25 += params['Rdfrac'].value * Vcmax25 * df[col_id]
 
         Eaj = params['Eaj'].value
         delSj = params['delSj'].value
@@ -374,7 +375,7 @@ class FitMe(object):
             col_id = "f_%d" % (i)
             Jmax25 += result.params['Jmax25_%d' % (i)].value * df[col_id]
             Vcmax25 += result.params['Vcmax25_%d' % (i)].value * df[col_id]
-            Rd25 += result.params['Rd25_%d' % (i)].value * df[col_id]
+            Rd25 += params['Rdfrac'].value * Vcmax25 * df[col_id]
         
         Eaj = result.params['Eaj'].value
         delSj = result.params['delSj'].value
@@ -546,7 +547,8 @@ class FitMe(object):
             
             Jmax25 = result.params['Jmax25_%d' % (i)].value
             Vcmax25 = result.params['Vcmax25_%d' % (i)].value
-            Rd25 = result.params['Rd25_%d' % (i)].value        
+            #Rd25 = result.params['Rd25_%d' % (i)].value   
+            Rd25 = result.params['Rdfac'].value *  Vcmax25        
             Eaj = result.params['Eaj'].value
             delSj = result.params['delSj'].value
             #Hdj = result.params['Hdj'].value
@@ -556,12 +558,20 @@ class FitMe(object):
             Ear = result.params['Ear'].value
             Hdv = 200000.00000000
             Hdj = 200000.00000000
-            (An, Anc, Anj) = self.farq(Ci=curve_df["Ci"], Tleaf=curve_df["Tleaf"], 
-                                       Par=None, Jmax=None, Vcmax=None, 
-                                       Jmax25=Jmax25, Vcmax25=Vcmax25, Rd=None, 
-                                       Q10=None, Eaj=Eaj, Eav=Eav, 
-                                       deltaSj=delSj, deltaSv=delSv, Rd25=Rd25, 
-                                       Ear=Ear, Hdv=Hdv, Hdj=Hdj)
+            if hasattr(curve_df, "Par"):
+                (An, Anc, Anj) = self.farq(Ci=curve_df["Ci"], Tleaf=curve_df["Tleaf"], 
+                                           Par=curve_df["Par"], Jmax=None, Vcmax=None, 
+                                           Jmax25=Jmax25, Vcmax25=Vcmax25, Rd=None, 
+                                           Q10=None, Eaj=Eaj, Eav=Eav, 
+                                           deltaSj=delSj, deltaSv=delSv, Rd25=Rd25, 
+                                           Ear=Ear, Hdv=Hdv, Hdj=Hdj)
+            else:
+                (An, Anc, Anj) = self.farq(Ci=curve_df["Ci"], Tleaf=curve_df["Tleaf"], 
+                                           Par=None, Jmax=None, Vcmax=None, 
+                                           Jmax25=Jmax25, Vcmax25=Vcmax25, Rd=None, 
+                                           Q10=None, Eaj=Eaj, Eav=Eav, 
+                                           deltaSj=delSj, deltaSv=delSv, Rd25=Rd25, 
+                                           Ear=Ear, Hdv=Hdv, Hdj=Hdj)
             residuals = curve_df["Photo"] - An
               
             ofname = "%s/%s_%s_%s_%s_fit_and_residual.png" % \
