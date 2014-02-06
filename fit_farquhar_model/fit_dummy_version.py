@@ -26,7 +26,7 @@ import sys
 import glob
 import numpy as np
 import csv
-from lmfit import minimize, Parameters
+from lmfit import minimize, Parameters, conf_interval, report_fit, report_ci
 from scipy import stats
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -116,7 +116,12 @@ class FitMe(object):
                         params = self.change_param_values(dfr, params)
                 
                     result = minimize(self.residual, params, args=(dfr,))
-                    self.print_fit_to_screen(result)
+                    #self.print_fit_to_screen(result)
+                    report_fit(params, show_correl=False)
+                    
+                    #ci = conf_interval(result, trace=False)
+                    #report_ci(ci)
+                    
                     
                     (An, Anc, Anj) = self.forward_run(result, dfr)
                     # Successful fit?
@@ -237,13 +242,13 @@ class FitMe(object):
         
         # Temp dependancy values do not vary by leaf, so only need one set of 
         # params.
-        params.add('Eaj', value=Eaj_guess, min=0.0, max=199999.9)
-        params.add('delSj', value=delSj_guess, min=0.0, max=800.0)  
+        params.add('Eaj', value=Eaj_guess, min=20000.0, max=199999.9)
+        params.add('delSj', value=delSj_guess, min=300.0, max=800.0)  
         #params.add('Hdj', value=200000.0, vary=False)
-        params.add('Eav', value=Eav_guess, min=0.0, max=199999.9)
-        params.add('delSv', value=delSv_guess, min=0.0, max=800.0)  
+        params.add('Eav', value=Eav_guess, min=20000.0, max=199999.9)
+        params.add('delSv', value=delSv_guess, min=300.0, max=800.0)  
         #params.add('Hdv', value=200000.0, vary=False)
-        params.add('Ear', value=Ear_guess, min=0.0, max=199999.9)
+        params.add('Ear', value=Ear_guess, min=20000.0, max=199999.9)
             
         return params, df
     
@@ -553,6 +558,7 @@ class FitMe(object):
         
         for curve_num in np.unique(df["Curve"]):
             curve_df = df[df["Curve"]==curve_num]
+            curve_df = curve_df.sort(['Ci'], ascending=True)#Sort for nice plots
             i = curve_df["Leaf"].values[0]
             
             col_id = "f_%d" % (i)
@@ -653,13 +659,13 @@ class FitMe(object):
 if __name__ == "__main__":
 
     ofname = "fitting_results.csv"
-    #results_dir = "/Users/mdekauwe/Desktop/results"
-    #data_dir = "/Users/mdekauwe/Desktop/data"
-    #plot_dir = "/Users/mdekauwe/Desktop/plots"
+    results_dir = "/Users/mdekauwe/Desktop/results"
+    data_dir = "/Users/mdekauwe/Desktop/data"
+    plot_dir = "/Users/mdekauwe/Desktop/plots"
     
-    results_dir = "results"
-    data_dir = "data"
-    plot_dir = "plots"
+    #results_dir = "results"
+    #data_dir = "data"
+    #plot_dir = "plots"
     from farquhar_model import FarquharC3
     model = FarquharC3(peaked_Jmax=True, peaked_Vcmax=True, model_Q10=False)
     
