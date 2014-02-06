@@ -102,6 +102,7 @@ class FitMe(object):
                         
         for fname in glob.glob(os.path.join(self.data_dir, infname_tag)):
             df = self.read_data(fname)
+            hdr_written = False
             for group in np.unique(df["fitgroup"]):
                 dfr = df[df["fitgroup"]==group]
                 dfr.index = range(len(dfr)) # need to reindex slice
@@ -142,8 +143,9 @@ class FitMe(object):
                     if print_to_screen:
                         self.print_fit_to_screen(best_result)
                         
-                    self.report_fits(writer, best_result, os.path.basename(fname), 
-                                     dfr, An)
+                    hdr_written = self.report_fits(writer, best_result, 
+                                                   os.path.basename(fname), 
+                                                   dfr, An, hdr_written)
                     self.make_plots(dfr, An, Anc, Anj, best_result)
                 else:
                     print "Fit failed, fitgroup = %d" % (group)          
@@ -422,7 +424,8 @@ class FitMe(object):
         
         return (An, Anc, Anj)
     
-    def report_fits(self, writer, result, fname, df, An_fit):
+    def report_fits(self, writer, result, fname, df, An_fit, 
+                    hdr_written=False):
         """ Save fitting results to a file... 
         
         Parameters
@@ -436,6 +439,9 @@ class FitMe(object):
         An_fit : array
             best model fit using optimised parameters, Net leaf assimilation 
             rate [umol m-2 s-1]
+        hdr_written : logical
+            Flag to stop the header being rewritten when in a loop    
+        
         """
         
         
@@ -487,9 +493,12 @@ class FitMe(object):
                                str(df["Leaf"][0])))
         
         header = header + remaining_header
-        writer.writerow(header)
+        if not hdr_written:
+            writer.writerow(header)
+            hdr_written = True
         writer.writerow(row)
         
+        return hdr_written
         
                 
     def print_fit_to_screen(self, result):
