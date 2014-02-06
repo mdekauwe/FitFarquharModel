@@ -576,12 +576,20 @@ class FitMe(object):
             Ear = result.params['Ear'].value
             Hdv = 200000.00000000
             Hdj = 200000.00000000
-            (An, Anc, Anj) = self.farq(Ci=curve_df["Ci"], Tleaf=curve_df["Tleaf"], 
-                                       Par=None, Jmax=None, Vcmax=None, 
-                                       Jmax25=Jmax25, Vcmax25=Vcmax25, Rd=None, 
-                                       Q10=None, Eaj=Eaj, Eav=Eav, 
-                                       deltaSj=delSj, deltaSv=delSv, Rd25=Rd25, 
-                                       Ear=Ear, Hdv=Hdv, Hdj=Hdj)
+            if hasattr(curve_df, "Par"):
+                (An, Anc, Anj) = self.farq(Ci=curve_df["Ci"], Tleaf=curve_df["Tleaf"], 
+                                           Par=curve_df["Par"], Jmax=None, Vcmax=None, 
+                                           Jmax25=Jmax25, Vcmax25=Vcmax25, Rd=None, 
+                                           Q10=None, Eaj=Eaj, Eav=Eav, 
+                                           deltaSj=delSj, deltaSv=delSv, Rd25=Rd25, 
+                                           Ear=Ear, Hdv=Hdv, Hdj=Hdj)
+            else:
+                (An, Anc, Anj) = self.farq(Ci=curve_df["Ci"], Tleaf=curve_df["Tleaf"], 
+                                           Par=None, Jmax=None, Vcmax=None, 
+                                           Jmax25=Jmax25, Vcmax25=Vcmax25, Rd=None, 
+                                           Q10=None, Eaj=Eaj, Eav=Eav, 
+                                           deltaSj=delSj, deltaSv=delSv, Rd25=Rd25, 
+                                           Ear=Ear, Hdv=Hdv, Hdj=Hdj)
             residuals = curve_df["Photo"] - An
               
             ofname = "%s/%s_%s_%s_%s_fit_and_residual.png" % \
@@ -610,7 +618,7 @@ class FitMe(object):
                     label="Anc")
             ax.plot(curve_df["Ci"], Anj, '--', c="blue", linewidth=1, 
                     label="Anj")
-            ax.set_ylabel("Assimilation Rate")
+            ax.set_ylabel("Net Assimilation Rate")
             ax.axes.get_xaxis().set_visible(False)
             ax.set_xlim(0, 1600)
             ax.legend(numpoints=1, loc="best")
