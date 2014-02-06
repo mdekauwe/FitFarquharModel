@@ -119,9 +119,11 @@ class FitMe(object):
                 dfr.index = range(len(dfr)) # need to reindex slice
                 (dfr) = self.setup_model_params(dfr)
                 
-                Num = 100000
+                iterations = 100000
+                burn = 50000
+                thin = 8
                 MC = pymc.MCMC(self.make_model(dfr))
-                MC.sample(iter=Num, burn=Num*0.1, thin=2)  
+                MC.sample(iterations, burn, thin)  
                 MC.write_csv(ofname)
                 
         
