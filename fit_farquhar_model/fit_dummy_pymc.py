@@ -114,7 +114,7 @@ class FitMe(object):
             df_sorted.index = range(len(df_sorted)) # need to reindex slice
             
             for group in np.unique(df_sorted["fitgroup"]):
-                ofname = "/Users/mdekauwe/Desktop/MCMC_fit_%s.csv" % (group)
+                ofname = "/Users/mdekauwe/Dropbox/MCMC_fit_%s.csv" % (group)
                 dfr = df_sorted[df_sorted["fitgroup"]==group]
                 dfr.index = range(len(dfr)) # need to reindex slice
                 (dfr) = self.setup_model_params(dfr)
