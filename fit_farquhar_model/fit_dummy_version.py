@@ -102,9 +102,18 @@ class FitMe(object):
                         
         for fname in glob.glob(os.path.join(self.data_dir, infname_tag)):
             df = self.read_data(fname)
+            
+            # sort data by curve first...
+            df_sorted = pd.DataFrame()
+            for curve_num in np.unique(df["Curve"]):
+                curve_df = df[df["Curve"]==curve_num]
+                curve_df = curve_df.sort(['Ci'], ascending=True)
+                df_sorted = df_sorted.append(curve_df)
+            df_sorted.index = range(len(df_sorted)) # need to reindex slice
+            
             hdr_written = False
-            for group in np.unique(df["fitgroup"]):
-                dfr = df[df["fitgroup"]==group]
+            for group in np.unique(df_sorted["fitgroup"]):
+                dfr = df_sorted[df_sorted["fitgroup"]==group]
                 dfr.index = range(len(dfr)) # need to reindex slice
                 (params, dfr) = self.setup_model_params(dfr)
                 # Test sensitivity, are we falling into local mins?
@@ -117,8 +126,7 @@ class FitMe(object):
                         params = self.change_param_values(dfr, params)
                 
                     result = minimize(self.residual, params, args=(dfr,))
-                    #self.print_fit_to_screen(result)
-                    report_fit(params, show_correl=False)
+                    #report_fit(params, show_correl=False)
                     
                     #ci = conf_interval(result, trace=False)
                     #report_ci(ci)
@@ -134,9 +142,6 @@ class FitMe(object):
                         if rmse < lowest_rmse:
                             lowest_rmse = rmse
                             best_result = result
-                        
-                        #print rmse
-                        #self.print_fit_to_screen(best_result)
                         
                 # Pick the best fit...
                 if lowest_rmse < self.high_number and best_result.errorbars:
@@ -569,7 +574,7 @@ class FitMe(object):
         
         for curve_num in np.unique(df["Curve"]):
             curve_df = df[df["Curve"]==curve_num]
-            curve_df = curve_df.sort(['Ci'], ascending=True)#Sort for nice plots
+            #curve_df = curve_df.sort(['Ci'], ascending=True)#Sort for nice plots
             i = curve_df["Leaf"].values[0]
             
             col_id = "f_%d" % (i)
