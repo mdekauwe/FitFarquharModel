@@ -114,16 +114,16 @@ class FitMe(object):
             df_sorted.index = range(len(df_sorted)) # need to reindex slice
             
             for group in np.unique(df_sorted["fitgroup"]):
+                ofname = "/Users/mdekauwe/Desktop/MCMC_fit_%s.csv" % (group)
                 dfr = df_sorted[df_sorted["fitgroup"]==group]
                 dfr.index = range(len(dfr)) # need to reindex slice
                 (dfr) = self.setup_model_params(dfr)
                 
-                Num = 10000
+                Num = 100
                 MC = pymc.MCMC(self.make_model(dfr))
-                MC.sample(iter=Num, burn=Num*0.1)  
-                MC.write_csv("/Users/mdekauwe/Desktop/MCMC.csv")
+                MC.sample(iter=Num)  
+                MC.write_csv(ofname)
                 
-                sys.exit()
         
     def make_model(self, df):
         """ Setup 'model factory' - which exposes various attributes to PYMC 
