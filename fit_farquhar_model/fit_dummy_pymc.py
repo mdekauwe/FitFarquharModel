@@ -97,10 +97,6 @@ class FitMe(object):
         print_to_screen : logical
             print fitting result to screen? Default is no!
         """
-        # open files and write header information
-        ofile = self.open_output_files()
-        writer = csv.writer(ofile, delimiter=',', quoting=csv.QUOTE_NONE, 
-                            escapechar=' ')
         
         for fname in glob.glob(os.path.join(self.data_dir, infname_tag)):
             df = self.read_data(fname)
@@ -114,18 +110,24 @@ class FitMe(object):
             df_sorted.index = range(len(df_sorted)) # need to reindex slice
             
             for group in np.unique(df_sorted["fitgroup"]):
-                ofname = "/Users/mdekauwe/Dropbox/MCMC_fit_%s.csv" % (group)
+                
                 dfr = df_sorted[df_sorted["fitgroup"]==group]
                 dfr.index = range(len(dfr)) # need to reindex slice
+                ofname = os.path.join(self.results_dir, "%s_%s.csv" % \
+                                (dfr["Species"][0], group))
                 (dfr) = self.setup_model_params(dfr)
                 
                 iterations = 100000
                 burn = 50000
-                thin = 8
+                thin = 2
                 MC = pymc.MCMC(self.make_model(dfr))
                 MC.sample(iterations, burn, thin)  
                 MC.write_csv(ofname)
                 
+                
+                self.make_plots(dfr, MC)
+                print MC.stats()['Eaj']['mean']
+                print MC.stats()['Jmax25_1']['mean']
         
     def make_model(self, df):
         """ Setup 'model factory' - which exposes various attributes to PYMC 
@@ -522,7 +524,7 @@ class FitMe(object):
 
     
     
-    def make_plots(self, df, An_fit, Anc_fit, Anj_fit, result):
+    def make_plots(self, df, MC):
         """ Make some plots to show how good our fitted model is to the data 
         
         * Plots A-Ci model fits vs. data
@@ -557,17 +559,14 @@ class FitMe(object):
             
             col_id = "f_%d" % (i)
             
-            Jmax25 = result.params['Jmax25_%d' % (i)].value
-            Vcmax25 = result.params['Vcmax25_%d' % (i)].value
-            #Rd25 = result.params['Rd25_%d' % (i)].value   
-            Rd25 = result.params['Rdfac'].value *  Vcmax25        
-            Eaj = result.params['Eaj'].value
-            delSj = result.params['delSj'].value
-            #Hdj = result.params['Hdj'].value
-            Eav = result.params['Eav'].value
-            delSv = result.params['delSv'].value
-            #Hdv = result.params['Hdv'].value
-            Ear = result.params['Ear'].value
+            Jmax25 = MC.stats()['Jmax25_%d' % (i)]['mean']
+            Vcmax25 = MC.stats()['Vcmax25_%d' % (i)]['mean']
+            Rd25 = MC.stats()['Rdfrac']['mean'] *  Vcmax25        
+            Eaj = MC.stats()['Eaj']['mean']
+            delSj = MC.stats()['delSj']['mean']
+            Eav = MC.stats()['Eav']['mean']
+            delSv = MC.stats()['delSv']['mean']
+            Ear = MC.stats()['Ear']['mean']
             Hdv = 200000.00000000
             Hdj = 200000.00000000
             if hasattr(curve_df, "Par"):
