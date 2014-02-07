@@ -226,27 +226,23 @@ class FitMe(object):
              Eav_guess, 
              delSj_guess, delSv_guess) = self.pick_random_starting_point()
             
-            params.add('Vcmax25_%d' % (leaf_num), value=Vcmax25_guess, min=0.0, 
-                        max=200.0)
+            params.add('Vcmax25_%d' % (leaf_num), value=Vcmax25_guess , min=0.0, 
+                        max=600.0)
             
             # Need to build dummy variable identifier for each leaf.
             col_id = "f_%d" % (leaf_num)
             temp = df["Leaf"]
             temp = np.where(temp==leaf_num, 1.0, 0.0)
             df[col_id] = temp
-        
+            
+        # Values do not vary by leaf
         params.add('Rdfac', value=0.015, min=0.005, max=0.05) 
         params.add('Jfac', value = 2.0, min=0.8, max=2.8)
-        
-        # Temp dependancy values do not vary by leaf, so only need one set of 
-        # params.
         params.add('Eaj', value=Eaj_guess, min=40000.0, max=80000.0)
         params.add('Eav', value=Eav_guess, min=40000.0, max=80000.0)
-        params.add('delSj', value=delSj_guess, min=620.0, max=660.0)  
-        params.add('delSv', value=delSv_guess, min=620.0, max=660.0)  
-        #params.add('Hdv', value=200000.0, vary=False)
-        #params.add('Ear', value=Ear_guess, min=20000.0, max=199999.9)
-            
+        params.add('delSj', value=delSj_guess, min=300.0, max=800.0)  
+        params.add('delSv', value=delSv_guess, min=300.0, max=800.0)  
+        
         return params, df
     
     def change_param_values(self, df, params):
