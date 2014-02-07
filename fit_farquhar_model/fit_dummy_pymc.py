@@ -33,7 +33,6 @@ import pandas as pd
 from math import fabs
 import pymc
 
-
 class FitMe(object):
     """
     Basic fitting class, contains some generic methods which are used by the
@@ -53,7 +52,7 @@ class FitMe(object):
     matrix singular. In these cases, the errorbars attribute 
     of the fit result (Minimizer object) will be False. 
     """
-    def __init__(self, model=None, ofname=None, results_dir=None, 
+    def __init__(self, model=None, results_dir=None, 
                  data_dir=None, plot_dir=None, num_iter=20, peaked=True, 
                  delimiter=","):
         """
@@ -61,8 +60,7 @@ class FitMe(object):
         ----------
         model : object
             model that we are fitting measurements against...
-        ofname : string
-            output filename for writing fitting result.
+        
         results_dir : string
             output directory path for the result to be written
         data_dir : string
@@ -74,8 +72,7 @@ class FitMe(object):
         """
         
         self.results_dir = results_dir
-        if ofname is not None:
-            self.ofname = os.path.join(self.results_dir, ofname)
+        
         self.data_dir = data_dir 
         self.plot_dir = plot_dir    
         self.farq = model.calc_photosynthesis
@@ -125,9 +122,9 @@ class FitMe(object):
                 #MC.sample(iterations, burn, thin)  
                 MC.write_csv(ofname)
                 
-                
                 self.make_plots(dfr, MC)
-                
+                pymc.Matplot.plot(MC, suffix='group', path=self.plot_dir, format='png')
+                sys.exit()
         
     def make_model(self, df):
         """ Setup 'model factory' - which exposes various attributes to PYMC 
@@ -606,12 +603,11 @@ class FitMe(object):
 
 if __name__ == "__main__":
 
-    ofname = "fitting_results.csv"
-    results_dir = "/Users/mdekauwe/Desktop/results"
-    data_dir = "/Users/mdekauwe/Desktop/data"
-    plot_dir = "/Users/mdekauwe/Desktop/plots"
+    results_dir = "/Users/mdekauwe/Dropbox/results"
+    data_dir = "/Users/mdekauwe/Dropbox/data"
+    plot_dir = "/Users/mdekauwe/Dropbox/plots"
     from farquhar_model import FarquharC3
     model = FarquharC3(peaked_Jmax=True, peaked_Vcmax=True, model_Q10=False)
     
-    F = FitMe(model, ofname, results_dir, data_dir, plot_dir)
+    F = FitMe(model, results_dir, data_dir, plot_dir)
     F.main(print_to_screen=True) 
