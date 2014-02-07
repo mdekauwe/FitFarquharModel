@@ -223,7 +223,7 @@ class FitMe(object):
              
             (Jmax25_guess, Vcmax25_guess, 
              Rd25_guess, Eaj_guess, 
-             Eav_guess, Ear_guess, 
+             Eav_guess, 
              delSj_guess, delSv_guess) = self.pick_random_starting_point()
             
             #params.add('Jmax25_%d' % (leaf_num), value=Jmax25_guess, min=0.0, 

@@ -134,23 +134,22 @@ class FitMe(object):
         call """
         
         mdata = df["Photo"]
-        Jvals = []
+       
         Vcvals = []
-        Rvals = []
+        
         for index, i in enumerate(np.unique(df["Leaf"])):
-            Jvals.append(pymc.Uniform('Jmax25_%d' % (i), lower=5.0, upper=650.0))
-            Vcvals.append(pymc.Uniform('Vcmax25_%d' % (i), lower=5.0, upper=350.0))
-            Rvals.append(pymc.Uniform('Rdfrac_%d' % (i), lower=0.001, upper=0.08))
-        #Rdfrac = pymc.Uniform('Rdfrac', lower=0.005, upper=0.04)
-        Eaj = pymc.Uniform('Eaj', lower=20000.0, upper=199999.9)
-        Eav = pymc.Uniform('Eav', lower=20000.0, upper=199999.9)
-        Ear = pymc.Uniform('Ear', lower=20000.0, upper=199999.9)        
-        delSj = pymc.Uniform('delSj', lower=300.0, upper=800.0)
-        delSv = pymc.Uniform('delSv', lower=300.0, upper=800.0)
+            Vcvals.append(pymc.Normal('Vcmax25_%d' % (i), mu=50.0, tau=1.0/(5.0*5.0)))
+            
+        Jfac.append(pymc.Normal('Jfac', mu=1.8, tau=1.0/(0.5*0.5)))
+        Rdfac = pymc.Uniform('Rdfac', lower=0.005, upper=0.05)
+        Eaj.append(pymc.Normal('Eaj', mu=40.0, tau=1.0/(20.0*20.0)))
+        Eav.append(pymc.Normal('Eaj', mu=60.0, tau=1.0/(20.0*20.0)))
+        delSj.append(pymc.Normal('delSj', mu=640.0, tau=1.0/(10.0*10.0)))
+        delSv.append(pymc.Normal('delSv', mu=640.0, tau=1.0/(10.0*10.0)))
         
         @pymc.deterministic
-        def func(Jvals=Jvals, Vcvals=Vcvals, Rvals=Rvals, Eaj=Eaj, Eav=Eav, 
-                 Ear=Ear, delSj=delSj, delSv=delSv): 
+        def func(Vcvals=Vcvals, Jfac=Jfac, Rdfac=Rdfac, Eaj=Eaj, Eav=Eav, 
+                 delSj=delSj, delSv=delSv): 
             
             # These parameter values need to be arrays
             Jmax25 = np.zeros(len(df))
@@ -160,13 +159,13 @@ class FitMe(object):
             for index, i in enumerate(np.unique(df["Leaf"])):
                 col_id = "f_%d" % (i)
                 
-                Jmax25 += Jvals[index] * df[col_id]
                 Vcmax25 += Vcvals[index] * df[col_id]
-                #Rd25 += Vcvals[index] * Rdfrac * df[col_id]
-                Rd25 += Vcvals[index] * Rvals[index] * df[col_id]
+                Jmax25 += Vcvals[index] * Jfac * df[col_id]
+                Rd25 += Vcvals[index] * Rdfac * df[col_id]
+                
             Hdv = 200000.00000000
             Hdj = 200000.00000000
-            
+            Ear = 20000.0
             (An, Anc, Anj) = self.farq(Ci=df["Ci"], Tleaf=df["Tleaf"], 
                                        Par=None, Jmax=None, Vcmax=None, 
                                        Jmax25=Jmax25, Vcmax25=Vcmax25, Rd=None, 
