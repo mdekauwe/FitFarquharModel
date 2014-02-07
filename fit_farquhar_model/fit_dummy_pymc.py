@@ -162,12 +162,20 @@ class FitMe(object):
             Hdv = 200000.0
             Hdj = 200000.0
             Ear = 20000.0
-            (An, Anc, Anj) = self.farq(Ci=df["Ci"], Tleaf=df["Tleaf"], 
-                                       Par=None, Jmax=None, Vcmax=None, 
-                                       Jmax25=Jmax25, Vcmax25=Vcmax25, Rd=None, 
-                                       Q10=None, Eaj=Eaj, Eav=Eav, 
-                                       deltaSj=delSj, deltaSv=delSv, Rd25=Rd25, 
-                                       Ear=Ear, Hdv=Hdv, Hdj=Hdj)
+            if hasattr(df, "Par"):
+                (An, Anc, Anj) = self.farq(Ci=df["Ci"], Tleaf=df["Tleaf"], 
+                                           Par=df["Par"], Jmax=None, Vcmax=None, 
+                                           Jmax25=Jmax25, Vcmax25=Vcmax25, Rd=None, 
+                                           Q10=None, Eaj=Eaj, Eav=Eav, 
+                                           deltaSj=delSj, deltaSv=delSv, Rd25=Rd25, 
+                                           Ear=Ear, Hdv=Hdv, Hdj=Hdj)
+            else:
+                (An, Anc, Anj) = self.farq(Ci=df["Ci"], Tleaf=df["Tleaf"], 
+                                           Par=None, Jmax=None, Vcmax=None, 
+                                           Jmax25=Jmax25, Vcmax25=Vcmax25, Rd=None, 
+                                           Q10=None, Eaj=Eaj, Eav=Eav, 
+                                           deltaSj=delSj, deltaSv=delSv, Rd25=Rd25, 
+                                           Ear=Ear, Hdv=Hdv, Hdj=Hdj)
             
             
             return An
@@ -250,116 +258,7 @@ class FitMe(object):
        
         return df
     
-    def residual(self, params, df):
-        """ simple function to quantify how good the fit was for the fitting
-        routine. 
-        
-        Parameters
-        ----------
-        params : object
-            List of parameters to be fit, initial guess, ranges etc. This is
-            an lmfit object
-        df: dataframe
-            df containing all the A-Ci curve and temp data 
-        
-        Returns: 
-        --------
-        residual : array
-            residual of fit between model and obs, based on current parameter
-            set
-        """
-        # Need to employ dummy variables to fit model parameters
-        # e.g. Jmax = Jmax_leaf1 * f1 + Jmax_leaf2 * f2 etc
-        # where f1=1 for matching leaf data and 0 elsewhere, ditto f2.
-         
-        # These parameter values need to be arrays
-        Jmax25 = np.zeros(len(df))
-        Vcmax25 = np.zeros(len(df))
-        Rd25 = np.zeros(len(df))
-        
-        # Need to build dummy variables.
-        for i in np.unique(df["Leaf"]):
-            col_id = "f_%d" % (i)
-            Vcmax25 += params['Vcmax25_%d' % (i)].value * df[col_id]
-            Rd25 += params['Rdfac'].value * Vcmax25 * df[col_id]
-            Jmax25 += params['Jfac'].value * Vcmax25 * df[col_id]
-        Eaj = params['Eaj'].value
-        delSj = params['delSj'].value
-        Eav = params['Eav'].value
-        delSv = params['delSv'].value
-        Ear = 20000.0
-        Hdv = 200000.0
-        Hdj = 200000.0
-        if hasattr(df, "Par"):
-            (An, Anc, Anj) = self.farq(Ci=df["Ci"], Tleaf=df["Tleaf"], 
-                                       Par=df["Par"], Jmax=None, Vcmax=None, 
-                                       Jmax25=Jmax25, Vcmax25=Vcmax25, Rd=None, 
-                                       Q10=None, Eaj=Eaj, Eav=Eav, 
-                                       deltaSj=delSj, deltaSv=delSv, Rd25=Rd25, 
-                                       Ear=Ear, Hdv=Hdv, Hdj=Hdj)
-        else:
-            (An, Anc, Anj) = self.farq(Ci=df["Ci"], Tleaf=df["Tleaf"], 
-                                       Par=None, Jmax=None, Vcmax=None, 
-                                       Jmax25=Jmax25, Vcmax25=Vcmax25, Rd=None, 
-                                       Q10=None, Eaj=Eaj, Eav=Eav, 
-                                       deltaSj=delSj, deltaSv=delSv, Rd25=Rd25, 
-                                       Ear=Ear, Hdv=Hdv, Hdj=Hdj)
-        
-        return (df["Photo"] - An)
-    
-    def forward_run(self, result, df):
-        """ Run farquhar model with fitted parameters and return result 
-        
-        Parameters
-        ----------
-        result : object
-            fitting result, param, std. error etc.
-         df: dataframe
-            df containing all the A-Ci curve and temp data 
-        
-        Returns
-        --------
-        An : float
-            Net leaf assimilation rate [umol m-2 s-1]
-        Acn : float
-            Net rubisco-limited leaf assimilation rate [umol m-2 s-1]
-        Ajn : float
-            Net RuBP-regeneration-limited leaf assimilation rate [umol m-2 s-1]
-        """
-        Jmax25 = np.zeros(len(df))
-        Vcmax25 = np.zeros(len(df))
-        Rd25 = np.zeros(len(df))
-        
-        for i in np.unique(df["Leaf"]):
-            col_id = "f_%d" % (i)
-            
-            Vcmax25 += result.params['Vcmax25_%d' % (i)].value * df[col_id]
-            Rd25 += params['Rdfac'].value * Vcmax25 * df[col_id]
-            Jmax25 += params['Jfac'].value * Vcmax25 * df[col_id]
-        Eaj = result.params['Eaj'].value
-        delSj = result.params['delSj'].value
-        Eav = result.params['Eav'].value
-        delSv = result.params['delSv'].value
-        Ear = 20000.0
-        Hdv = 200000.0
-        Hdj = 200000.0
-        if hasattr(df, "Par"):
-            (An, Anc, Anj) = self.farq(Ci=df["Ci"], Tleaf=df["Tleaf"], 
-                                       Par=df["Par"], Jmax=None, Vcmax=None, 
-                                       Jmax25=Jmax25, Vcmax25=Vcmax25, Rd=None, 
-                                       Q10=None, Eaj=Eaj, Eav=Eav, 
-                                       deltaSj=delSj, deltaSv=delSv, Rd25=Rd25, 
-                                       Ear=Ear, Hdv=Hdv, Hdj=Hdj)
-        else:
-            (An, Anc, Anj) = self.farq(Ci=df["Ci"], Tleaf=df["Tleaf"], 
-                                       Par=None, Jmax=None, Vcmax=None, 
-                                       Jmax25=Jmax25, Vcmax25=Vcmax25, Rd=None, 
-                                       Q10=None, Eaj=Eaj, Eav=Eav, 
-                                       deltaSj=delSj, deltaSv=delSv, Rd25=Rd25, 
-                                       Ear=Ear, Hdv=Hdv, Hdj=Hdj)
-        
-        return (An, Anc, Anj)
-    
+
     def report_fits(self, writer, result, fname, df, An_fit):
         """ Save fitting results to a file... 
         
