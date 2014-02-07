@@ -119,15 +119,15 @@ class FitMe(object):
                 
                 iterations = 100000
                 burn = 50000
-                thin = 2
+                thin = 5
                 MC = pymc.MCMC(self.make_model(dfr))
-                MC.sample(iterations, burn, thin)  
+                MC.sample(500) 
+                #MC.sample(iterations, burn, thin)  
                 MC.write_csv(ofname)
                 
                 
                 self.make_plots(dfr, MC)
-                print MC.stats()['Eaj']['mean']
-                print MC.stats()['Jmax25_1']['mean']
+                
         
     def make_model(self, df):
         """ Setup 'model factory' - which exposes various attributes to PYMC 
@@ -140,12 +140,12 @@ class FitMe(object):
         for index, i in enumerate(np.unique(df["Leaf"])):
             Vcvals.append(pymc.Normal('Vcmax25_%d' % (i), mu=50.0, tau=1.0/(5.0*5.0)))
             
-        Jfac.append(pymc.Normal('Jfac', mu=1.8, tau=1.0/(0.5*0.5)))
+        Jfac = pymc.Normal('Jfac', mu=1.8, tau=1.0/(0.5*0.5))
         Rdfac = pymc.Uniform('Rdfac', lower=0.005, upper=0.05)
-        Eaj.append(pymc.Normal('Eaj', mu=40.0, tau=1.0/(20.0*20.0)))
-        Eav.append(pymc.Normal('Eaj', mu=60.0, tau=1.0/(20.0*20.0)))
-        delSj.append(pymc.Normal('delSj', mu=640.0, tau=1.0/(10.0*10.0)))
-        delSv.append(pymc.Normal('delSv', mu=640.0, tau=1.0/(10.0*10.0)))
+        Eaj = pymc.Normal('Eaj', mu=40.0, tau=1.0/(20.0*20.0))
+        Eav = pymc.Normal('Eav', mu=60.0, tau=1.0/(20.0*20.0))
+        delSj = pymc.Normal('delSj', mu=640.0, tau=1.0/(10.0*10.0))
+        delSv = pymc.Normal('delSv', mu=640.0, tau=1.0/(10.0*10.0))
         
         @pymc.deterministic
         def func(Vcvals=Vcvals, Jfac=Jfac, Rdfac=Rdfac, Eaj=Eaj, Eav=Eav, 
@@ -254,36 +254,6 @@ class FitMe(object):
        
         return df
     
-    
-        
-    def pick_random_starting_point(self):
-        """ random pick starting point for parameter values 
-        
-        Parameters
-        ----------
-        
-        Returns: 
-        --------
-        retval * 3 : float
-            Three starting guesses for Jmax, Vcmax and Rd
-        """
-        Jmax25 = np.random.uniform(5.0, 550) 
-        Vcmax25 = np.random.uniform(5.0, 350) 
-        #Rd25 = 0.015 * Vcmax25
-        #Rd25 = np.random.uniform(0.0, 5.0)
-        Rdfrac = np.random.uniform(0.005, 0.03) 
-        Eaj = np.random.uniform(20000.0, 80000.0)
-        Eav = np.random.uniform(20000.0, 80000.0)
-        Ear = np.random.uniform(20000.0, 80000.0)
-        delSj = np.random.uniform(550.0, 700.0)
-        delSv = np.random.uniform(550.0, 700.0)
-        if not self.peaked:
-            delSj = None
-            delSv = None
-        
-        return Jmax25, Vcmax25, Rdfrac, Eaj, Eav, Ear, delSj, delSv
-    
-                  
     def residual(self, params, df):
         """ simple function to quantify how good the fit was for the fitting
         routine. 
@@ -314,20 +284,16 @@ class FitMe(object):
         # Need to build dummy variables.
         for i in np.unique(df["Leaf"]):
             col_id = "f_%d" % (i)
-            Jmax25 += params['Jmax25_%d' % (i)].value * df[col_id]
             Vcmax25 += params['Vcmax25_%d' % (i)].value * df[col_id]
-            #Rd25 += params['Rdfrac'].value * Vcmax25 * df[col_id]
-            Rd25 += params['Rdfrac_%d' % (i)].value * Vcmax25 * df[col_id]
-            
+            Rd25 += params['Rdfac'].value * Vcmax25 * df[col_id]
+            Jmax25 += params['Jfac'].value * Vcmax25 * df[col_id]
         Eaj = params['Eaj'].value
         delSj = params['delSj'].value
-        #Hdj = params['Hdj'].value
         Eav = params['Eav'].value
         delSv = params['delSv'].value
-        #Hdv = params['Hdv'].value
-        Ear = params['Ear'].value
-        Hdv = 200000.00000000
-        Hdj = 200000.00000000
+        Ear = 20000.0
+        Hdv = 200000.0
+        Hdj = 200000.0
         if hasattr(df, "Par"):
             (An, Anc, Anj) = self.farq(Ci=df["Ci"], Tleaf=df["Tleaf"], 
                                        Par=df["Par"], Jmax=None, Vcmax=None, 
@@ -370,20 +336,17 @@ class FitMe(object):
         
         for i in np.unique(df["Leaf"]):
             col_id = "f_%d" % (i)
-            Jmax25 += result.params['Jmax25_%d' % (i)].value * df[col_id]
+            
             Vcmax25 += result.params['Vcmax25_%d' % (i)].value * df[col_id]
-            #Rd25 += params['Rdfrac'].value * Vcmax25 * df[col_id]
-            Rd25 += params['Rdfrac_%d' % (i)].value * Vcmax25 * df[col_id]
-        
+            Rd25 += params['Rdfac'].value * Vcmax25 * df[col_id]
+            Jmax25 += params['Jfac'].value * Vcmax25 * df[col_id]
         Eaj = result.params['Eaj'].value
         delSj = result.params['delSj'].value
-        #Hdj = result.params['Hdj'].value
         Eav = result.params['Eav'].value
         delSv = result.params['delSv'].value
-        #Hdv = result.params['Hdv'].value
-        Ear = result.params['Ear'].value
-        Hdv = 200000.00000000
-        Hdj = 200000.00000000
+        Ear = 20000.0
+        Hdv = 200000.0
+        Hdj = 200000.0
         if hasattr(df, "Par"):
             (An, Anc, Anj) = self.farq(Ci=df["Ci"], Tleaf=df["Tleaf"], 
                                        Par=df["Par"], Jmax=None, Vcmax=None, 
@@ -543,15 +506,15 @@ class FitMe(object):
             
             col_id = "f_%d" % (i)
             
-            Jmax25 = MC.stats()['Jmax25_%d' % (i)]['mean']
+            
             Vcmax25 = MC.stats()['Vcmax25_%d' % (i)]['mean']
-            #Rd25 = MC.stats()['Rdfrac']['mean'] *  Vcmax25
-            Rd25 = MC.stats()['Rdfrac_%d' % (i)]['mean'] *  Vcmax25         
+            Rd25 = MC.stats()['Rdfac']['mean'] *  Vcmax25
+            Jmax25 = MC.stats()['Jfac']['mean'] *  Vcmax25            
             Eaj = MC.stats()['Eaj']['mean']
             delSj = MC.stats()['delSj']['mean']
             Eav = MC.stats()['Eav']['mean']
             delSv = MC.stats()['delSv']['mean']
-            Ear = MC.stats()['Ear']['mean']
+            Ear = 20000.0
             Hdv = 200000.00000000
             Hdj = 200000.00000000
             if hasattr(curve_df, "Par"):
