@@ -119,11 +119,12 @@ class FitMe(object):
                 thin = 5
                 MC = pymc.MCMC(self.make_model(dfr))
                 MC.sample(iterations, burn, thin)  
-                MC.write_csv(ofname)
                 
+                # ==== done ==== #
+                MC.write_csv(ofname)
                 self.make_plots(dfr, MC)
                 pymc.Matplot.plot(MC, suffix='_%s' % (str(group)), path=self.plot_dir, format='png')
-                sys.exit()
+                
         
     def make_model(self, df):
         """ Setup 'model factory' - which exposes various attributes to PYMC 
