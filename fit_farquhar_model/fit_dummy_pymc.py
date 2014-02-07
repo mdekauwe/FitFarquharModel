@@ -118,12 +118,11 @@ class FitMe(object):
                 burn = 50000
                 thin = 5
                 MC = pymc.MCMC(self.make_model(dfr))
-                MC.sample(2000) 
-                #MC.sample(iterations, burn, thin)  
+                MC.sample(iterations, burn, thin)  
                 MC.write_csv(ofname)
                 
                 self.make_plots(dfr, MC)
-                pymc.Matplot.plot(MC, suffix='group', path=self.plot_dir, format='png')
+                pymc.Matplot.plot(MC, suffix='_%s' % (str(group)), path=self.plot_dir, format='png')
                 sys.exit()
         
     def make_model(self, df):
