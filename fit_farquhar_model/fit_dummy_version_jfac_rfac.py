@@ -227,7 +227,7 @@ class FitMe(object):
              delSj_guess, delSv_guess) = self.pick_random_starting_point()
             
             params.add('Vcmax25_%d' % (leaf_num), value=Vcmax25_guess , min=0.0, 
-                        max=600.0)
+                        max=300.0)
             
             # Need to build dummy variable identifier for each leaf.
             col_id = "f_%d" % (leaf_num)

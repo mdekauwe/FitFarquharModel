@@ -140,8 +140,8 @@ class FitMe(object):
         Rdfac = pymc.Uniform('Rdfac', lower=0.005, upper=0.05)
         Eaj = pymc.Lognormal('Eaj', mu=np.log(40000.0), tau=1.0/np.log(20000.0)**2)
         Eav = pymc.Lognormal('Eav', mu=np.log(60000.0), tau=1.0/np.log(20000.0)**2)
-        delSj = pymc.Lognormal('delSj', mu=np.log(640.0), tau=1.0/np.log(10.0)**2)
-        delSv = pymc.Lognormal('delSv', mu=np.log(640.0), tau=1.0/np.log(10.0)**2)
+        delSj = pymc.Lognormal('delSj', mu=np.log(640.0), tau=1.0/np.log(30.0)**2)
+        delSv = pymc.Lognormal('delSv', mu=np.log(640.0), tau=1.0/np.log(30.0)**2)
         
         @pymc.deterministic
         def func(Vcvals=Vcvals, Jfac=Jfac, Rdfac=Rdfac, Eaj=Eaj, Eav=Eav, 
