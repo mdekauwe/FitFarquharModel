@@ -163,8 +163,8 @@ class FitMe(object):
                 Jmax25 += Vcvals[index] * Jfac * df[col_id]
                 Rd25 += Vcvals[index] * Rdfac * df[col_id]
                 
-            Hdv = 200000.00000000
-            Hdj = 200000.00000000
+            Hdv = 200000.0
+            Hdj = 200000.0
             Ear = 20000.0
             (An, Anc, Anj) = self.farq(Ci=df["Ci"], Tleaf=df["Tleaf"], 
                                        Par=None, Jmax=None, Vcmax=None, 
@@ -254,25 +254,7 @@ class FitMe(object):
        
         return df
     
-    def change_param_values(self, df, params):
-        """ pick new guesses for parameter values """
-        for leaf_num in np.unique(df["Leaf"]):
-            
-            (Jmax25_guess, Vcmax25_guess, 
-             Rdfrac_guess, Eaj_guess, 
-             Eav_guess, Ear_guess, 
-             delSj_guess, delSv_guess) = self.pick_random_starting_point()
-            
-            params['Jmax25_%d' % (leaf_num)].value = Jmax25_guess
-            params['Vcmax25_%d' % (leaf_num)].value = Vcmax25_guess
-            params['Rdfrac'].value = Rdfrac_guess
-            params['Eaj'].value = Eaj_guess
-            params['Eav'].value = Eav_guess
-            params['Ear'].value = Ear_guess
-            params['delSj'].value = delSj_guess
-            params['delSv'].value = delSv_guess
-        
-        return params
+    
         
     def pick_random_starting_point(self):
         """ random pick starting point for parameter values 

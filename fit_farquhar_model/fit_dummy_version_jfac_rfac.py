@@ -413,7 +413,7 @@ class FitMe(object):
                      result.params['Vcmax25_%d' % (i)].value * df[col_id])
             Jmax25 += (result.params['Jfac'].value * 
                        result.params['Vcmax25_%d' % (i)].value * df[col_id])
-            Jmax25 += result.params['Jmax25_%d' % (i)].value * df[col_id]
+            #Jmax25 += result.params['Jmax25_%d' % (i)].value * df[col_id]
                      
         Eaj = result.params['Eaj'].value
         delSj = result.params['delSj'].value
