@@ -229,7 +229,7 @@ class FitMe(object):
             #params.add('Jmax25_%d' % (leaf_num), value=Jmax25_guess, min=0.0, 
             #            max=600.0)
             params.add('Vcmax25_%d' % (leaf_num), value=Vcmax25_guess , min=0.0, 
-                        max=600.0)
+                        max=200.0)
             
             #params.add('Rdfac_%d' % (leaf_num), value=0.015, min=0.005, max=0.03) 
             #params.add('Rd25_%d' % (leaf_num), value=Rd25_guess, 
@@ -246,15 +246,15 @@ class FitMe(object):
             df[col_id] = temp
         
         params.add('Rdfac', value=0.015, min=0.005, max=0.05) 
-        params.add('Jfac',value = 2.0, min = 0.5, max = 3.0)
+        params.add('Jfac',value = 2.0, min = 0.8, max = 2.8)
         
         # Temp dependancy values do not vary by leaf, so only need one set of 
         # params.
-        params.add('Eaj', value=Eaj_guess, min=20000.0, max=199999.9)
+        params.add('Eaj', value=Eaj_guess, min=40000.0, max=80000.0)
         params.add('delSj', value=delSj_guess, min=300.0, max=800.0)  
         #params.add('Hdj', value=200000.0, vary=False)
-        params.add('Eav', value=Eav_guess, min=20000.0, max=199999.9)
-        params.add('delSv', value=delSv_guess, min=300.0, max=800.0)  
+        params.add('Eav', value=Eav_guess, min=40000.0, max=80000.0)
+        params.add('delSv', value=delSv_guess, min=620.0, max=660.0)  
         #params.add('Hdv', value=200000.0, vary=False)
         #params.add('Ear', value=Ear_guess, min=20000.0, max=199999.9)
             
