@@ -138,8 +138,7 @@ class FitMe(object):
         Vcvals = []
         
         for index, i in enumerate(np.unique(df["Leaf"])):
-            Vcvals.append(pymc.Lognormal('Vcmax25_%d' % (i), mu=np.log(50.0), 
-                          tau=1.0/np.log(5.0)**2))
+            Vcvals.append(pymc.Uniform('Vcmax25_%d' % (i), lower=5.0, upper=50.0)
         Jfac = pymc.Lognormal('Jfac', mu=np.log(1.8), tau=1.0/np.log(1.8)**2)
         Rdfac = pymc.Uniform('Rdfac', lower=0.005, upper=0.05)
         Eaj = pymc.Lognormal('Eaj', mu=np.log(40000.0), tau=1.0/np.log(20000.0)**2)
