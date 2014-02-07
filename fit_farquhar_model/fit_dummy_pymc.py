@@ -138,14 +138,14 @@ class FitMe(object):
         Vcvals = []
         
         for index, i in enumerate(np.unique(df["Leaf"])):
-            Vcvals.append(pymc.Normal('Vcmax25_%d' % (i), mu=50.0, tau=1.0/(5.0*5.0)))
-            
-        Jfac = pymc.Normal('Jfac', mu=1.8, tau=1.0/(0.5*0.5))
+            Vcvals.append(Vcmax25 = pymc.Lognormal('Vcmax25', mu=np.log(50.0), 
+                                    tau=1.0/np.log(5.0)**2))
+        Jfac = pymc.Lognormal('Jfac', mu=np.log(1.8), tau=1.0/np.log(1.8)**2)
         Rdfac = pymc.Uniform('Rdfac', lower=0.005, upper=0.05)
-        Eaj = pymc.Normal('Eaj', mu=40.0, tau=1.0/(20.0*20.0))
-        Eav = pymc.Normal('Eav', mu=60.0, tau=1.0/(20.0*20.0))
-        delSj = pymc.Normal('delSj', mu=640.0, tau=1.0/(10.0*10.0))
-        delSv = pymc.Normal('delSv', mu=640.0, tau=1.0/(10.0*10.0))
+        Eaj = pymc.Lognormal('Eaj', mu=np.log(40000.0), tau=1.0/np.log(20000.0)**2)
+        Eav = pymc.Lognormal('Eav', mu=np.log(60000.0), tau=1.0/np.log(20000.0)**2)
+        delSj = pymc.Lognormal('delSj', mu=np.log(640.0), tau=1.0/np.log(10.0)**2)
+        delSv = pymc.Lognormal('delSv', mu=np.log(640.0), tau=1.0/np.log(10.0)**2)
         
         @pymc.deterministic
         def func(Vcvals=Vcvals, Jfac=Jfac, Rdfac=Rdfac, Eaj=Eaj, Eav=Eav, 
