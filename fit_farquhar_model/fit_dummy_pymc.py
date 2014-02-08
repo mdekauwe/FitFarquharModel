@@ -116,32 +116,33 @@ class FitMe(object):
                 
                 iterations = 100000
                 burn = 50000
-                thin = 5
+                thin = 10
                 MC = pymc.MCMC(self.make_model(dfr))
-                MC.sample(iterations, burn, thin)  
+                #MC.sample(iterations, burn, thin)
+                MC.sample(1000)  
                 
                 # ==== done ==== #
                 MC.write_csv(ofname)
                 self.make_plots(dfr, MC)
-                pymc.Matplot.plot(MC, suffix='_%s' % (str(group)), path=self.plot_dir, format='png')
-                
+                pymc.Matplot.plot(MC, suffix='_%s' % (str(group)), 
+                                  path=self.plot_dir, format='png')
         
     def make_model(self, df):
         """ Setup 'model factory' - which exposes various attributes to PYMC 
         call """
         
-        mdata = df["Photo"]
+        obs = df["Photo"]
        
         Vcvals = []
         
         for index, i in enumerate(np.unique(df["Leaf"])):
             Vcvals.append(pymc.Uniform('Vcmax25_%d' % (i), lower=5.0, upper=50.0))
-        Jfac = pymc.Lognormal('Jfac', mu=np.log(1.8), tau=1.0/np.log(1.8)**2)
+        Jfac = pymc.Normal('Jfac', mu=1.8, tau=1.0/0.5**2)
         Rdfac = pymc.Uniform('Rdfac', lower=0.005, upper=0.05)
-        Eaj = pymc.Lognormal('Eaj', mu=np.log(40000.0), tau=1.0/np.log(20000.0)**2)
-        Eav = pymc.Lognormal('Eav', mu=np.log(60000.0), tau=1.0/np.log(20000.0)**2)
-        delSj = pymc.Lognormal('delSj', mu=np.log(640.0), tau=1.0/np.log(30.0)**2)
-        delSv = pymc.Lognormal('delSv', mu=np.log(640.0), tau=1.0/np.log(30.0)**2)
+        Eaj = pymc.Normal('Eaj', mu=40000.0, tau=1.0/20000.0**2)
+        Eav = pymc.Normal('Eav', mu=60000.0, tau=1.0/20000.0**2)
+        delSj = pymc.Normal('delSj', mu=640.0, tau=1.0/30.0**2)
+        delSv = pymc.Normal('delSv', mu=640.0, tau=1.0/30.0**2)
         
         @pymc.deterministic
         def func(Vcvals=Vcvals, Jfac=Jfac, Rdfac=Rdfac, Eaj=Eaj, Eav=Eav, 
@@ -180,7 +181,7 @@ class FitMe(object):
             
             return An
         obs_sigma = 0.0001 # assume obs are perfect
-        like = pymc.Normal('mdata', mu=func, tau=1.0/obs_sigma**2, value=mdata, 
+        like = pymc.Normal('like', mu=func, tau=1.0/obs_sigma**2, value=obs, 
                             observed=True)
         
         return locals()
@@ -502,9 +503,9 @@ class FitMe(object):
 
 if __name__ == "__main__":
 
-    results_dir = "/Users/mdekauwe/Dropbox/results"
-    data_dir = "/Users/mdekauwe/Dropbox/data"
-    plot_dir = "/Users/mdekauwe/Dropbox/plots"
+    results_dir = "/Users/mdekauwe/Desktop/results"
+    data_dir = "/Users/mdekauwe/Desktop/data"
+    plot_dir = "/Users/mdekauwe/Desktop/plots"
     from farquhar_model import FarquharC3
     model = FarquharC3(peaked_Jmax=True, peaked_Vcmax=True, model_Q10=False)
     
