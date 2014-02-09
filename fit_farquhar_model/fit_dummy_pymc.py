@@ -1,19 +1,15 @@
 #!/usr/bin/env python
 
 """
-Using the Levenberg-Marquardt algorithm  to fit Jmax25, Vcmax25, Rd25, Eaj, Eav, 
-Ear, deltaSj and deltaSv.
+Fit Jmax25, Vcmax25, Rd25 and their temperature dependancies to the Farquhar 
+model using the PYMC libraries. Docstrings are wrong as I am testing different
+ways of fitting this...testing constant factors between leaves for J/V ratios.
 
 Jmax25, Vcmax25 & Rd25 are fit seperately by leaf, thus accounting for 
 differences in leaf N. At the same time, Eaj, Eav, Ear, deltaSj and deltaSv are 
 fit together for the same species. To achieve this we utilise dummy variables,
 it will become more obvious below.
 
-The steps here are:
-    1. Define a search grid to pick the starting point of the minimiser, in an
-       attempt to avoid issues relating to falling into a local minima. 
-    2. Try and fit the parameters 
-    
 That's all folks.
 """
 
@@ -136,7 +132,7 @@ class FitMe(object):
         Vcvals = []
         
         for index, i in enumerate(np.unique(df["Leaf"])):
-            Vcvals.append(pymc.Uniform('Vcmax25_%d' % (i), lower=5.0, upper=50.0))
+            Vcvals.append(pymc.Uniform('Vcmax25_%d' % (i), lower=5.0, upper=250.0))
         Jfac = pymc.Normal('Jfac', mu=1.8, tau=1.0/0.5**2)
         Rdfac = pymc.Uniform('Rdfac', lower=0.005, upper=0.05)
         Eaj = pymc.Normal('Eaj', mu=40000.0, tau=1.0/20000.0**2)
