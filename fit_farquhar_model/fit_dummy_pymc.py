@@ -1,14 +1,18 @@
 #!/usr/bin/env python
 
 """
-Fit Jmax25, Vcmax25, Rd25 and their temperature dependancies to the Farquhar 
-model using the PYMC libraries. Docstrings are wrong as I am testing different
-ways of fitting this...testing constant factors between leaves for J/V ratios.
+Using a series of A-Ci curves, the Farquhar model and the pymc libs fit Jmax25, 
+Vcmax25, Rd25 and their temperature dependancies. *Docstrings are wrong as I am 
+testing different ways of fitting this*...testing constant factors between 
+leaves for J/V ratios.
 
-Jmax25, Vcmax25 & Rd25 are fit seperately by leaf, thus accounting for 
-differences in leaf N. At the same time, Eaj, Eav, Ear, deltaSj and deltaSv are 
-fit together for the same species. To achieve this we utilise dummy variables,
-it will become more obvious below.
+Currently...
+
+Jmax25, Vcmax25 & Rd25 vary by leaf due to varying leaf N, but trailing fitting
+a single Vcmax25 value per leaf and a constant factor between this and Jmax25
+and Rd25. Thus we are using a dummy variables to fit Vcmax25 values per leaf,
+where N leaves might be 3+, but we are fitting all the curves per species to 
+resolves the temperature dependancies.
 
 That's all folks.
 """
@@ -34,19 +38,6 @@ class FitMe(object):
     Basic fitting class, contains some generic methods which are used by the
     fitting routines, e.g. plotting, file reporting etc.
     
-    
-    Error bar fitting issue - from lmfit documentation...
-
-    In some cases, it may not be possible to estimate the 
-    errors  and correlations. For example, if a variable 
-    actually has no  practical effect on the fit, it will 
-    likely cause the  covariance matrix to be singular, 
-    making standard errors  impossible to estimate. Placing 
-    bounds on varied Parameters  makes it more likely that 
-    errors cannot be estimated, as  being near the maximum or 
-    minimum value makes the covariance 
-    matrix singular. In these cases, the errorbars attribute 
-    of the fit result (Minimizer object) will be False. 
     """
     def __init__(self, model=None, results_dir=None, 
                  data_dir=None, plot_dir=None, num_iter=20, peaked=True, 
@@ -68,7 +59,6 @@ class FitMe(object):
         """
         
         self.results_dir = results_dir
-        
         self.data_dir = data_dir 
         self.plot_dir = plot_dir    
         self.farq = model.calc_photosynthesis
@@ -77,7 +67,6 @@ class FitMe(object):
         self.deg2kelvin = 273.15
         self.num_iter = num_iter
         self.delimiter = delimiter
-        
         self.peaked = peaked
         self.high_number = 99999.9
         
@@ -94,43 +83,47 @@ class FitMe(object):
         for fname in glob.glob(os.path.join(self.data_dir, infname_tag)):
             df = self.read_data(fname)
             
-            # sort data by curve first...
-            df_sorted = pd.DataFrame()
-            for curve_num in np.unique(df["Curve"]):
-                curve_df = df[df["Curve"]==curve_num]
-                curve_df = curve_df.sort(['Ci'], ascending=True)
-                df_sorted = df_sorted.append(curve_df)
-            df_sorted.index = range(len(df_sorted)) # need to reindex slice
+            # sort each curve by Ci...
+            df = self.sort_curves_by_ci(df)
             
-            for group in np.unique(df_sorted["fitgroup"]):
-                
-                dfr = df_sorted[df_sorted["fitgroup"]==group]
-                dfr.index = range(len(dfr)) # need to reindex slice
+            for group in np.unique(df["fitgroup"]):
+                df_group = df[df["fitgroup"]==group]
+                df_group.index = range(len(df_group)) # need to reindex slice
                 ofname = os.path.join(self.results_dir, "%s_%s.csv" % \
-                                (dfr["Species"][0], group))
-                (dfr) = self.setup_model_params(dfr)
+                                (df_group["Species"][0], group))
+                (df_group) = self.setup_model_params(df_group)
                 
                 iterations = 100000
                 burn = 50000
                 thin = 10
-                MC = pymc.MCMC(self.make_model(dfr))
+                MC = pymc.MCMC(self.make_model(df_group))
                 #MC.sample(iterations, burn, thin)
                 MC.sample(1000)  
                 
                 # ==== done ==== #
                 MC.write_csv(ofname)
-                self.make_plots(dfr, MC)
+                self.make_plots(df_group, MC)
                 pymc.Matplot.plot(MC, suffix='_%s' % (str(group)), 
                                   path=self.plot_dir, format='png')
+    
+    def sort_curves_by_ci(self, df):
+        """ Sort curves by Ci (low to high) helps with output plotting,
+            shouldn't matter to fitting, but it makes more sense to be sorted"""
+        df_sorted = pd.DataFrame()
+        for curve_num in np.unique(df["Curve"]):
+            curve_df = df[df["Curve"]==curve_num]
+            curve_df = curve_df.sort(['Ci'], ascending=True)
+            df_sorted = df_sorted.append(curve_df)
+        df_sorted.index = range(len(df_sorted)) # need to reindex slice
+        
+        return df_sorted
         
     def make_model(self, df):
         """ Setup 'model factory' - which exposes various attributes to PYMC 
         call """
         
-        obs = df["Photo"]
-       
-        Vcvals = []
         
+        Vcvals = []
         for index, i in enumerate(np.unique(df["Leaf"])):
             Vcvals.append(pymc.Uniform('Vcmax25_%d' % (i), lower=5.0, upper=250.0))
         Jfac = pymc.Normal('Jfac', mu=1.8, tau=1.0/0.5**2)
@@ -144,14 +137,19 @@ class FitMe(object):
         def func(Vcvals=Vcvals, Jfac=Jfac, Rdfac=Rdfac, Eaj=Eaj, Eav=Eav, 
                  delSj=delSj, delSv=delSv): 
             
+            # Need to build dummy variables such that each leaf has access
+            # to its corresponding PAR, temperature and Ci data.
+            # For each curve create a column of 1's and 0's, which indicate
+            # the leaves Ci, temp data.
+            
             # These parameter values need to be arrays
             Jmax25 = np.zeros(len(df))
             Vcmax25 = np.zeros(len(df))
             Rd25 = np.zeros(len(df))
+            
             # Need to build dummy variables.
             for index, i in enumerate(np.unique(df["Leaf"])):
                 col_id = "f_%d" % (i)
-                
                 Vcmax25 += Vcvals[index] * df[col_id]
                 Jmax25 += Vcvals[index] * Jfac * df[col_id]
                 Rd25 += Vcvals[index] * Rdfac * df[col_id]
@@ -162,23 +160,22 @@ class FitMe(object):
             if hasattr(df, "Par"):
                 (An, Anc, Anj) = self.farq(Ci=df["Ci"], Tleaf=df["Tleaf"], 
                                            Par=df["Par"], Jmax=None, Vcmax=None, 
-                                           Jmax25=Jmax25, Vcmax25=Vcmax25, Rd=None, 
-                                           Q10=None, Eaj=Eaj, Eav=Eav, 
-                                           deltaSj=delSj, deltaSv=delSv, Rd25=Rd25, 
-                                           Ear=Ear, Hdv=Hdv, Hdj=Hdj)
+                                           Jmax25=Jmax25, Vcmax25=Vcmax25, 
+                                           Rd=None, Q10=None, Eaj=Eaj, Eav=Eav, 
+                                           deltaSj=delSj, deltaSv=delSv, 
+                                           Rd25=Rd25, Ear=Ear, Hdv=Hdv, Hdj=Hdj)
             else:
                 (An, Anc, Anj) = self.farq(Ci=df["Ci"], Tleaf=df["Tleaf"], 
                                            Par=None, Jmax=None, Vcmax=None, 
-                                           Jmax25=Jmax25, Vcmax25=Vcmax25, Rd=None, 
-                                           Q10=None, Eaj=Eaj, Eav=Eav, 
-                                           deltaSj=delSj, deltaSv=delSv, Rd25=Rd25, 
-                                           Ear=Ear, Hdv=Hdv, Hdj=Hdj)
-            
-            
+                                           Jmax25=Jmax25, Vcmax25=Vcmax25, 
+                                           Rd=None, Q10=None, Eaj=Eaj, Eav=Eav, 
+                                           deltaSj=delSj, deltaSv=delSv, 
+                                           Rd25=Rd25, Ear=Ear, Hdv=Hdv, Hdj=Hdj)
             return An
         obs_sigma = 0.0001 # assume obs are perfect
+        obs = df["Photo"]
         like = pymc.Normal('like', mu=func, tau=1.0/obs_sigma**2, value=obs, 
-                            observed=True)
+                           observed=True)
         
         return locals()
        
