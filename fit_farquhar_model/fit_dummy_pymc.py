@@ -88,7 +88,6 @@ class FitMe(object):
             
             # sort each curve by Ci...
             df = self.sort_curves_by_ci(df)
-            
             for group in np.unique(df["fitgroup"]):
                 df_group = df[df["fitgroup"]==group]
                 df_group.index = range(len(df_group)) # need to reindex slice
@@ -103,10 +102,13 @@ class FitMe(object):
                 # ==== done ==== #
                 
                 MC.write_csv(ofname)
-                self.make_plots(df_group, MC, group)
-                pymc.Matplot.plot(MC, suffix='_%s' % (str(group)), 
-                                  path=self.plot_dir, format='png')
-                
+                #self.make_plots(df_group, MC, group)
+                #pymc.Matplot.plot(MC, suffix='_%s' % (str(group)), 
+                #                  path=self.plot_dir, format='png')
+            
+            return MC # debug traces
+           
+                    
     def summarize(self, mcmc, field):
         results = mcmc.trace(field)[:]
         results = zip(*results)
@@ -574,9 +576,9 @@ class FitMe(object):
 
 if __name__ == "__main__":
 
-    results_dir = "/Users/mdekauwe/Desktop/results"
-    data_dir = "/Users/mdekauwe/Desktop/data"
-    plot_dir = "/Users/mdekauwe/Desktop/plots"
+    results_dir = "../examples/results_pymc"
+    data_dir = "../examples/data_pymc"
+    plot_dir = "../examples/plots_pymc"
     from farquhar_model import FarquharC3
     model = FarquharC3(peaked_Jmax=True, peaked_Vcmax=True, model_Q10=False)
     iterations = 100000
@@ -584,4 +586,4 @@ if __name__ == "__main__":
     thin = 10
     F = FitMe(model, results_dir, data_dir, plot_dir, iterations=iterations, 
               burn=burn, thin=thin)
-    F.main(print_to_screen=True) 
+    MC = F.main(print_to_screen=True) 
