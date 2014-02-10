@@ -199,7 +199,7 @@ class FitMe(object):
                 Vcmax25 += Vcvals[index] * df[col_id]
                 Jmax25 += Vcvals[index] * Jfac * df[col_id]
                 Rd25 += Vcvals[index] * Rdfac * df[col_id]
-            print Eaj, Eav, Ear   
+            #print Eaj, Eav, Ear   
             Hdv = 200000.0
             Hdj = 200000.0
             if hasattr(df, "Par"):
