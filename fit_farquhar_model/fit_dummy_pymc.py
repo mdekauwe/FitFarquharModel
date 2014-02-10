@@ -117,7 +117,6 @@ class FitMe(object):
                 self.make_plots(df_group, MC, group)
                 pymc.Matplot.plot(MC, suffix='_%s' % (str(group)), 
                                   path=self.plot_dir, format='png')
-                sys.exit()
                 
     def summarize(self, mcmc, field):
         results = mcmc.trace(field)[:]
@@ -148,6 +147,7 @@ class FitMe(object):
         call """
         
         # I am assuming that sigma = range / 4 to set these priors
+        
         
         # mu=25, range=(5-50)
         Vcvals = [pymc.TruncatedNormal('Vcmax25_%d' % (i), \
