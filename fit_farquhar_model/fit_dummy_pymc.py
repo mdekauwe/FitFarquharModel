@@ -101,11 +101,23 @@ class FitMe(object):
                 MC.sample(self.iterations, self.burn, self.thin)
                 
                 # ==== done ==== #
+                """
+                for curve_num in np.unique(df["Curve"]):
+                    col_id = "f_%d" % (i)
+            
+            
+                    Vcmax25 = MC.stats()['Vcmax25_%d' % (i)]['mean']
+                    Rd25 = MC.stats()['Rdfac']['mean'] *  Vcmax25
+                    Jmax25 = MC.stats()['Jfac']['mean'] *  Vcmax25            
+                    Eaj = MC.stats()['Eaj']['mean']
+                    delSj = MC.stats()['delSj']['mean']
+                """
+                
                 MC.write_csv(ofname)
                 self.make_plots(df_group, MC, group)
                 pymc.Matplot.plot(MC, suffix='_%s' % (str(group)), 
                                   path=self.plot_dir, format='png')
-                
+                sys.exit()
                 
     def summarize(self, mcmc, field):
         results = mcmc.trace(field)[:]
@@ -138,28 +150,32 @@ class FitMe(object):
         # I am assuming that sigma = range / 4 to set these priors
         #
         # mu=25, range=(5-50)
-        Vcvals = [pymc.Normal('Vcmax25_%d' % (i), mu=25.0, tau=1.0/11.25**2) \
+        Vcvals = [pymc.TruncatedNormal('Vcmax25_%d' % (i), \
+                  mu=25.0, tau=1.0/11.25**2), a=0.0, b=650.0, \
                   for i in np.unique(df["Leaf"])]
         
         # mu=1.8, range=(0.8-2.8)
-        Jfac = pymc.Normal('Jfac', mu=1.8, tau=1.0/0.5**2)
+        Jfac = pymc.TruncatedNormal('Jfac', mu=1.8, tau=1.0/0.5**2, a=0.0, b=5.0)
         
         Rdfac = pymc.Uniform('Rdfac', lower=0.005, upper=0.05)
         
         # mu=40000, range=(20000-60000)
-        Eaj = pymc.Normal('Eaj', mu=40000.0, tau=1.0/20000.0**2)
+        Eaj = pymc.TruncatedNormal('Eaj', mu=40000.0, tau=1.0/10000.0**2, 
+                                    a=0.0, b=199999.9)
         
         # mu=60000, range=(40000-80000)
-        Eav = pymc.Normal('Eav', mu=60000.0, tau=1.0/10000.0**2)
+        Eav = pymc.TruncatedNormal('Eav', mu=60000.0, tau=1.0/10000.0**2, 
+                                    a=0.0, b=199999.9)
         
         # mu=34000, range=(20000-60000)
-        Ear = pymc.Normal('Ear', mu=34000.0, tau=1.0/10000.0**2)
+        Ear = pymc.TruncatedNormal('Ear', mu=34000.0, tau=1.0/10000.0**2, 
+                                    a=0.0, b=199999.9)
        
         # mu=640, range=(620-660)       
-        delSj = pymc.Normal('delSj', mu=640.0, tau=1.0/10.0**2)
+        delSj = pymc.TruncatedNormal('delSj', mu=640.0, tau=1.0/10.0**2, a=300.0, b=800.0)
         
         # mu=640, range=(620-660)     
-        delSv = pymc.Normal('delSv', mu=640.0, tau=1.0/10.0**2)
+        delSv = pymc.TruncatedNormal('delSv', mu=640.0, tau=1.0/10.0**2, a=300.0, b=800.0)
         
         @pymc.deterministic
         def func(Vcvals=Vcvals, Jfac=Jfac, Rdfac=Rdfac, Eaj=Eaj, Eav=Eav, 
@@ -181,7 +197,7 @@ class FitMe(object):
                 Vcmax25 += Vcvals[index] * df[col_id]
                 Jmax25 += Vcvals[index] * Jfac * df[col_id]
                 Rd25 += Vcvals[index] * Rdfac * df[col_id]
-                
+            print Eaj, Eav, Ear   
             Hdv = 200000.0
             Hdj = 200000.0
             if hasattr(df, "Par"):
@@ -569,6 +585,9 @@ if __name__ == "__main__":
     plot_dir = "/Users/mdekauwe/Desktop/plots"
     from farquhar_model import FarquharC3
     model = FarquharC3(peaked_Jmax=True, peaked_Vcmax=True, model_Q10=False)
-    
-    F = FitMe(model, results_dir, data_dir, plot_dir)
+    iterations = 100000
+    burn = 50000
+    thin = 10
+    F = FitMe(model, results_dir, data_dir, plot_dir, iterations=iterations, 
+              burn=burn, thin=thin)
     F.main(print_to_screen=True) 
