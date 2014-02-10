@@ -130,12 +130,13 @@ class FitMe(object):
         Rdfac = pymc.Uniform('Rdfac', lower=0.005, upper=0.05)
         Eaj = pymc.Normal('Eaj', mu=40000.0, tau=1.0/20000.0**2)
         Eav = pymc.Normal('Eav', mu=60000.0, tau=1.0/20000.0**2)
+        Ear = pymc.Normal('Ear', mu=40000.0, tau=1.0/20000.0**2)
         delSj = pymc.Normal('delSj', mu=640.0, tau=1.0/30.0**2)
         delSv = pymc.Normal('delSv', mu=640.0, tau=1.0/30.0**2)
         
         @pymc.deterministic
         def func(Vcvals=Vcvals, Jfac=Jfac, Rdfac=Rdfac, Eaj=Eaj, Eav=Eav, 
-                 delSj=delSj, delSv=delSv): 
+                 Ear=Ear, delSj=delSj, delSv=delSv): 
             
             # Need to build dummy variables such that each leaf has access
             # to its corresponding PAR, temperature and Ci data.
@@ -156,7 +157,6 @@ class FitMe(object):
                 
             Hdv = 200000.0
             Hdj = 200000.0
-            Ear = 20000.0
             if hasattr(df, "Par"):
                 (An, Anc, Anj) = self.farq(Ci=df["Ci"], Tleaf=df["Tleaf"], 
                                            Par=df["Par"], Jmax=None, Vcmax=None, 
@@ -403,7 +403,7 @@ class FitMe(object):
             delSj = MC.stats()['delSj']['mean']
             Eav = MC.stats()['Eav']['mean']
             delSv = MC.stats()['delSv']['mean']
-            Ear = 20000.0
+            Ear = MC.stats()['Ear']['mean']
             Hdv = 200000.00000000
             Hdj = 200000.00000000
             if hasattr(curve_df, "Par"):
