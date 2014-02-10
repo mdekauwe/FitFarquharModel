@@ -15,7 +15,7 @@ import pymc
 
 N = 10000
 Vcmax = [pymc.TruncatedNormal('Vcmax25', \
-          mu=25.0, tau=1.0/11.25**2, a=0.0, b=650.0).value \
+          mu=100.0, tau=1.0/61.25**2, a=0.0, b=650.0).value \
           for i in xrange(N)]
 
 Jfac = [pymc.TruncatedNormal('Jfac', mu=1.8, tau=1.0/0.5**2, \
