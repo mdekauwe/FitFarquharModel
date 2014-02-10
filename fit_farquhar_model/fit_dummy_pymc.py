@@ -148,17 +148,18 @@ class FitMe(object):
         call """
         
         # I am assuming that sigma = range / 4 to set these priors
-        #
-        # mu=25, range=(5-50)
         
+        # mu=25, range=(5-50)
         Vcvals = [pymc.TruncatedNormal('Vcmax25_%d' % (i), \
                   mu=25.0, tau=1.0/11.25**2, a=0.0, b=650.0) \
                   for i in np.unique(df["Leaf"])]
         
         
         # mu=1.8, range=(0.8-2.8)
-        Jfac = pymc.TruncatedNormal('Jfac', mu=1.8, tau=1.0/0.5**2, a=0.0, b=5.0)
+        Jfac = pymc.TruncatedNormal('Jfac', mu=1.8, tau=1.0/0.5**2, \
+                                    a=0.0, b=5.0)
         
+        # broad prior
         Rdfac = pymc.Uniform('Rdfac', lower=0.005, upper=0.05)
         
         # mu=40000, range=(20000-60000)
@@ -174,10 +175,12 @@ class FitMe(object):
                                     a=0.0, b=199999.9)
        
         # mu=640, range=(620-660)       
-        delSj = pymc.TruncatedNormal('delSj', mu=640.0, tau=1.0/10.0**2, a=300.0, b=800.0)
+        delSj = pymc.TruncatedNormal('delSj', mu=640.0, tau=1.0/10.0**2, \
+                                      a=300.0, b=800.0)
         
         # mu=640, range=(620-660)     
-        delSv = pymc.TruncatedNormal('delSv', mu=640.0, tau=1.0/10.0**2, a=300.0, b=800.0)
+        delSv = pymc.TruncatedNormal('delSv', mu=640.0, tau=1.0/10.0**2, \
+                                      a=300.0, b=800.0)
         
         @pymc.deterministic
         def func(Vcvals=Vcvals, Jfac=Jfac, Rdfac=Rdfac, Eaj=Eaj, Eav=Eav, 
