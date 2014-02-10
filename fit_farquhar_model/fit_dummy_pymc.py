@@ -101,17 +101,6 @@ class FitMe(object):
                 MC.sample(self.iterations, self.burn, self.thin)
                 
                 # ==== done ==== #
-                """
-                for curve_num in np.unique(df["Curve"]):
-                    col_id = "f_%d" % (i)
-            
-            
-                    Vcmax25 = MC.stats()['Vcmax25_%d' % (i)]['mean']
-                    Rd25 = MC.stats()['Rdfac']['mean'] *  Vcmax25
-                    Jmax25 = MC.stats()['Jfac']['mean'] *  Vcmax25            
-                    Eaj = MC.stats()['Eaj']['mean']
-                    delSj = MC.stats()['delSj']['mean']
-                """
                 
                 MC.write_csv(ofname)
                 self.make_plots(df_group, MC, group)

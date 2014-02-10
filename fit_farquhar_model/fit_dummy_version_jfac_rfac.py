@@ -222,7 +222,7 @@ class FitMe(object):
         for leaf_num in np.unique(df["Leaf"]):
              
             (Jmax25_guess, Vcmax25_guess, 
-             Rd25_guess, Eaj_guess, 
+             Rd25_guess, Eaj_guess, Ear_guess,
              Eav_guess, 
              delSj_guess, delSv_guess) = self.pick_random_starting_point()
             
@@ -240,6 +240,7 @@ class FitMe(object):
         params.add('Jfac', value = 2.0, min=0.8, max=2.8)
         params.add('Eaj', value=Eaj_guess, min=40000.0, max=80000.0)
         params.add('Eav', value=Eav_guess, min=40000.0, max=80000.0)
+        params.add('Ear', value=Ear_guess, min=40000.0, max=80000.0)
         params.add('delSj', value=delSj_guess, min=300.0, max=800.0)  
         params.add('delSv', value=delSv_guess, min=300.0, max=800.0)  
         
@@ -250,7 +251,7 @@ class FitMe(object):
         for leaf_num in np.unique(df["Leaf"]):
             
             (Jfac_guess, Vcmax25_guess, 
-             Rdfac_guess, Eaj_guess, 
+             Rdfac_guess, Eaj_guess, Ear_guess,
              Eav_guess, 
              delSj_guess, delSv_guess) = self.pick_random_starting_point()
             
@@ -259,6 +260,7 @@ class FitMe(object):
         params['Rdfac'].value = Rdfac_guess
         params['Eaj'].value = Eaj_guess
         params['Eav'].value = Eav_guess
+        params['Ear'].value = Ear_guess
         params['delSj'].value = delSj_guess
         params['delSv'].value = delSv_guess
         
@@ -279,15 +281,16 @@ class FitMe(object):
         Vcmax25 = np.random.uniform(5.0, 350)
         Jfac = np.random.uniform(0.5, 3.0) 
         Rdfac = np.random.uniform(0.005, 0.03) 
-        Eaj = np.random.uniform(20000.0, 80000.0)
-        Eav = np.random.uniform(20000.0, 80000.0)
+        Eaj = np.random.uniform(20000.0, 60000.0)
+        Eav = np.random.uniform(40000.0, 60000.0)
+        Ear = np.random.uniform(20000.0, 60000.0)
         delSj = np.random.uniform(550.0, 700.0)
         delSv = np.random.uniform(550.0, 700.0)
         if not self.peaked:
             delSj = None
             delSv = None
         
-        return Jfac, Vcmax25, Rdfac, Eaj, Eav, delSj, delSv
+        return Jfac, Vcmax25, Rdfac, Eaj, Ear, Eav, delSj, delSv
     
                   
     def residual(self, params, df):
@@ -333,7 +336,7 @@ class FitMe(object):
         delSj = params['delSj'].value
         Eav = params['Eav'].value
         delSv = params['delSv'].value
-        Ear = 20000.0
+        Ear = params['Ear'].value
         Hdv = 200000.0
         Hdj = 200000.0
         if hasattr(df, "Par"):
@@ -389,7 +392,7 @@ class FitMe(object):
         delSj = result.params['delSj'].value
         Eav = result.params['Eav'].value
         delSv = result.params['delSv'].value
-        Ear = 20000.0
+        Ear = result.params['Ear'].value
         Hdv = 200000.0
         Hdj = 200000.0
         if hasattr(df, "Par"):
@@ -566,7 +569,7 @@ class FitMe(object):
             delSj = result.params['delSj'].value
             Eav = result.params['Eav'].value
             delSv = result.params['delSv'].value
-            Ear = 20000.0
+            Ear = result.params['Ear'].value
             Hdv = 200000.0
             Hdj = 200000.0
             if hasattr(curve_df, "Par"):
