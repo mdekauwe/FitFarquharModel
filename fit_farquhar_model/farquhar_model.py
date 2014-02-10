@@ -154,9 +154,9 @@ class FarquharC3(object):
         Eav : float
             activation energy for the parameter [J mol-1]
         deltaSj : float
-            entropy factor [kJ mol-1 K-1)
+            entropy factor [J mol-1 K-1)
         deltaSv : float
-            entropy factor [kJ mol-1 K-1)
+            entropy factor [J mol-1 K-1)
         HdV : float
             Deactivation energy for Vcmax [J mol-1]
         Hdj : float
