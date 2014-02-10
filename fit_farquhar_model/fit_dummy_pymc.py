@@ -97,8 +97,8 @@ class FitMe(object):
                 burn = 50000
                 thin = 10
                 MC = pymc.MCMC(self.make_model(df_group))
-                #MC.sample(iterations, burn, thin)
-                MC.sample(1000)  
+                MC.sample(iterations, burn, thin)
+                #MC.sample(1000)  
                 
                 # ==== done ==== #
                 MC.write_csv(ofname)
@@ -122,10 +122,8 @@ class FitMe(object):
         """ Setup 'model factory' - which exposes various attributes to PYMC 
         call """
         
-        
-        Vcvals = []
-        for index, i in enumerate(np.unique(df["Leaf"])):
-            Vcvals.append(pymc.Uniform('Vcmax25_%d' % (i), lower=5.0, upper=250.0))
+        Vcvals = [pymc.Uniform('Vcmax25_%d' % (i), lower=5.0, upper=250.0) \
+                  for i in np.unique(df["Leaf"])]
         Jfac = pymc.Normal('Jfac', mu=1.8, tau=1.0/0.5**2)
         Rdfac = pymc.Uniform('Rdfac', lower=0.005, upper=0.05)
         Eaj = pymc.Normal('Eaj', mu=40000.0, tau=1.0/20000.0**2)
