@@ -122,7 +122,7 @@ class FitMe(object):
         """ Setup 'model factory' - which exposes various attributes to PYMC 
         call """
         
-        Vcvals = [pymc.Uniform('Vcmax25_%d' % (i), lower=5.0, upper=250.0) \
+        Vcvals = [pymc.Uniform('Vcmax25_%d' % (i), lower=5.0, upper=50.0) \
                   for i in np.unique(df["Leaf"])]
         Jfac = pymc.Normal('Jfac', mu=1.8, tau=1.0/0.5**2)
         Rdfac = pymc.Uniform('Rdfac', lower=0.005, upper=0.05)
