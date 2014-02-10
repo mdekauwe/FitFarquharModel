@@ -150,13 +150,13 @@ class FarquharC3(object):
             ratio of respiration at a given temperature divided by respiration 
             at a temperature 10 degrees lower
         Eaj : float
-            activation energy for the parameter [kJ mol-1]
+            activation energy for the parameter [J mol-1]
         Eav : float
-            activation energy for the parameter [kJ mol-1]
+            activation energy for the parameter [J mol-1]
         deltaSj : float
-            entropy factor [J mol-1 K-1)
+            entropy factor [kJ mol-1 K-1)
         deltaSv : float
-            entropy factor [J mol-1 K-1)
+            entropy factor [kJ mol-1 K-1)
         HdV : float
             Deactivation energy for Vcmax [J mol-1]
         Hdj : float
@@ -311,7 +311,7 @@ class FarquharC3(object):
         k25 : float
             rate parameter value at 25 degC or 298 K
         Ea : float
-            activation energy for the parameter [kJ mol-1]
+            activation energy for the parameter [J mol-1]
         Tk : float
             leaf temperature [deg K]
 
@@ -335,13 +335,13 @@ class FarquharC3(object):
         k25 : float
             rate parameter value at 25 degC or 298 K
         Ea : float
-            activation energy for the parameter [kJ mol-1]
+            activation energy for the parameter [J mol-1]
         Tk : float
             leaf temperature [deg K]
         deltaS : float
-            entropy factor [J mol-1 K-1)
+            entropy factor [kJ mol-1 K-1)
         Hd : float
-            describes rate of decrease about the optimum temp [KJ mol-1]
+            describes rate of decrease about the optimum temp [J mol-1]
         
         Returns:
         -------

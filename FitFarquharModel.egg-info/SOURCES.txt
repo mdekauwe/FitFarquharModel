@@ -8,5 +8,6 @@ fit_farquhar_model/__init__.py
 fit_farquhar_model/farquhar_model.py
 fit_farquhar_model/fit_dummy_pymc.py
 fit_farquhar_model/fit_dummy_version.py
+fit_farquhar_model/fit_dummy_version_jfac_rfac.py
 fit_farquhar_model/fit_model.py
 fit_farquhar_model/normalise.py

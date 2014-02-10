@@ -41,7 +41,7 @@ class FitMe(object):
     """
     def __init__(self, model=None, results_dir=None, 
                  data_dir=None, plot_dir=None, num_iter=20, peaked=True, 
-                 delimiter=","):
+                 delimiter=",", iterations=None, burn=None, thin=None):
         """
         Parameters
         ----------
@@ -69,6 +69,9 @@ class FitMe(object):
         self.delimiter = delimiter
         self.peaked = peaked
         self.high_number = 99999.9
+        self.iterations = iterations
+        self.burn = burn
+        self.thin = thin
         
     def main(self, print_to_screen, infname_tag="*.csv"):   
         """ Loop over all our A-Ci measured curves and fit the Farquhar model
@@ -93,19 +96,29 @@ class FitMe(object):
                                 (df_group["Species"][0], group))
                 (df_group) = self.setup_model_params(df_group)
                 
-                iterations = 100000
-                burn = 50000
-                thin = 10
+                
                 MC = pymc.MCMC(self.make_model(df_group))
-                MC.sample(iterations, burn, thin)
-                #MC.sample(1000)  
+                MC.sample(self.iterations, self.burn, self.thin)
                 
                 # ==== done ==== #
                 MC.write_csv(ofname)
-                self.make_plots(df_group, MC)
+                self.make_plots(df_group, MC, group)
                 pymc.Matplot.plot(MC, suffix='_%s' % (str(group)), 
                                   path=self.plot_dir, format='png')
-    
+                
+                
+    def summarize(self, mcmc, field):
+        results = mcmc.trace(field)[:]
+        results = zip(*results)
+        means = []
+        for r in results:
+            m, v = stats.mean_and_sample_variance(r)
+            means.append(m)
+        means.append(1.0 - sum(means))
+        print
+        print "---"
+        print means
+               
     def sort_curves_by_ci(self, df):
         """ Sort curves by Ci (low to high) helps with output plotting,
             shouldn't matter to fitting, but it makes more sense to be sorted"""
@@ -358,7 +371,7 @@ class FitMe(object):
 
     
     
-    def make_plots(self, df, MC):
+    def make_plots(self, df, MC, group):
         """ Make some plots to show how good our fitted model is to the data 
         
         * Plots A-Ci model fits vs. data
@@ -386,6 +399,47 @@ class FitMe(object):
         season = df["Season"][0]
         season = "all"
         leaf = df["Leaf"][0]
+        
+        # Get RMSE of total fit.
+        
+        Jmax25 = np.zeros(len(df))
+        Vcmax25 = np.zeros(len(df))
+        Rd25 = np.zeros(len(df))
+        
+        # Need to build dummy variables.
+        for index, i in enumerate(np.unique(df["Leaf"])):
+            col_id = "f_%d" % (i)
+            Vcmax25 += MC.stats()['Vcmax25_%d' % (i)]['mean'] * df[col_id]
+            Jmax25 += (MC.stats()['Vcmax25_%d' % (i)]['mean'] * 
+                       MC.stats()['Jfac']['mean'] * df[col_id])
+            Rd25 += (MC.stats()['Vcmax25_%d' % (i)]['mean'] * 
+                       MC.stats()['Rdfac']['mean'] * df[col_id])           
+        Eaj = MC.stats()['Eaj']['mean']
+        delSj = MC.stats()['delSj']['mean']
+        Eav = MC.stats()['Eav']['mean']
+        delSv = MC.stats()['delSv']['mean']
+        Ear = MC.stats()['Ear']['mean']
+        Hdv = 200000.00000000
+        Hdj = 200000.00000000
+        
+        if hasattr(df, "Par"):
+            (An, Anc, Anj) = self.farq(Ci=df["Ci"], Tleaf=df["Tleaf"], 
+                                       Par=df["Par"], Jmax=None, Vcmax=None, 
+                                       Jmax25=Jmax25, Vcmax25=Vcmax25, 
+                                       Rd=None, Q10=None, Eaj=Eaj, Eav=Eav, 
+                                       deltaSj=delSj, deltaSv=delSv, 
+                                       Rd25=Rd25, Ear=Ear, Hdv=Hdv, Hdj=Hdj)
+        else:
+            (An, Anc, Anj) = self.farq(Ci=df["Ci"], Tleaf=df["Tleaf"], 
+                                       Par=None, Jmax=None, Vcmax=None, 
+                                       Jmax25=Jmax25, Vcmax25=Vcmax25, 
+                                       Rd=None, Q10=None, Eaj=Eaj, Eav=Eav, 
+                                       deltaSj=delSj, deltaSv=delSv, 
+                                       Rd25=Rd25, Ear=Ear, Hdv=Hdv, Hdj=Hdj)
+        rmse = np.sqrt(np.mean((df["Photo"] - An)**2))
+        print group
+        print "**** RMSE = %f" % (rmse)
+        print
         
         for curve_num in np.unique(df["Curve"]):
             curve_df = df[df["Curve"]==curve_num]
