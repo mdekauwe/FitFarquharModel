@@ -339,7 +339,7 @@ class FarquharC3(object):
         Tk : float
             leaf temperature [deg K]
         deltaS : float
-            entropy factor [kJ mol-1 K-1)
+            entropy factor [J mol-1 K-1)
         Hd : float
             describes rate of decrease about the optimum temp [J mol-1]
         
