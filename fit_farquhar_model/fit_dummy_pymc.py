@@ -135,15 +135,31 @@ class FitMe(object):
         """ Setup 'model factory' - which exposes various attributes to PYMC 
         call """
         
-        Vcvals = [pymc.Uniform('Vcmax25_%d' % (i), lower=5.0, upper=50.0) \
+        # I am assuming that sigma = range / 4 to set these priors
+        #
+        # mu=25, range=(5-50)
+        Vcvals = [pymc.Normal('Vcmax25_%d' % (i), mu=25.0, tau=1.0/11.25**2) \
                   for i in np.unique(df["Leaf"])]
+        
+        # mu=1.8, range=(0.8-2.8)
         Jfac = pymc.Normal('Jfac', mu=1.8, tau=1.0/0.5**2)
+        
         Rdfac = pymc.Uniform('Rdfac', lower=0.005, upper=0.05)
+        
+        # mu=40000, range=(20000-60000)
         Eaj = pymc.Normal('Eaj', mu=40000.0, tau=1.0/20000.0**2)
-        Eav = pymc.Normal('Eav', mu=60000.0, tau=1.0/20000.0**2)
-        Ear = pymc.Normal('Ear', mu=40000.0, tau=1.0/20000.0**2)
-        delSj = pymc.Normal('delSj', mu=640.0, tau=1.0/30.0**2)
-        delSv = pymc.Normal('delSv', mu=640.0, tau=1.0/30.0**2)
+        
+        # mu=60000, range=(40000-80000)
+        Eav = pymc.Normal('Eav', mu=60000.0, tau=1.0/10000.0**2)
+        
+        # mu=34000, range=(20000-60000)
+        Ear = pymc.Normal('Ear', mu=34000.0, tau=1.0/10000.0**2)
+       
+        # mu=640, range=(620-660)       
+        delSj = pymc.Normal('delSj', mu=640.0, tau=1.0/10.0**2)
+        
+        # mu=640, range=(620-660)     
+        delSv = pymc.Normal('delSv', mu=640.0, tau=1.0/10.0**2)
         
         @pymc.deterministic
         def func(Vcvals=Vcvals, Jfac=Jfac, Rdfac=Rdfac, Eaj=Eaj, Eav=Eav, 
