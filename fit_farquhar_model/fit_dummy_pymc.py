@@ -148,7 +148,7 @@ class FitMe(object):
         
         # I am assuming that sigma = range / 4 to set these priors
         
-        """
+        
         # mu=25, range=(5-50)
         Vcvals = [pymc.TruncatedNormal('Vcmax25_%d' % (i), \
                   mu=25.0, tau=1.0/11.25**2, a=0.0, b=650.0) \
@@ -221,7 +221,7 @@ class FitMe(object):
         log_sigma = np.log(50.0)
         log_tau = 1.0/log_sigma**2
         delSv = pymc.Lognormal('delSv', mu=log_mu, tau=log_tau)
-        
+        """
         
         @pymc.deterministic
         def func(Vcvals=Vcvals, Jfac=Jfac, Rdfac=Rdfac, Eaj=Eaj, Eav=Eav, 
