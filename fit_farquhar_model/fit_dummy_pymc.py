@@ -143,7 +143,7 @@ class FitMe(object):
         
         # I am assuming that sigma = range / 4 to set these priors
         
-        """
+        
         # mu=25, range=(5-50)
         Vcvals = [pymc.TruncatedNormal('Vcmax25_%d' % (i), \
                   mu=25.0, tau=1.0/11.25**2, a=0.0, b=650.0) \
@@ -158,27 +158,27 @@ class FitMe(object):
         Rdfac = pymc.Uniform('Rdfac', lower=0.005, upper=0.05)
         
         # mu=40000, range=(20000-60000)
-        Eaj = pymc.TruncatedNormal('Eaj', mu=40000.0, tau=1.0/10000.0**2, 
+        Eaj = pymc.TruncatedNormal('Eaj', mu=40000.0, tau=1.0/20000.0**2, 
                                     a=0.0, b=199999.9)
         
         # mu=60000, range=(40000-80000)
-        Eav = pymc.TruncatedNormal('Eav', mu=60000.0, tau=1.0/10000.0**2, 
+        Eav = pymc.TruncatedNormal('Eav', mu=60000.0, tau=1.0/20000.0**2, 
                                     a=0.0, b=199999.9)
         
         # mu=34000, range=(20000-60000)
-        Ear = pymc.TruncatedNormal('Ear', mu=34000.0, tau=1.0/10000.0**2, 
+        Ear = pymc.TruncatedNormal('Ear', mu=34000.0, tau=1.0/20000.0**2, 
                                     a=0.0, b=199999.9)
        
         # mu=640, range=(620-660)       
-        delSj = pymc.TruncatedNormal('delSj', mu=640.0, tau=1.0/10.0**2, \
+        delSj = pymc.TruncatedNormal('delSj', mu=640.0, tau=1.0/20.0**2, \
                                       a=300.0, b=800.0)
         
         # mu=640, range=(620-660)     
-        delSv = pymc.TruncatedNormal('delSv', mu=640.0, tau=1.0/10.0**2, \
+        delSv = pymc.TruncatedNormal('delSv', mu=640.0, tau=1.0/20.0**2, \
                                       a=300.0, b=800.0)
+        
+        
         """
-        
-        
         log_mu = np.log(25.0)
         log_sigma = np.log(11.25)
         log_tau = 1.0/log_sigma**2
@@ -216,6 +216,7 @@ class FitMe(object):
         log_sigma = np.log(50.0)
         log_tau = 1.0/log_sigma**2
         delSv = pymc.Lognormal('delSv', mu=log_mu, tau=log_tau)
+        """
         
         @pymc.deterministic
         def func(Vcvals=Vcvals, Jfac=Jfac, Rdfac=Rdfac, Eaj=Eaj, Eav=Eav, 
@@ -625,9 +626,9 @@ if __name__ == "__main__":
     plot_dir = "../examples/plots_pymc"
     from farquhar_model import FarquharC3
     model = FarquharC3(peaked_Jmax=True, peaked_Vcmax=True, model_Q10=False)
-    iterations = 100000
-    burn = 50000
-    thin = 10
+    iterations = 1000
+    burn = 0
+    thin = 1
     F = FitMe(model, results_dir, data_dir, plot_dir, iterations=iterations, 
               burn=burn, thin=thin)
     MC = F.main(print_to_screen=True) 
