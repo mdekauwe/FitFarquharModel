@@ -97,22 +97,27 @@ class FitMe(object):
                 
                 
                 MC = pymc.MCMC(self.make_model(df_group))
+                
+                #MC.use_step_method(pymc.AdaptiveMetropolis)
                 MC.sample(self.iterations, self.burn, self.thin)
                 
                 # ==== done ==== #
                 # only works in git version
-                vars = ['Vcmax25_%d' % (i) for i in np.unique(df["Leaf"])]
-                vars_rest = ["Jfac","Rdfac","Eaj","Eav","Ear","delSj","delSv"]
-                vars = vars + vars_rest
-                MC.write_csv(ofname, variables=vars)
-                #MC.write_csv(ofname)
+                #vars = ['Vcmax25_%d' % (i) for i in np.unique(df["Leaf"])]
+                #vars_rest = ["Jfac","Rdfac","Eaj","Eav","Ear","delSj","delSv"]
+                #vars = vars + vars_rest
+                #MC.write_csv(ofname, variables=vars)
+                MC.write_csv(ofname)
                 #self.make_plots(df_group, MC, group)
                 #pymc.Matplot.plot(MC, suffix='_%s' % (str(group)), 
                 #                  path=self.plot_dir, format='png')
             
             return MC # debug traces
            
-                    
+
+
+
+                   
     def summarize(self, mcmc, field):
         results = mcmc.trace(field)[:]
         results = zip(*results)
@@ -261,7 +266,7 @@ class FitMe(object):
         like = pymc.Normal('like', mu=func, tau=1.0/obs_sigma**2, value=obs, 
                            observed=True)
         
-        return locals()
+        return vars()
        
     def open_output_files(self):
         """
@@ -626,9 +631,9 @@ if __name__ == "__main__":
     plot_dir = "../examples/plots_pymc"
     from farquhar_model import FarquharC3
     model = FarquharC3(peaked_Jmax=True, peaked_Vcmax=True, model_Q10=False)
-    iterations = 1000
-    burn = 0
-    thin = 1
+    iterations = 100000
+    burn = 50000
+    thin = 10
     F = FitMe(model, results_dir, data_dir, plot_dir, iterations=iterations, 
               burn=burn, thin=thin)
     MC = F.main(print_to_screen=True) 
