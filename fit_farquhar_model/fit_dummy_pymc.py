@@ -100,8 +100,12 @@ class FitMe(object):
                 MC.sample(self.iterations, self.burn, self.thin)
                 
                 # ==== done ==== #
-                
-                MC.write_csv(ofname)
+                # only works in git version
+                vars = ['Vcmax25_%d' % (i) for i in np.unique(df["Leaf"])]
+                vars_rest = ["Jfac","Rdfac","Eaj","Eav","Ear","delSj","delSv"]
+                vars = vars + vars_rest
+                MC.write_csv(ofname, variables=vars)
+                #MC.write_csv(ofname)
                 #self.make_plots(df_group, MC, group)
                 #pymc.Matplot.plot(MC, suffix='_%s' % (str(group)), 
                 #                  path=self.plot_dir, format='png')
@@ -139,7 +143,7 @@ class FitMe(object):
         
         # I am assuming that sigma = range / 4 to set these priors
         
-        
+        """
         # mu=25, range=(5-50)
         Vcvals = [pymc.TruncatedNormal('Vcmax25_%d' % (i), \
                   mu=25.0, tau=1.0/11.25**2, a=0.0, b=650.0) \
@@ -172,6 +176,46 @@ class FitMe(object):
         # mu=640, range=(620-660)     
         delSv = pymc.TruncatedNormal('delSv', mu=640.0, tau=1.0/10.0**2, \
                                       a=300.0, b=800.0)
+        """
+        
+        
+        log_mu = np.log(25.0)
+        log_sigma = np.log(11.25)
+        log_tau = 1.0/log_sigma**2
+        Vcvals = [pymc.Lognormal('Vcmax25_%d' % (i), mu=log_mu, tau=log_tau)\
+                  for i in np.unique(df["Leaf"])]
+        
+        log_mu = np.log(1.8)
+        log_sigma = np.log(0.5)
+        log_tau = 1.0/log_sigma**2
+        Jfac = pymc.Lognormal('Jfac', mu=log_mu, tau=log_tau)
+        
+        Rdfac = pymc.Uniform('Rdfac', lower=0.005, upper=0.05)
+        
+        log_mu = np.log(40000.0)
+        log_sigma = np.log(20000.0)
+        log_tau = 1.0/log_sigma**2
+        Eaj = pymc.Lognormal('Eaj', mu=log_mu, tau=log_tau)
+        
+        log_mu = np.log(60000.0)
+        log_sigma = np.log(20000.0)
+        log_tau = 1.0/log_sigma**2
+        Eav = pymc.Lognormal('Eav', mu=log_mu, tau=log_tau)
+        
+        log_mu = np.log(34000)
+        log_sigma = np.log(15000.0)
+        log_tau = 1.0/log_sigma**2
+        Ear = pymc.Lognormal('Ear', mu=log_mu, tau=log_tau)
+        
+        log_mu = np.log(640.0)
+        log_sigma = np.log(50.0)
+        log_tau = 1.0/log_sigma**2
+        delSj = pymc.Lognormal('delSj', mu=log_mu, tau=log_tau)
+        
+        log_mu = np.log(640.0)
+        log_sigma = np.log(50.0)
+        log_tau = 1.0/log_sigma**2
+        delSv = pymc.Lognormal('delSv', mu=log_mu, tau=log_tau)
         
         @pymc.deterministic
         def func(Vcvals=Vcvals, Jfac=Jfac, Rdfac=Rdfac, Eaj=Eaj, Eav=Eav, 
@@ -193,7 +237,7 @@ class FitMe(object):
                 Vcmax25 += Vcvals[index] * df[col_id]
                 Jmax25 += Vcvals[index] * Jfac * df[col_id]
                 Rd25 += Vcvals[index] * Rdfac * df[col_id]
-            #print Eaj, Eav, Ear   
+                #print Vcvals[index], Jfac, Rdfac, Eaj, Eav, Ear   
             Hdv = 200000.0
             Hdj = 200000.0
             if hasattr(df, "Par"):
