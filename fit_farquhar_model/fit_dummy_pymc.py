@@ -163,23 +163,23 @@ class FitMe(object):
         Rdfac = pymc.Uniform('Rdfac', lower=0.005, upper=0.05)
         
         # mu=40000, range=(20000-60000)
-        Eaj = pymc.TruncatedNormal('Eaj', mu=40000.0, tau=1.0/20000.0**2, 
+        Eaj = pymc.TruncatedNormal('Eaj', mu=40000.0, tau=1.0/10000.0**2, 
                                     a=0.0, b=199999.9)
         
         # mu=60000, range=(40000-80000)
-        Eav = pymc.TruncatedNormal('Eav', mu=60000.0, tau=1.0/20000.0**2, 
+        Eav = pymc.TruncatedNormal('Eav', mu=60000.0, tau=1.0/10000.0**2, 
                                     a=0.0, b=199999.9)
         
         # mu=34000, range=(20000-60000)
-        Ear = pymc.TruncatedNormal('Ear', mu=34000.0, tau=1.0/20000.0**2, 
+        Ear = pymc.TruncatedNormal('Ear', mu=34000.0, tau=1.0/10000.0**2, 
                                     a=0.0, b=199999.9)
        
         # mu=640, range=(620-660)       
-        delSj = pymc.TruncatedNormal('delSj', mu=640.0, tau=1.0/20.0**2, \
+        delSj = pymc.TruncatedNormal('delSj', mu=640.0, tau=1.0/10.0**2, \
                                       a=300.0, b=800.0)
         
         # mu=640, range=(620-660)     
-        delSv = pymc.TruncatedNormal('delSv', mu=640.0, tau=1.0/20.0**2, \
+        delSv = pymc.TruncatedNormal('delSv', mu=640.0, tau=1.0/10.0**2, \
                                       a=300.0, b=800.0)
         
         

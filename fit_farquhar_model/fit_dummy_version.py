@@ -99,7 +99,7 @@ class FitMe(object):
         ofile = self.open_output_files()
         writer = csv.writer(ofile, delimiter=',', quoting=csv.QUOTE_NONE, 
                             escapechar=' ')
-                        
+               
         for fname in glob.glob(os.path.join(self.data_dir, infname_tag)):
             df = self.read_data(fname)
             

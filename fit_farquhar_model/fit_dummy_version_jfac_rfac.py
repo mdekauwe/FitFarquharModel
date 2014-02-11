@@ -126,7 +126,7 @@ class FitMe(object):
                         params = self.change_param_values(dfr, params)
                 
                     result = minimize(self.residual, params, args=(dfr,))
-                    #report_fit(params, show_correl=False)
+                    report_fit(params, show_correl=False)
                     
                     #ci = conf_interval(result, trace=False)
                     #report_ci(ci)
@@ -222,12 +222,12 @@ class FitMe(object):
         for leaf_num in np.unique(df["Leaf"]):
              
             (Jmax25_guess, Vcmax25_guess, 
-             Rd25_guess, Eaj_guess, Ear_guess,
-             Eav_guess, 
+             Rdfac_guess, Eaj_guess, 
+             Eav_guess, Ear_guess, 
              delSj_guess, delSv_guess) = self.pick_random_starting_point()
-            
+             
             params.add('Vcmax25_%d' % (leaf_num), value=Vcmax25_guess , min=0.0, 
-                        max=300.0)
+                        max=600.0)
             
             # Need to build dummy variable identifier for each leaf.
             col_id = "f_%d" % (leaf_num)
@@ -237,12 +237,12 @@ class FitMe(object):
             
         # Values do not vary by leaf
         params.add('Rdfac', value=0.015, min=0.005, max=0.05) 
-        params.add('Jfac', value = 2.0, min=0.8, max=2.8)
-        params.add('Eaj', value=Eaj_guess, min=40000.0, max=80000.0)
-        params.add('Eav', value=Eav_guess, min=40000.0, max=80000.0)
-        params.add('Ear', value=Ear_guess, min=40000.0, max=80000.0)
+        params.add('Jfac',value = 2.0, min = 0.5, max = 3.0)
+        params.add('Eaj', value=Eaj_guess, min=20000.0, max=199999.9)
         params.add('delSj', value=delSj_guess, min=300.0, max=800.0)  
+        params.add('Eav', value=Eav_guess, min=20000.0, max=199999.9)
         params.add('delSv', value=delSv_guess, min=300.0, max=800.0)  
+        params.add('Ear', value=Ear_guess, min=5000.0, max=199999.9)  
         
         return params, df
     
@@ -251,10 +251,10 @@ class FitMe(object):
         for leaf_num in np.unique(df["Leaf"]):
             
             (Jfac_guess, Vcmax25_guess, 
-             Rdfac_guess, Eaj_guess, Ear_guess,
-             Eav_guess, 
+             Rdfac_guess, Eaj_guess, 
+             Eav_guess, Ear_guess, 
              delSj_guess, delSv_guess) = self.pick_random_starting_point()
-            
+             
             params['Vcmax25_%d' % (leaf_num)].value = Vcmax25_guess
         params['Jfac'].value = Jfac_guess
         params['Rdfac'].value = Rdfac_guess
@@ -277,20 +277,19 @@ class FitMe(object):
         retval * 3 : float
             Three starting guesses for Jmax, Vcmax and Rd
         """
-        
-        Vcmax25 = np.random.uniform(5.0, 350)
-        Jfac = np.random.uniform(0.5, 3.0) 
-        Rdfac = np.random.uniform(0.005, 0.03) 
-        Eaj = np.random.uniform(20000.0, 60000.0)
-        Eav = np.random.uniform(40000.0, 60000.0)
-        Ear = np.random.uniform(20000.0, 60000.0)
+        Jfac = np.random.uniform(0.5, 3.0)
+        Vcmax25 = np.random.uniform(5.0, 350) 
+        Rdfac = np.random.uniform(0.005, 0.05) 
+        Eaj = np.random.uniform(20000.0, 80000.0)
+        Eav = np.random.uniform(20000.0, 80000.0)
+        Ear = np.random.uniform(5000.0, 80000.0)
         delSj = np.random.uniform(550.0, 700.0)
         delSv = np.random.uniform(550.0, 700.0)
         if not self.peaked:
             delSj = None
             delSv = None
         
-        return Jfac, Vcmax25, Rdfac, Eaj, Ear, Eav, delSj, delSv
+        return Jfac, Vcmax25, Rdfac, Eaj, Eav, Ear, delSj, delSv
     
                   
     def residual(self, params, df):
@@ -323,22 +322,21 @@ class FitMe(object):
         # Need to build dummy variables.
         for i in np.unique(df["Leaf"]):
             col_id = "f_%d" % (i)
-            
-            
+
             Vcmax25 += params['Vcmax25_%d' % (i)].value * df[col_id]
+            
             Rd25 += (params['Rdfac'].value * 
                      params['Vcmax25_%d' % (i)].value * df[col_id])
             Jmax25 += (params['Jfac'].value * 
-                       params['Vcmax25_%d' % (i)].value * df[col_id])
-            
-            
+                     params['Vcmax25_%d' % (i)].value * df[col_id])
+                     
         Eaj = params['Eaj'].value
         delSj = params['delSj'].value
         Eav = params['Eav'].value
         delSv = params['delSv'].value
         Ear = params['Ear'].value
-        Hdv = 200000.0
-        Hdj = 200000.0
+        Hdv = 200000.00000000
+        Hdj = 200000.00000000
         if hasattr(df, "Par"):
             (An, Anc, Anj) = self.farq(Ci=df["Ci"], Tleaf=df["Tleaf"], 
                                        Par=df["Par"], Jmax=None, Vcmax=None, 
@@ -381,20 +379,19 @@ class FitMe(object):
 
         for i in np.unique(df["Leaf"]):
             col_id = "f_%d" % (i)
-            
             Vcmax25 += result.params['Vcmax25_%d' % (i)].value * df[col_id]
             Rd25 += (result.params['Rdfac'].value * 
                      result.params['Vcmax25_%d' % (i)].value * df[col_id])
             Jmax25 += (result.params['Jfac'].value * 
-                       result.params['Vcmax25_%d' % (i)].value * df[col_id])
+                     result.params['Vcmax25_%d' % (i)].value * df[col_id])
                      
         Eaj = result.params['Eaj'].value
         delSj = result.params['delSj'].value
         Eav = result.params['Eav'].value
         delSv = result.params['delSv'].value
         Ear = result.params['Ear'].value
-        Hdv = 200000.0
-        Hdj = 200000.0
+        Hdv = 200000.00000000
+        Hdj = 200000.00000000
         if hasattr(df, "Par"):
             (An, Anc, Anj) = self.farq(Ci=df["Ci"], Tleaf=df["Tleaf"], 
                                        Par=df["Par"], Jmax=None, Vcmax=None, 
@@ -570,8 +567,8 @@ class FitMe(object):
             Eav = result.params['Eav'].value
             delSv = result.params['delSv'].value
             Ear = result.params['Ear'].value
-            Hdv = 200000.0
-            Hdj = 200000.0
+            Hdv = 200000.00000000
+            Hdj = 200000.00000000
             if hasattr(curve_df, "Par"):
                 (An, Anc, Anj) = self.farq(Ci=curve_df["Ci"], Tleaf=curve_df["Tleaf"], 
                                            Par=curve_df["Par"], Jmax=None, Vcmax=None, 
@@ -663,13 +660,11 @@ class FitMe(object):
 if __name__ == "__main__":
 
     ofname = "fitting_results.csv"
-    results_dir = "/Users/mdekauwe/Desktop/results"
-    data_dir = "/Users/mdekauwe/Desktop/data"
-    plot_dir = "/Users/mdekauwe/Desktop/plots"
+    results_dir = "../examples/results_pymc"
+    data_dir = "../examples/data_pymc"
+    #data_dir = "/Users/mdekauwe/Desktop/data"
+    plot_dir = "../examples/plots_pymc"
     
-    #results_dir = "results"
-    #data_dir = "data"
-    #plot_dir = "plots"
     from farquhar_model import FarquharC3
     model = FarquharC3(peaked_Jmax=True, peaked_Vcmax=True, model_Q10=False)
     
