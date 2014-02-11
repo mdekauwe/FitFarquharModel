@@ -32,123 +32,41 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from math import fabs
 import pymc
-
-class FitMe(object):
+  
+class FarquharMCMC(object):
+    """ General(ish) MCMC fitting class, idea is that the user will subclass at 
+    the very least the priors method and adjust as they feel fit.
     """
-    Basic fitting class, contains some generic methods which are used by the
-    fitting routines, e.g. plotting, file reporting etc.
-    
-    """
-    def __init__(self, model=None, results_dir=None, 
-                 data_dir=None, plot_dir=None, num_iter=20, peaked=True, 
-                 delimiter=",", iterations=None, burn=None, thin=None):
-        """
-        Parameters
-        ----------
-        model : object
-            model that we are fitting measurements against...
+    def __init__(self, call_model=None, iterations=None, burn=None, thin=None):
         
-        results_dir : string
-            output directory path for the result to be written
-        data_dir : string
-            input directory path where measured A-Ci files live
-        plot_dir : string
-            directory to save plots of various fitting routines
-        num_iter : int
-            number of different attempts to refit code
-        """
-        
-        self.results_dir = results_dir
-        self.data_dir = data_dir 
-        self.plot_dir = plot_dir    
-        self.farq = model.calc_photosynthesis
-        self.succes_count = 0
-        self.nfiles = 0
-        self.deg2kelvin = 273.15
-        self.num_iter = num_iter
-        self.delimiter = delimiter
-        self.peaked = peaked
-        self.high_number = 99999.9
         self.iterations = iterations
         self.burn = burn
         self.thin = thin
+        self.call_model = call_model
+    
+    def main(self, df, return_MC=False):   
         
-    def main(self, print_to_screen, infname_tag="*.csv"):   
-        """ Loop over all our A-Ci measured curves and fit the Farquhar model
-        parameters to these data. 
+        MC = pymc.MCMC(self.make_model(df))
+        MC.sample(self.iterations, self.burn, self.thin)
         
-        Parameters
-        ----------
-        print_to_screen : logical
-            print fitting result to screen? Default is no!
+        if return_MC: 
+            return MC
+    
+    def save_fits(self, MC, ofname, variables=None):
+        """ write parameter fits, CI to csv file """
+        
+        if variables is None:
+             MC.write_csv(ofname)
+        else:
+            # only works in git version
+            MC.write_csv(ofname, variables=vars)
+    
+    def set_priors(self, df):
+        """ default priors
+        
+        When setting normals I am assuming that sigma = range / 4 to set these 
+        priors
         """
-        
-        for fname in glob.glob(os.path.join(self.data_dir, infname_tag)):
-            df = self.read_data(fname)
-            
-            # sort each curve by Ci...
-            df = self.sort_curves_by_ci(df)
-            for group in np.unique(df["fitgroup"]):
-                df_group = df[df["fitgroup"]==group]
-                df_group.index = range(len(df_group)) # need to reindex slice
-                ofname = os.path.join(self.results_dir, "%s_%s.csv" % \
-                                (df_group["Species"][0], group))
-                (df_group) = self.setup_model_params(df_group)
-                
-                
-                MC = pymc.MCMC(self.make_model(df_group))
-                
-                #MC.use_step_method(pymc.AdaptiveMetropolis)
-                MC.sample(self.iterations, self.burn, self.thin)
-                
-                # ==== done ==== #
-                # only works in git version
-                #vars = ['Vcmax25_%d' % (i) for i in np.unique(df["Leaf"])]
-                #vars_rest = ["Jfac","Rdfac","Eaj","Eav","Ear","delSj","delSv"]
-                #vars = vars + vars_rest
-                #MC.write_csv(ofname, variables=vars)
-                MC.write_csv(ofname)
-                #self.make_plots(df_group, MC, group)
-                #pymc.Matplot.plot(MC, suffix='_%s' % (str(group)), 
-                #                  path=self.plot_dir, format='png')
-            
-            return MC # debug traces
-           
-
-
-
-                   
-    def summarize(self, mcmc, field):
-        results = mcmc.trace(field)[:]
-        results = zip(*results)
-        means = []
-        for r in results:
-            m, v = stats.mean_and_sample_variance(r)
-            means.append(m)
-        means.append(1.0 - sum(means))
-        print
-        print "---"
-        print means
-               
-    def sort_curves_by_ci(self, df):
-        """ Sort curves by Ci (low to high) helps with output plotting,
-            shouldn't matter to fitting, but it makes more sense to be sorted"""
-        df_sorted = pd.DataFrame()
-        for curve_num in np.unique(df["Curve"]):
-            curve_df = df[df["Curve"]==curve_num]
-            curve_df = curve_df.sort(['Ci'], ascending=True)
-            df_sorted = df_sorted.append(curve_df)
-        df_sorted.index = range(len(df_sorted)) # need to reindex slice
-        
-        return df_sorted
-        
-    def make_model(self, df):
-        """ Setup 'model factory' - which exposes various attributes to PYMC 
-        call """
-        
-        # I am assuming that sigma = range / 4 to set these priors
-        
-        
         # mu=25, range=(5-50)
         Vcvals = [pymc.TruncatedNormal('Vcmax25_%d' % (i), \
                   mu=25.0, tau=1.0/11.25**2, a=0.0, b=650.0) \
@@ -181,7 +99,6 @@ class FitMe(object):
         # mu=640, range=(620-660)     
         delSv = pymc.TruncatedNormal('delSv', mu=640.0, tau=1.0/10.0**2, \
                                       a=300.0, b=800.0)
-        
         
         """
         log_mu = np.log(25.0)
@@ -223,6 +140,14 @@ class FitMe(object):
         delSv = pymc.Lognormal('delSv', mu=log_mu, tau=log_tau)
         """
         
+        return Vcvals, Jfac, Rdfac, Eaj, Eav, Ear, delSj, delSv
+    
+    def make_model(self, df):
+        """ Setup 'model factory' - which exposes various attributes to PYMC 
+        call """
+       
+        (Vcvals, Jfac, Rdfac, Eaj, Eav, Ear, delSj, delSv) = self.set_priors(df)
+        
         @pymc.deterministic
         def func(Vcvals=Vcvals, Jfac=Jfac, Rdfac=Rdfac, Eaj=Eaj, Eav=Eav, 
                  Ear=Ear, delSj=delSj, delSv=delSv): 
@@ -247,209 +172,41 @@ class FitMe(object):
             Hdv = 200000.0
             Hdj = 200000.0
             if hasattr(df, "Par"):
-                (An, Anc, Anj) = self.farq(Ci=df["Ci"], Tleaf=df["Tleaf"], 
+                (An, Anc, Anj) = self.call_model(Ci=df["Ci"], Tleaf=df["Tleaf"], 
                                            Par=df["Par"], Jmax=None, Vcmax=None, 
                                            Jmax25=Jmax25, Vcmax25=Vcmax25, 
                                            Rd=None, Q10=None, Eaj=Eaj, Eav=Eav, 
                                            deltaSj=delSj, deltaSv=delSv, 
                                            Rd25=Rd25, Ear=Ear, Hdv=Hdv, Hdj=Hdj)
             else:
-                (An, Anc, Anj) = self.farq(Ci=df["Ci"], Tleaf=df["Tleaf"], 
+                (An, Anc, Anj) = self.call_model(Ci=df["Ci"], Tleaf=df["Tleaf"], 
                                            Par=None, Jmax=None, Vcmax=None, 
                                            Jmax25=Jmax25, Vcmax25=Vcmax25, 
                                            Rd=None, Q10=None, Eaj=Eaj, Eav=Eav, 
                                            deltaSj=delSj, deltaSv=delSv, 
                                            Rd25=Rd25, Ear=Ear, Hdv=Hdv, Hdj=Hdj)
             return An
-        obs_sigma = 0.0001 # assume obs are perfect
+        
         obs = df["Photo"]
-        like = pymc.Normal('like', mu=func, tau=1.0/obs_sigma**2, value=obs, 
+        # Standard deviation is modelled with a Uniform prior
+        obs_sigma = pymc.Uniform("obs_sigma", lower=0.0, upper=10.0, value=0.1)
+        
+        @pymc.deterministic
+        def precision(obs_sigma=obs_sigma):
+            # Precision, based on standard deviation
+            return 1.0/obs_sigma**2
+        
+        like = pymc.Normal('like', mu=func, tau=precision, value=obs, 
                            observed=True)
         
+        #obs_sigma = 0.0001 # assume obs are perfect
+        #
+        #like = pymc.Normal('like', mu=func, tau=1.0/obs_sigma**2, value=obs, 
+        #                   observed=True)
+        
         return vars()
-       
-    def open_output_files(self):
-        """
-        Opens output file for recording fit information
-        
-        Returns: 
-        --------
-        fp : object
-            file pointer
-        """
-        if os.path.isfile(self.ofname):
-            os.remove(self.ofname)
-        
-        try:
-            ofile = open(self.ofname, 'wb')
-        except IOError:
-            raise IOError("Can't open %s file for write" % self.ofname)     
-        
-        return ofile
-        
-    def read_data(self, fname):
-        """ Reads in the A-Ci data if infile_type="aci" is true, otherwise this
-        reads in the fitted results... 
-        
-        For A-Ci data, code expects a format of:
-        -> Curve, Tleaf, Ci, Photo, Species, Season, Leaf
-        
-        Parameters
-        ----------
-        fname : string
-            input file name, expecting csv file.
-        
-        Returns: 
-        --------
-        data : array
-            numpy array containing the data
-        """
-        
-        df = pd.read_csv(fname, sep=self.delimiter, header=0)
-        
-        # change temperature to kelvins
-        df["Tleaf"] += self.deg2kelvin
-            
-        return df
-    
-    def setup_model_params(self, df):
-        """ Setup lmfit Parameters object
-        
-        Parameters
-        ----------
-        df : dataframe
-            dataframe containing all the A-Ci curves.
-        
-        Returns
-        -------
-        params : object
-            lmfit object containing parameters to fit
-        """
-        
-        
-        # Need to loop over all the leaves, fitting separate Jmax25, Vcmax25 
-        # and Rd25 parameter values by leaf
-        
-        for leaf_num in np.unique(df["Leaf"]):
-            
-            # Need to build dummy variable identifier for each leaf.
-            col_id = "f_%d" % (leaf_num)
-            temp = df["Leaf"]
-            temp = np.where(temp==leaf_num, 1.0, 0.0)
-            df[col_id] = temp
-        
-       
-        return df
-    
-
-    def report_fits(self, writer, result, fname, df, An_fit):
-        """ Save fitting results to a file... 
-        
-        Parameters
-        ----------
-        result: object
-            fitting result, param, std. error etc.
-        fname : string
-            filename to append to output file
-        df : object
-            dataframe containing all the A-Ci curve information
-        An_fit : array
-            best model fit using optimised parameters, Net leaf assimilation 
-            rate [umol m-2 s-1]
-        """
-        
-        
-        remaining_header = ["Tav", "Var", "R2", "SSQ", "MSE", "DOF", "n", \
-                            "Species", "Season", "Leaf", "Filename", \
-                            "Topt_J", "Topt_V", "id"]
-        
-        pearsons_r = stats.pearsonr(df["Photo"], An_fit)[0]
-        diff_sq = (df["Photo"]-An_fit)**2
-        ssq = np.sum(diff_sq)
-        mean_sq_err = np.mean(diff_sq)
-        row = []
-        header = []
-        for name, par in result.params.items():
-            header.append("%s" % (name))
-            header.append("%s" % ("SE"))
-            row.append("%s" % (par.value))
-            row.append("%s" % (par.stderr))
-        row.append("%s" % (np.mean(df["Tleaf"] - self.deg2kelvin)))
-        row.append("%s" % ((df["Photo"]-An_fit).var()))
-        row.append("%s" % (pearsons_r**2))
-        row.append("%s" % (ssq))
-        row.append("%s" % (mean_sq_err))
-        row.append("%s" % (len(An_fit)-1))
-        row.append("%s" % (len(An_fit)))
-        row.append("%s" % (df["Species"][0]))
-        row.append("%s" % (df["Season"][0]))
-        row.append("%s" % (df["Leaf"][0]))
-        row.append("%s" % (fname))
-        
-        Hdv = 200000.00000000
-        Hdj = 200000.00000000
-        Topt_J = (self.calc_Topt(Hdj, 
-                                 result.params["Eaj"].value, 
-                                 result.params["delSj"].value))
-        Topt_V = (self.calc_Topt(Hdv, 
-                                 result.params["Eav"].value, 
-                                 result.params["delSv"].value))
-        #Topt_J = (self.calc_Topt(result.params["Hdj"].value, 
-        #                         result.params["Eaj"].value, 
-        #                         result.params["delSj"].value))
-        #Topt_V = (self.calc_Topt(result.params["Hdv"].value, 
-        #                         result.params["Eav"].value, 
-        #                         result.params["delSv"].value))
-        row.append("%f" % (Topt_J))
-        row.append("%f" % (Topt_V))
-        row.append("%s%s%s" % (str(df["Species"][0]), \
-                               str(df["Season"][0]), \
-                               str(df["Leaf"][0])))
-        
-        header = header + remaining_header
-        writer.writerow(header)
-        writer.writerow(row)
-        
-        
-                
-    def print_fit_to_screen(self, result):
-        """ Print the fitting result to the terminal 
-        
-        Parameters
-        ----------
-        result : object
-            fitting result, param, std. error etc.
-        """
-        for name, par in result.params.items():
-            print '%s = %.8f +/- %.8f ' % (name, par.value, par.stderr)
-        print 
-    
-    def check_params(self, result, threshold=1.05):
-        """ Check that fitted values aren't stuck against the "wall"
-        
-        Parameters
-        ----------
-        result : object
-            fitting result, param, std. error etc.
-        """
-        bad = False
-        for name, par in result.params.items():
-            if name in ('Hdj', 'Hdv'):
-                continue
-            elif fabs(par.stderr - 0.00000000) < 0.00001:
-                bad = True
-                break
-                
-            #if (par.value * threshold > par.max or 
-            #    fabs(par.stderr - 0.00000000) < 0.00001):
-            #    bad = True
-            #    break
-            
-        return bad
-
-    
-    
-    def make_plots(self, df, MC, group):
+ 
+    def make_plots(self, df, MC):
         """ Make some plots to show how good our fitted model is to the data 
         
         * Plots A-Ci model fits vs. data
@@ -501,21 +258,21 @@ class FitMe(object):
         Hdj = 200000.00000000
         
         if hasattr(df, "Par"):
-            (An, Anc, Anj) = self.farq(Ci=df["Ci"], Tleaf=df["Tleaf"], 
+            (An, Anc, Anj) = self.call_model(Ci=df["Ci"], Tleaf=df["Tleaf"], 
                                        Par=df["Par"], Jmax=None, Vcmax=None, 
                                        Jmax25=Jmax25, Vcmax25=Vcmax25, 
                                        Rd=None, Q10=None, Eaj=Eaj, Eav=Eav, 
                                        deltaSj=delSj, deltaSv=delSv, 
                                        Rd25=Rd25, Ear=Ear, Hdv=Hdv, Hdj=Hdj)
         else:
-            (An, Anc, Anj) = self.farq(Ci=df["Ci"], Tleaf=df["Tleaf"], 
+            (An, Anc, Anj) = self.call_model(Ci=df["Ci"], Tleaf=df["Tleaf"], 
                                        Par=None, Jmax=None, Vcmax=None, 
                                        Jmax25=Jmax25, Vcmax25=Vcmax25, 
                                        Rd=None, Q10=None, Eaj=Eaj, Eav=Eav, 
                                        deltaSj=delSj, deltaSv=delSv, 
                                        Rd25=Rd25, Ear=Ear, Hdv=Hdv, Hdj=Hdj)
         rmse = np.sqrt(np.mean((df["Photo"] - An)**2))
-        print group
+        
         print "**** RMSE = %f" % (rmse)
         print
         
@@ -537,14 +294,14 @@ class FitMe(object):
             Hdv = 200000.00000000
             Hdj = 200000.00000000
             if hasattr(curve_df, "Par"):
-                (An, Anc, Anj) = self.farq(Ci=curve_df["Ci"], Tleaf=curve_df["Tleaf"], 
+                (An, Anc, Anj) = self.call_model(Ci=curve_df["Ci"], Tleaf=curve_df["Tleaf"], 
                                            Par=curve_df["Par"], Jmax=None, Vcmax=None, 
                                            Jmax25=Jmax25, Vcmax25=Vcmax25, Rd=None, 
                                            Q10=None, Eaj=Eaj, Eav=Eav, 
                                            deltaSj=delSj, deltaSv=delSv, Rd25=Rd25, 
                                            Ear=Ear, Hdv=Hdv, Hdj=Hdj)
             else:
-                (An, Anc, Anj) = self.farq(Ci=curve_df["Ci"], Tleaf=curve_df["Tleaf"], 
+                (An, Anc, Anj) = self.call_model(Ci=curve_df["Ci"], Tleaf=curve_df["Tleaf"], 
                                            Par=None, Jmax=None, Vcmax=None, 
                                            Jmax25=Jmax25, Vcmax25=Vcmax25, Rd=None, 
                                            Q10=None, Eaj=Eaj, Eav=Eav, 
@@ -592,37 +349,123 @@ class FitMe(object):
         
             fig.savefig(ofname)
             plt.close(fig)
+        
+class FitMe(object):
+    """
+    Basic fitting class, contains some generic methods which are used by the
+    fitting routines, e.g. plotting, file reporting etc.
     
-    def calc_Topt(self, Hd, Ha, delS, RGAS=8.314):
-        """ Calculate the temperature optimum 
+    """
+    def __init__(self, results_dir=None, data_dir=None, plot_dir=None, 
+                 delimiter=","):
+        """
+        Parameters
+        ----------
+        results_dir : string
+            output directory path for the result to be written
+        data_dir : string
+            input directory path where measured A-Ci files live
+        plot_dir : string
+            directory to save plots of various fitting routines
+        """
+        
+        self.results_dir = results_dir
+        self.data_dir = data_dir 
+        self.plot_dir = plot_dir    
+        self.deg2kelvin = 273.15
+        self.delimiter = delimiter
+        
+        
+    def main(self, MCMC, return_MC=False, infname_tag="*.csv"):   
+        """ Loop over all our A-Ci measured curves and fit the Farquhar model
+        parameters to these data. 
         
         Parameters
         ----------
-        Hd : float
-            describes rate of decrease about the optimum temp [KJ mol-1]
-        Ha : float
-            activation energy for the parameter [kJ mol-1]
-        delS : float
-            entropy factor [J mol-1 K-1)
-        RGAS : float
-            Universal gas constant [J mol-1 K-1]
+        
+        """
+        for fname in glob.glob(os.path.join(self.data_dir, infname_tag)):
+            df = self.read_data(fname)
+            # sort each curve by Ci...
+            df = self.sort_curves_by_ci(df)
+            for group in np.unique(df["fitgroup"]):
+                df_group = df[df["fitgroup"]==group]
+                df_group.index = range(len(df_group)) # need to reindex slice
+                ofname = os.path.join(self.results_dir, "%s_%s.csv" % \
+                                (df_group["Species"][0], group))
+                (df_group) = self.setup_dummy_variable(df_group)
+                
+                if return_MC:
+                    MC = MCMC.main(df_group, return_MC=return_MC)
+                    return MC # debug traces
+                else:
+                    MCMC.main(df_group, return_MC=return_MC)
+               
+    def sort_curves_by_ci(self, df):
+        """ Sort curves by Ci (low to high) helps with output plotting,
+            shouldn't matter to fitting, but it makes more sense to be sorted"""
+        df_sorted = pd.DataFrame()
+        for curve_num in np.unique(df["Curve"]):
+            curve_df = df[df["Curve"]==curve_num]
+            curve_df = curve_df.sort(['Ci'], ascending=True)
+            df_sorted = df_sorted.append(curve_df)
+        df_sorted.index = range(len(df_sorted)) # need to reindex slice
+        
+        return df_sorted
+
+    def read_data(self, fname):
+        """ Reads in the A-Ci data if infile_type="aci" is true, otherwise this
+        reads in the fitted results... 
+        
+        For A-Ci data, code expects a format of:
+        -> Curve, Tleaf, Ci, Photo, Species, Season, Leaf
+        
+        Parameters
+        ----------
+        fname : string
+            input file name, expecting csv file.
+        
+        Returns: 
+        --------
+        data : array
+            numpy array containing the data
+        """
+        
+        df = pd.read_csv(fname, sep=self.delimiter, header=0)
+        
+        # change temperature to kelvins
+        df["Tleaf"] += self.deg2kelvin
+            
+        return df
+    
+    def setup_dummy_variable(self, df):
+        """ Setup lmfit Parameters object
+        
+        Parameters
+        ----------
+        df : dataframe
+            dataframe containing all the A-Ci curves.
         
         Returns
-        --------
-        Topt : float
-            optimum temperature [deg C]
-        
-        Reference
-        ----------
-        * Medlyn, B. E., Dreyer, E., Ellsworth, D., Forstreuter, M., Harley, 
-          P.C., Kirschbaum, M.U.F., Leroux, X., Montpied, P., Strassemeyer, J., 
-          Walcroft, A., Wang, K. and Loustau, D. (2002) Temperature response of 
-          parameters of a biochemically based model of photosynthesis. II. 
-          A review of experimental data. Plant, Cell and Enviroment 25, 
-          1167-1179.
+        -------
+        params : object
+            lmfit object containing parameters to fit
         """
-        return (Hd / (delS - RGAS * np.log(Ha / (Hd - Ha)))) - self.deg2kelvin
+        
+        
+        # Need to loop over all the leaves, fitting separate Jmax25, Vcmax25 
+        # and Rd25 parameter values by leaf
+        
+        for leaf_num in np.unique(df["Leaf"]):
             
+            # Need to build dummy variable identifier for each leaf.
+            col_id = "f_%d" % (leaf_num)
+            temp = df["Leaf"]
+            temp = np.where(temp==leaf_num, 1.0, 0.0)
+            df[col_id] = temp
+       
+        return df
+    
 
 if __name__ == "__main__":
 

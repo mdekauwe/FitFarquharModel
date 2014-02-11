@@ -13,24 +13,23 @@ df.index = range(len(df)) # need to reindex slice
 #df.loc[:,'Tleaf'] += 273.15
 
 
-
+Eaj = 27535.63574182
+Ear = 21053.28192588
+Eav = 44013.15555911
+Jfac =  1.47680402
+Rdfac = 0.04542771
 Vcmax25_1 = 19.57163149 
 Vcmax25_2 = 24.76596270 
 Vcmax25_3 = 23.28029167 
 Vcmax25_4 = 33.51815661 
 Vcmax25_5 = 28.37893914 
 Vcmax25_6 = 17.31574023 
-Vvals = [Vcmax25_1,Vcmax25_2,Vcmax25_3,Vcmax25_4,Vcmax25_5,Vcmax25_6]
-
-Rdfac = 0.04542771
-Jfac =  1.47680402
-Eaj = 27535.63574182
 delSj = 643.39267144
-Eav = 44013.15555911
 delSv = 640.09326969
-Ear = 21053.28192588
+
 Hdv = 200000.0
 Hdj = 200000.0
+Vvals = [Vcmax25_1,Vcmax25_2,Vcmax25_3,Vcmax25_4,Vcmax25_5,Vcmax25_6]
 
 Anx = np.zeros(0)
 Cix = np.zeros(0)
