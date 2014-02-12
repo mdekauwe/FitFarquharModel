@@ -31,6 +31,8 @@ Hdv = 200000.0
 Hdj = 200000.0
 Vvals = [Vcmax25_1,Vcmax25_2,Vcmax25_3,Vcmax25_4,Vcmax25_5,Vcmax25_6]
 
+add_noise = True
+
 Anx = np.zeros(0)
 Cix = np.zeros(0)
 #f = open("../examples/data_pymc/synthetic_data.csv", "w")
@@ -56,7 +58,14 @@ for curve_num in np.unique(df["Curve"]):
                            Q10=None, Eaj=Eaj, Eav=Eav, 
                            deltaSj=delSj, deltaSv=delSv, Rd25=Rd25, 
                           Ear=Ear, Hdv=Hdv, Hdj=Hdj)
+    
+    from scipy.stats import truncnorm
     for i, A in enumerate(An):
+       
+        if add_noise:
+            A = truncnorm.rvs(a=0., b=20.0, loc=A, scale=3.0)
+        else:
+            noise = 0.0
         print >>f, "%s,%d,%d,%f,%f,%f,%s,%s"  % (curve_df["Species"][i], curve_df["Leaf"][i],\
                                             curve_df["Curve"][i], A, \
                                             curve_df["Ci"][i], curve_df["Tleaf"][i]-273.15,\
