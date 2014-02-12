@@ -59,7 +59,7 @@ class FitMe(object):
         self.delimiter = delimiter
         
         
-    def main(self, MCMC, return_MC=False, infname_tag="*.csv"):   
+    def main(self, MCMC, infname_tag="*.csv"):   
         """ Loop over all our A-Ci measured curves and fit the Farquhar model
         parameters to these data. 
         
@@ -81,12 +81,8 @@ class FitMe(object):
                 trace_ofname = os.path.join(self.trace_dir, 
                                             "mcmc_%s.pickle" % (str(group)))
                 
-                if return_MC:
-                    MC = MCMC.call_mcmc(df_group, trace_ofname, 
-                                        return_MC=return_MC)
-                    return MC # debug traces
-                else:
-                    MCMC.main(df_group, trace_ofname, return_MC=return_MC)
+                MC = MCMC.call_mcmc(df_group, trace_ofname)
+                self.save_fits(MC, "mcmc_fit_result_%s" % (str(group))
                
     def sort_curves_by_ci(self, df):
         """ Sort curves by Ci (low to high) helps with output plotting,
@@ -166,15 +162,16 @@ class FarquharMCMC(object):
         self.call_model = call_model
         self.progress_bar = progress_bar
     
-    def call_mcmc(self, df, trace_ofname, return_MC=False):   
+    def call_mcmc(self, df, trace_ofname):   
 
         MC = pymc.MCMC(self.make_model(df), db='pickle', dbname=trace_ofname)
         
         MC.sample(iter=self.iterations, burn=self.burn, thin=self.thin, 
                   progress_bar=self.progress_bar)
         
-        if return_MC: 
-            return MC
+        return MC
+        
+            
     
     def save_fits(self, MC, ofname, variables=None):
         """ write parameter fits, CI to csv file """
