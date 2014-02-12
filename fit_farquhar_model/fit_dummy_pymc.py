@@ -487,11 +487,20 @@ if __name__ == "__main__":
     results_dir = "../examples/results_pymc"
     data_dir = "../examples/data_pymc"
     plot_dir = "../examples/plots_pymc"
+    trace_dir = "../examples/traces"
+    
+    # photosynthesis model
     from farquhar_model import FarquharC3
     model = FarquharC3(peaked_Jmax=True, peaked_Vcmax=True, model_Q10=False)
-    iterations = 100000
-    burn = 50000
-    thin = 10
-    F = FitMe(model, results_dir, data_dir, plot_dir, iterations=iterations, 
-              burn=burn, thin=thin)
-    MC = F.main(print_to_screen=True) 
+    call_model = model.calc_photosynthesis
+    iterations = 50000
+    burn = 25000
+    thin = 5
+
+    # Bayesian fitting class initialisation
+    MCMC = FarquharMCMC(call_model=call_model, iterations=iterations, burn=burn, 
+                        thin=thin, progress_bar=True)
+
+
+    F = FitMe(results_dir, data_dir, plot_dir, trace_dir)
+    mc = F.main(MCMC)
