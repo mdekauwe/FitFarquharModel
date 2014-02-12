@@ -82,7 +82,7 @@ class FitMe(object):
                                             "mcmc_%s.pickle" % (str(group)))
                 
                 MC = MCMC.call_mcmc(df_group, trace_ofname)
-                self.save_fits(MC, "mcmc_fit_result_%s" % (str(group)))
+                MC.save_fits(MC, "mcmc_fit_result_%s" % (str(group)))
                
     def sort_curves_by_ci(self, df):
         """ Sort curves by Ci (low to high) helps with output plotting,
@@ -148,7 +148,8 @@ class FitMe(object):
             df[col_id] = temp
        
         return df
-  
+ 
+ 
 class FarquharMCMC(object):
     """ General(ish) MCMC fitting class, idea is that the user will subclass at 
     the very least the priors method and adjust as they feel fit.
