@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 import sys
 
 from fit_farquhar_model.farquhar_model import FarquharC3
-#fname = "/Users/mdekauwe/Google_Drive/ACI_datasets/data/Way/Picea_mariana.csv"
-fname = "/Users/mdekauwe/Desktop/Picea_mariana.csv"
+fname = "/Users/mdekauwe/Google_Drive/ACI_datasets/data/Way/Picea_mariana.csv"
+#fname = "/Users/mdekauwe/Desktop/Picea_mariana.csv"
 df = pd.read_csv(fname, sep=",", header=0)
 df = df[df["fitgroup"]=="Cool"]
 df["Tleaf"] += 273.15
@@ -33,7 +33,8 @@ Vvals = [Vcmax25_1,Vcmax25_2,Vcmax25_3,Vcmax25_4,Vcmax25_5,Vcmax25_6]
 
 Anx = np.zeros(0)
 Cix = np.zeros(0)
-f = open("../examples/data_pymc/synthetic_data.csv", "w")
+#f = open("../examples/data_pymc/synthetic_data.csv", "w")
+f = open("/Users/mdekauwe/Desktop/synthetic_data.csv", "w")
 print >>f, "Species,Leaf,Curve,Photo,Ci,Tleaf,Season,fitgroup"
 for curve_num in np.unique(df["Curve"]):
     
