@@ -165,8 +165,15 @@ class FarquharMCMC(object):
         self.progress_bar = progress_bar
     
     def call_mcmc(self, df, trace_ofname):   
-
-        MC = pymc.MCMC(self.make_model(df), db='pickle', dbname=trace_ofname)
+        
+        # optimise starting point for chain
+        print "Optimising starting position for chain..."
+        model = self.make_model(df)
+        map = pymc.MAP(model)
+        map.fit()
+        
+        # Use these parameter estimates in the fitting
+        MC = pymc.MCMC(map.variables, db='pickle', dbname=trace_ofname)
         
         MC.sample(iter=self.iterations, burn=self.burn, thin=self.thin, 
                   progress_bar=self.progress_bar)
@@ -312,20 +319,19 @@ class FarquharMCMC(object):
         
         obs = df["Photo"]
         # Standard deviation is modelled with a Uniform prior
-        obs_sigma = pymc.Uniform("obs_sigma", lower=0.0, upper=10.0, value=0.1)
-        
-        @pymc.deterministic
-        def precision(obs_sigma=obs_sigma):
-            # Precision, based on standard deviation
-            return 1.0/obs_sigma**2
-        
-        like = pymc.Normal('like', mu=func, tau=precision, value=obs, 
-                           observed=True)
-        
-        #obs_sigma = 0.0001 # assume obs are perfect
+        #obs_sigma = pymc.Uniform("obs_sigma", lower=0.0, upper=10.0, value=0.1)
         #
-        #like = pymc.Normal('like', mu=func, tau=1.0/obs_sigma**2, value=obs, 
+        #@pymc.deterministic
+        #def precision(obs_sigma=obs_sigma):
+        #    # Precision, based on standard deviation
+        #    return 1.0/obs_sigma**2
+        
+        #like = pymc.Normal('like', mu=func, tau=precision, value=obs, 
         #                   observed=True)
+        
+        obs_sigma = 0.0001 # assume obs are perfect
+        like = pymc.Normal('like', mu=func, tau=1.0/obs_sigma**2, value=obs, 
+                           observed=True)
         
         return locals()
  
