@@ -327,7 +327,7 @@ class FarquharMCMC(object):
         #like = pymc.Normal('like', mu=func, tau=1.0/obs_sigma**2, value=obs, 
         #                   observed=True)
         
-        return vars()
+        return locals()
  
     def make_plots(self, df, MC):
         """ Make some plots to show how good our fitted model is to the data 
