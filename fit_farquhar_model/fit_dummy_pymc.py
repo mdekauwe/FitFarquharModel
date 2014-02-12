@@ -32,22 +32,146 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from math import fabs
 import pymc
+
+class FitMe(object):
+    """
+    Basic fitting class, contains some generic methods which are used by the
+    fitting routines, e.g. plotting, file reporting etc.
+    
+    """
+    def __init__(self, results_dir=None, data_dir=None, plot_dir=None, 
+                 trace_dir=None, delimiter=","):
+        """
+        Parameters
+        ----------
+        results_dir : string
+            output directory path for the result to be written
+        data_dir : string
+            input directory path where measured A-Ci files live
+        plot_dir : string
+            directory to save plots of various fitting routines
+        """
+        self.trace_dir = trace_dir
+        self.results_dir = results_dir
+        self.data_dir = data_dir 
+        self.plot_dir = plot_dir    
+        self.deg2kelvin = 273.15
+        self.delimiter = delimiter
+        
+        
+    def main(self, MCMC, return_MC=False, infname_tag="*.csv"):   
+        """ Loop over all our A-Ci measured curves and fit the Farquhar model
+        parameters to these data. 
+        
+        Parameters
+        ----------
+        
+        """
+        for fname in glob.glob(os.path.join(self.data_dir, infname_tag)):
+            df = self.read_data(fname)
+            # sort each curve by Ci...
+            df = self.sort_curves_by_ci(df)
+            for group in np.unique(df["fitgroup"]):
+                df_group = df[df["fitgroup"]==group]
+                df_group.index = range(len(df_group)) # need to reindex slice
+                ofname = os.path.join(self.results_dir, "%s_%s.csv" % \
+                                (df_group["Species"][0], group))
+                (df_group) = self.setup_dummy_variable(df_group)
+                
+                trace_ofname = os.path.join(self.trace_dir, 
+                                            "mcmc_%s.pickle" % (str(group)))
+                
+                if return_MC:
+                    MC = MCMC.call_mcmc(df_group, trace_ofname, 
+                                        return_MC=return_MC)
+                    return MC # debug traces
+                else:
+                    MCMC.main(df_group, trace_ofname, return_MC=return_MC)
+               
+    def sort_curves_by_ci(self, df):
+        """ Sort curves by Ci (low to high) helps with output plotting,
+            shouldn't matter to fitting, but it makes more sense to be sorted"""
+        df_sorted = pd.DataFrame()
+        for curve_num in np.unique(df["Curve"]):
+            curve_df = df[df["Curve"]==curve_num]
+            curve_df = curve_df.sort(['Ci'], ascending=True)
+            df_sorted = df_sorted.append(curve_df)
+        df_sorted.index = range(len(df_sorted)) # need to reindex slice
+        
+        return df_sorted
+
+    def read_data(self, fname):
+        """ Reads in the A-Ci data if infile_type="aci" is true, otherwise this
+        reads in the fitted results... 
+        
+        For A-Ci data, code expects a format of:
+        -> Curve, Tleaf, Ci, Photo, Species, Season, Leaf
+        
+        Parameters
+        ----------
+        fname : string
+            input file name, expecting csv file.
+        
+        Returns: 
+        --------
+        data : array
+            numpy array containing the data
+        """
+        
+        df = pd.read_csv(fname, sep=self.delimiter, header=0)
+        
+        # change temperature to kelvins
+        df["Tleaf"] += self.deg2kelvin
+            
+        return df
+    
+    def setup_dummy_variable(self, df):
+        """ Setup lmfit Parameters object
+        
+        Parameters
+        ----------
+        df : dataframe
+            dataframe containing all the A-Ci curves.
+        
+        Returns
+        -------
+        params : object
+            lmfit object containing parameters to fit
+        """
+        
+        
+        # Need to loop over all the leaves, fitting separate Jmax25, Vcmax25 
+        # and Rd25 parameter values by leaf
+        
+        for leaf_num in np.unique(df["Leaf"]):
+            
+            # Need to build dummy variable identifier for each leaf.
+            col_id = "f_%d" % (leaf_num)
+            temp = df["Leaf"]
+            temp = np.where(temp==leaf_num, 1.0, 0.0)
+            df[col_id] = temp
+       
+        return df
   
 class FarquharMCMC(object):
     """ General(ish) MCMC fitting class, idea is that the user will subclass at 
     the very least the priors method and adjust as they feel fit.
     """
-    def __init__(self, call_model=None, iterations=None, burn=None, thin=None):
+    def __init__(self, call_model=None, iterations=None, burn=None, thin=None,
+                 progress_bar=True):
         
         self.iterations = iterations
         self.burn = burn
         self.thin = thin
         self.call_model = call_model
+        self.progress_bar = progress_bar
     
-    def main(self, df, return_MC=False):   
+    def call_mcmc(self, df, trace_ofname, return_MC=False):   
+
+        MC = pymc.MCMC(self.make_model(df), db='pickle', dbname=trace_ofname)
         
-        MC = pymc.MCMC(self.make_model(df))
-        MC.sample(self.iterations, self.burn, self.thin)
+        MC.sample(iter=self.iterations, burn=self.burn, thin=self.thin, 
+                  progress_bar=self.progress_bar)
         
         if return_MC: 
             return MC
@@ -350,121 +474,7 @@ class FarquharMCMC(object):
             fig.savefig(ofname)
             plt.close(fig)
         
-class FitMe(object):
-    """
-    Basic fitting class, contains some generic methods which are used by the
-    fitting routines, e.g. plotting, file reporting etc.
-    
-    """
-    def __init__(self, results_dir=None, data_dir=None, plot_dir=None, 
-                 delimiter=","):
-        """
-        Parameters
-        ----------
-        results_dir : string
-            output directory path for the result to be written
-        data_dir : string
-            input directory path where measured A-Ci files live
-        plot_dir : string
-            directory to save plots of various fitting routines
-        """
-        
-        self.results_dir = results_dir
-        self.data_dir = data_dir 
-        self.plot_dir = plot_dir    
-        self.deg2kelvin = 273.15
-        self.delimiter = delimiter
-        
-        
-    def main(self, MCMC, return_MC=False, infname_tag="*.csv"):   
-        """ Loop over all our A-Ci measured curves and fit the Farquhar model
-        parameters to these data. 
-        
-        Parameters
-        ----------
-        
-        """
-        for fname in glob.glob(os.path.join(self.data_dir, infname_tag)):
-            df = self.read_data(fname)
-            # sort each curve by Ci...
-            df = self.sort_curves_by_ci(df)
-            for group in np.unique(df["fitgroup"]):
-                df_group = df[df["fitgroup"]==group]
-                df_group.index = range(len(df_group)) # need to reindex slice
-                ofname = os.path.join(self.results_dir, "%s_%s.csv" % \
-                                (df_group["Species"][0], group))
-                (df_group) = self.setup_dummy_variable(df_group)
-                
-                if return_MC:
-                    MC = MCMC.main(df_group, return_MC=return_MC)
-                    return MC # debug traces
-                else:
-                    MCMC.main(df_group, return_MC=return_MC)
-               
-    def sort_curves_by_ci(self, df):
-        """ Sort curves by Ci (low to high) helps with output plotting,
-            shouldn't matter to fitting, but it makes more sense to be sorted"""
-        df_sorted = pd.DataFrame()
-        for curve_num in np.unique(df["Curve"]):
-            curve_df = df[df["Curve"]==curve_num]
-            curve_df = curve_df.sort(['Ci'], ascending=True)
-            df_sorted = df_sorted.append(curve_df)
-        df_sorted.index = range(len(df_sorted)) # need to reindex slice
-        
-        return df_sorted
 
-    def read_data(self, fname):
-        """ Reads in the A-Ci data if infile_type="aci" is true, otherwise this
-        reads in the fitted results... 
-        
-        For A-Ci data, code expects a format of:
-        -> Curve, Tleaf, Ci, Photo, Species, Season, Leaf
-        
-        Parameters
-        ----------
-        fname : string
-            input file name, expecting csv file.
-        
-        Returns: 
-        --------
-        data : array
-            numpy array containing the data
-        """
-        
-        df = pd.read_csv(fname, sep=self.delimiter, header=0)
-        
-        # change temperature to kelvins
-        df["Tleaf"] += self.deg2kelvin
-            
-        return df
-    
-    def setup_dummy_variable(self, df):
-        """ Setup lmfit Parameters object
-        
-        Parameters
-        ----------
-        df : dataframe
-            dataframe containing all the A-Ci curves.
-        
-        Returns
-        -------
-        params : object
-            lmfit object containing parameters to fit
-        """
-        
-        
-        # Need to loop over all the leaves, fitting separate Jmax25, Vcmax25 
-        # and Rd25 parameter values by leaf
-        
-        for leaf_num in np.unique(df["Leaf"]):
-            
-            # Need to build dummy variable identifier for each leaf.
-            col_id = "f_%d" % (leaf_num)
-            temp = df["Leaf"]
-            temp = np.where(temp==leaf_num, 1.0, 0.0)
-            df[col_id] = temp
-       
-        return df
     
 
 if __name__ == "__main__":
