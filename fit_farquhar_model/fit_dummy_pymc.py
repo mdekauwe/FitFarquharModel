@@ -82,7 +82,7 @@ class FitMe(object):
                                             "mcmc_%s.pickle" % (str(group)))
                 
                 MC = MCMC.call_mcmc(df_group, trace_ofname)
-                MC.save_fits(MC, "mcmc_fit_result_%s" % (str(group)))
+                MCMC.save_fits(MC, "mcmc_fit_result_%s" % (str(group)))
                
     def sort_curves_by_ci(self, df):
         """ Sort curves by Ci (low to high) helps with output plotting,
