@@ -319,7 +319,7 @@ class FarquharMCMC(object):
         
         obs = df["Photo"]
         # Standard deviation is modelled with a Uniform prior
-        obs_sigma = pymc.Uniform("obs_sigma", lower=0.0, upper=10.0, value=0.1)
+        obs_sigma = pymc.Uniform("obs_sigma", lower=0.0, upper=100.0, value=0.1)
         
         @pymc.deterministic
         def precision(obs_sigma=obs_sigma):
