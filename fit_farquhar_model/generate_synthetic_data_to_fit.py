@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 import sys
 
 from fit_farquhar_model.farquhar_model import FarquharC3
-#fname = "/Users/mdekauwe/Google_Drive/ACI_datasets/data/Way/Picea_mariana.csv"
-fname = "/Users/mdekauwe/Desktop/Picea_mariana.csv"
+fname = "/Users/mdekauwe/Google_Drive/ACI_datasets/data/Way/Picea_mariana.csv"
+#fname = "/Users/mdekauwe/Desktop/Picea_mariana.csv"
 df = pd.read_csv(fname, sep=",", header=0)
 df = df[df["fitgroup"]=="Cool"]
 df["Tleaf"] += 273.15
@@ -31,7 +31,7 @@ Hdv = 200000.0
 Hdj = 200000.0
 Vvals = [Vcmax25_1,Vcmax25_2,Vcmax25_3,Vcmax25_4,Vcmax25_5,Vcmax25_6]
 
-add_noise = True
+add_noise = False
 
 Anx = np.zeros(0)
 Cix = np.zeros(0)
@@ -66,7 +66,7 @@ for curve_num in np.unique(df["Curve"]):
             #A = truncnorm.rvs(a=0., b=20.0, loc=A, scale=3.0)
             #print A,
             A += np.random.normal(0.0, 1.0)
-            #print A
+            print "adding noise"
         else:
             noise = 0.0
         print >>f, "%s,%d,%d,%f,%f,%f,%s,%s"  % (curve_df["Species"][i], curve_df["Leaf"][i],\
