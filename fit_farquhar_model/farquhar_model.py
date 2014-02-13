@@ -179,10 +179,8 @@ class FarquharC3(object):
         """
         self.check_supplied_args(Jmax, Vcmax, Rd, Jmax25, Vcmax25, Rd25)
         
-        # Michaelis-Menten constant for O2/CO2, Arrhenius temp dependancy
-        Kc = self.arrh(self.Kc25, self.Ec, Tleaf)
-        Ko = self.arrh(self.Ko25, self.Eo, Tleaf)
-        Km = Kc * (1.0 + self.Oi / Ko)
+        # calculate temp dependancies of Michaelis–Menten constants for CO2, O2
+        Km = self.calc_michaelis_menten_constants(Tleaf)
         
         # Effect of temp on CO2 compensation point 
         gamma_star = self.arrh(self.gamstar25, self.Egamma, Tleaf)
@@ -194,7 +192,6 @@ class FarquharC3(object):
             else:
                 Rd = self.arrh(Rd25, Ear, Tleaf)
             
-        
         if Vcmax25 is not None:    
             # Effect of temperature on Vcmax and Jamx
             if self.peaked_Vcmax:
@@ -215,12 +212,12 @@ class FarquharC3(object):
         # All measurements are calculated under saturated light!!
         else:
             J = Jmax
-                        
-        # Rubisco-limited photosynthesis
-        Ac = (Vcmax * (Ci - gamma_star)) / (Ci + Km)
         
-        # rate of photosynthesis when RuBP-regeneration is limiting
-        Aj = (J / 4.0) * ((Ci - gamma_star) / (Ci + 2.0 * gamma_star))
+        # Rubisco carboxylation limited rate of photosynthesis
+        Ac = self.assim(Ci, gamma_star, a1=Vcmax, a2=Km) 
+    
+        # Light-limited rate of photosynthesis allowed by RuBP regeneration
+        Aj = self.assim(Ci, gamma_star, a1=J/4.0, a2=2.0*gamma_star)         
         
         # option for the user to specify the transition point
         if self.change_over_pt is not None:
@@ -301,7 +298,25 @@ class FarquharC3(object):
         except AttributeError:
             err_msg = "Supplied arguments are a mess!"
             raise AttributeError, err_msg      
+    
+    def calc_michaelis_menten_constants(self, Tleaf):
+        """ Michaelis-Menten constant for O2/CO2, Arrhenius temp dependancy 
+        Parameters:
+        ----------
+        Tleaf : float
+            leaf temperature [deg K]
         
+        Returns: 
+        Km : float
+            
+        """
+        Kc = self.arrh(self.Kc25, self.Ec, Tleaf)
+        Ko = self.arrh(self.Ko25, self.Eo, Tleaf)
+        
+        Km = Kc * (1.0 + self.Oi / Ko)
+        
+        return Km
+     
     def arrh(self, k25, Ea, Tk):
         """ Temperature dependence of kinetic parameters is described by an
         Arrhenius function.    
@@ -359,6 +374,33 @@ class FarquharC3(object):
                 
         return arg1 * arg2 / arg3
    
+    def assim(self, Ci, gamma_star, a1, a2):
+        """calculation of photosynthesis with the limitation defined by the 
+        variables passed as a1 and a2, i.e. if we are calculating vcmax or 
+        jmax limited assimilation rates.
+        
+        Parameters:
+        ----------
+        Ci : float
+            intercellular CO2 concentration.
+        gamma_star : float
+            CO2 compensation point in the abscence of mitochondrial respiration
+        a1 : float
+            variable depends on whether the calculation is light or rubisco 
+            limited.
+        a2 : float
+            variable depends on whether the calculation is light or rubisco 
+            limited.
+
+        Returns:
+        -------
+        assimilation_rate : float
+            assimilation rate assuming either light or rubisco limitation.
+        """
+        rate = a1 * (Ci - gamma_star) / (a2 + Ci) 
+        rate = np.where(Ci<gamma_star, 0.0, rate)
+        
+        return rate
         
     def resp(self, Tleaf, Q10, Rd25, Tref=25.0):
         """ Calculate leaf respiration accounting for temperature dependence.
