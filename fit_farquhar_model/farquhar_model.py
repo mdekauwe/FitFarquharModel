@@ -187,8 +187,9 @@ class FarquharC3(object):
         
         # Calculations at 25 degrees C or the measurement temperature
         if Rd25 is not None: 
-            Rd = self.calc_resp(Tleaf, Q10, Rd25, Ear, Tleaf)
-            
+            Rd = self.calc_resp(Tleaf, Q10, Rd25, Ear)
+        
+        # Calculate temperature dependancies on Vcmax and Jmax    
         if Vcmax25 is not None:    
             # Effect of temperature on Vcmax and Jamx
             if self.peaked_Vcmax:
@@ -399,8 +400,7 @@ class FarquharC3(object):
         
         return rate
         
-    def calc_resp(self, Tleaf=None, Q10=None, Rd25=None, Ear=None, Tleaf=None,
-                  Tref=25.0):
+    def calc_resp(self, Tleaf=None, Q10=None, Rd25=None, Ear=None, Tref=25.0):
         """ Calculate leaf respiration accounting for temperature dependence.
         
         Parameters:
@@ -413,7 +413,8 @@ class FarquharC3(object):
         Q10 : float
             ratio of respiration at a given temperature divided by respiration 
             at a temperature 10 degrees lower
-        
+        Ear : float
+            activation energy for the parameter [J mol-1]
         Returns:
         -------
         Rt : float
