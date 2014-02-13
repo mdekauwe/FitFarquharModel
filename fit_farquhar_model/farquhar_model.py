@@ -187,10 +187,7 @@ class FarquharC3(object):
         
         # Calculations at 25 degrees C or the measurement temperature
         if Rd25 is not None: 
-            if self.model_Q10:
-                Rd = self.resp(Tleaf, Q10, Rd25, Tref=25.0)
-            else:
-                Rd = self.arrh(Rd25, Ear, Tleaf)
+            Rd = self.calc_resp(Tleaf, Q10, Rd25, Ear, Tleaf)
             
         if Vcmax25 is not None:    
             # Effect of temperature on Vcmax and Jamx
@@ -402,7 +399,8 @@ class FarquharC3(object):
         
         return rate
         
-    def resp(self, Tleaf, Q10, Rd25, Tref=25.0):
+    def calc_resp(self, Tleaf=None, Q10=None, Rd25=None, Ear=None, Tleaf=None,
+                  Tref=25.0):
         """ Calculate leaf respiration accounting for temperature dependence.
         
         Parameters:
@@ -425,7 +423,12 @@ class FarquharC3(object):
         -----------
         Tjoelker et al (2001) GCB, 7, 223-230.
         """
-        return Rd25 * Q10**(((Tleaf - self.deg2kelvin) - Tref) / 10.0)
+        if self.model_Q10:
+            Rd = Rd25 * Q10**(((Tleaf - self.deg2kelvin) - Tref) / 10.0)
+        else:
+            Rd = self.arrh(Rd25, Ear, Tleaf)
+            
+        return Rd
     
     def quadratic(self, a=None, b=None, c=None):
         """ minimilist quadratic solution as root for J solution should always
