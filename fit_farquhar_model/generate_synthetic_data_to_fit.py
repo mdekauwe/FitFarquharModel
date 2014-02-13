@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 import sys
 
 from fit_farquhar_model.farquhar_model import FarquharC3
-fname = "/Users/mdekauwe/Google_Drive/ACI_datasets/data/Way/Picea_mariana.csv"
-#fname = "/Users/mdekauwe/Desktop/Picea_mariana.csv"
+#fname = "/Users/mdekauwe/Google_Drive/ACI_datasets/data/Way/Picea_mariana.csv"
+fname = "/Users/mdekauwe/Desktop/Picea_mariana.csv"
 df = pd.read_csv(fname, sep=",", header=0)
 df = df[df["fitgroup"]=="Cool"]
 df["Tleaf"] += 273.15
@@ -63,7 +63,10 @@ for curve_num in np.unique(df["Curve"]):
     for i, A in enumerate(An):
        
         if add_noise:
-            A = truncnorm.rvs(a=0., b=20.0, loc=A, scale=3.0)
+            #A = truncnorm.rvs(a=0., b=20.0, loc=A, scale=3.0)
+            #print A,
+            A += np.random.normal(0.0, 1.0)
+            #print A
         else:
             noise = 0.0
         print >>f, "%s,%d,%d,%f,%f,%f,%s,%s"  % (curve_df["Species"][i], curve_df["Leaf"][i],\
