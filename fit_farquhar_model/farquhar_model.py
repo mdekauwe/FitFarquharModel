@@ -395,10 +395,7 @@ class FarquharC3(object):
         assimilation_rate : float
             assimilation rate assuming either light or rubisco limitation.
         """
-        rate = a1 * (Ci - gamma_star) / (a2 + Ci) 
-        rate = np.where(Ci<gamma_star, 0.0, rate)
-        
-        return rate
+        return a1 * (Ci - gamma_star) / (a2 + Ci) 
         
     def calc_resp(self, Tleaf=None, Q10=None, Rd25=None, Ear=None, Tref=25.0):
         """ Calculate leaf respiration accounting for temperature dependence.
