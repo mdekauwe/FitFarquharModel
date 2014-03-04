@@ -62,9 +62,7 @@ class FarquharC3(object):
         Oi : float
             intercellular concentration of O2 [mmol mol-1]
         gamstar25 : float
-            co2 compensation point (i.e. the value of Ci at which net CO2 
-            uptake is zero due to photorespiration) in the absence of 
-            dark resp at 25 degC [umol mol-1] or 298 K
+            CO2 compensation point - base rate at 25 deg C / 298 K [umol mol-1]
         Kc25 : float
             Michaelis-Menten coefficents for carboxylation by Rubisco at 
             25degC [umol mol-1] or 298 K
