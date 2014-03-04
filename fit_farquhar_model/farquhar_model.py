@@ -52,7 +52,7 @@ class FarquharC3(object):
     
     def __init__(self, peaked_Jmax=False, peaked_Vcmax=False, Oi=205.0, 
                  gamstar25=42.75, Kc25=404.9, Ko25=278.4, Ec=79430.0,
-                 Eo=36380.0, Egamma=37830.0, theta_hyperbol=0.9995, 
+                 Eo=36380.0, Eag=37830.0, theta_hyperbol=0.9995, 
                  theta_J=0.7, force_vcmax_fit_pts=None,
                  alpha=None, quantum_yield=0.3, absorptance=0.8,
                  change_over_pt=None, model_Q10=False):
@@ -74,7 +74,7 @@ class FarquharC3(object):
             Activation energy for carboxylation [J mol-1]
         Eo : float
             Activation energy for oxygenation [J mol-1]
-        Egamma : float
+        Eag : float
             Activation energy at CO2 compensation point [J mol-1]
         RGAS : float
             Universal gas constant [J mol-1 K-1]
@@ -107,7 +107,7 @@ class FarquharC3(object):
         self.Ko25 = Ko25
         self.Ec = Ec   
         self.Eo = Eo  
-        self.Egamma = Egamma
+        self.Eag = Eag
         self.theta_hyperbol = theta_hyperbol
         self.theta_J = theta_J    
         if alpha is not None:
@@ -181,7 +181,7 @@ class FarquharC3(object):
         Km = self.calc_michaelis_menten_constants(Tleaf)
         
         # Effect of temp on CO2 compensation point 
-        gamma_star = self.arrh(self.gamstar25, self.Egamma, Tleaf)
+        gamma_star = self.arrh(self.gamstar25, self.Eag, Tleaf)
         
         # Calculations at 25 degrees C or the measurement temperature
         if Rd25 is not None: 
