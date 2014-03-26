@@ -471,7 +471,7 @@ class FitMe(object):
             
             
             row.append("%.4f" % (curve_df["Photo"].values[i]))
-            row.append("%.4f" % (curve_df["Tleaf"].values[i]))
+            row.append("%.4f" % (curve_df["Tleaf"].values[i]-self.deg2kelvin))
             row.append("%.4f" % (curve_df["Ci"].values[i]))
             row.append("%.4f" % (An.values[i]))
             row.append("%.4f" % (curve_df["Photo"].values[i] - An.values[i]))
@@ -622,6 +622,7 @@ class FitMe(object):
         season = "all"
         leaf = df["Leaf"][0]
         
+        residualsx = np.zeros(0)
         for curve_num in np.unique(df["Curve"]):
             curve_df = df[df["Curve"]==curve_num]
             curve_df = curve_df.sort(['Ci'], ascending=True)#Sort for nice plots
@@ -662,6 +663,7 @@ class FitMe(object):
                                            Ear=Ear, Hdv=Hdv, Hdj=Hdj)
             
             residuals = curve_df["Photo"] - An
+            residualsx = np.append(residualsx, residuals)
             self.save_residuals(curve_num, curve_df, An, writer_resid)
             
             
@@ -706,13 +708,12 @@ class FitMe(object):
             fig.savefig(ofname)
             plt.close(fig)
             
-            
             ofname = "%s/%s_%s_%s_%s_residual_vs_ci_and_temp.png" % \
                      (self.plot_dir, species, season, leaf, curve_num)
             
         
             
-            plt.rcParams['figure.subplot.hspace'] = 0.05
+            plt.rcParams['figure.subplot.hspace'] = 0.15
             plt.rcParams['figure.subplot.wspace'] = 0.05
             plt.rcParams['font.size'] = 10
             plt.rcParams['legend.fontsize'] = 10
@@ -744,6 +745,45 @@ class FitMe(object):
             fig.savefig(ofname)
             plt.close(fig)
             
+
+            
+        ofname = "%s/%s_%s_%s_residual_vs_ci_and_temp.png" % \
+                 (self.plot_dir, species, season, leaf)
+        
+    
+        
+        plt.rcParams['figure.subplot.hspace'] = 0.15
+        plt.rcParams['figure.subplot.wspace'] = 0.05
+        plt.rcParams['font.size'] = 10
+        plt.rcParams['legend.fontsize'] = 10
+        plt.rcParams['xtick.labelsize'] = 10.0
+        plt.rcParams['ytick.labelsize'] = 10.0
+        plt.rcParams['axes.labelsize'] = 10.0
+    
+        fig = plt.figure(figsize=(8,6)) 
+    
+        ax1 = fig.add_subplot(121)
+        ax2 = fig.add_subplot(122)
+    
+        ax1.plot(df["Ci"], residualsx, 
+                ls="", lw=1.5, marker="o", c="red")
+        
+        ax1.set_xlabel("Ci")
+        ax1.set_ylabel("Residuals")
+        ax1.set_xlim(0, 1600)
+        ax1.set_ylim(-2, 2)
+        
+        ax2.axes.get_yaxis().set_visible(False)
+        ax2.plot(df["Tleaf"]-self.deg2kelvin, residualsx, 
+                ls="", lw=1.5, marker="o", c="red")
+        
+        ax2.set_xlabel("Leaf Temperature (deg C)")
+        #ax2.set_ylabel("Residuals")
+        #ax1.set_xlim(0, 1600)
+        ax2.set_ylim(-2, 2)
+        fig.savefig(ofname)
+        plt.close(fig)
+        
     def calc_Topt(self, Hd, Ha, delS, RGAS=8.314):
         """ Calculate the temperature optimum 
         
