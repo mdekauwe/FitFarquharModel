@@ -712,22 +712,23 @@ class FitMe(object):
                      (self.plot_dir, species, season, leaf, curve_num)
             
         
-            
-            plt.rcParams['figure.subplot.hspace'] = 0.15
-            plt.rcParams['figure.subplot.wspace'] = 0.05
+            plt.rcParams['font.family'] = "sans-serif"
+            plt.rcParams['font.sans-serif'] = "Helvetica"
+            plt.rcParams['figure.subplot.hspace'] = 0.25
+            plt.rcParams['figure.subplot.wspace'] = 0.15
             plt.rcParams['font.size'] = 10
             plt.rcParams['legend.fontsize'] = 10
             plt.rcParams['xtick.labelsize'] = 10.0
             plt.rcParams['ytick.labelsize'] = 10.0
             plt.rcParams['axes.labelsize'] = 10.0
         
-            fig = plt.figure(figsize=(8,6)) 
+            fig = plt.figure(figsize=(10,4)) 
         
             ax1 = fig.add_subplot(121)
             ax2 = fig.add_subplot(122)
         
             ax1.plot(curve_df["Ci"], residuals, 
-                    ls="", lw=1.5, marker="o", c="red")
+                    ls="", lw=1.5, marker="o", c="red", alpha=0.7)
             
             ax1.set_xlabel("Ci")
             ax1.set_ylabel("Residuals")
@@ -736,7 +737,7 @@ class FitMe(object):
             
             ax2.axes.get_yaxis().set_visible(False)
             ax2.plot(curve_df["Tleaf"]-self.deg2kelvin, residuals, 
-                    ls="", lw=1.5, marker="o", c="red")
+                    ls="", lw=1.5, marker="o", c="red", alpha=0.7)
             
             ax2.set_xlabel("Leaf Temperature (deg C)")
             #ax2.set_ylabel("Residuals")
@@ -751,9 +752,10 @@ class FitMe(object):
                  (self.plot_dir, species, season, leaf)
         
     
-        
+        plt.rcParams['font.family'] = "sans-serif"
+        plt.rcParams['font.sans-serif'] = "Helvetica"
         plt.rcParams['figure.subplot.hspace'] = 0.15
-        plt.rcParams['figure.subplot.wspace'] = 0.05
+        plt.rcParams['figure.subplot.wspace'] = 0.2
         plt.rcParams['font.size'] = 10
         plt.rcParams['legend.fontsize'] = 10
         plt.rcParams['xtick.labelsize'] = 10.0
@@ -766,7 +768,7 @@ class FitMe(object):
         ax2 = fig.add_subplot(122)
     
         ax1.plot(df["Ci"], residualsx, 
-                ls="", lw=1.5, marker="o", c="red")
+                ls="", lw=1.5, marker="o", c="red", alpha=0.7)
         
         ax1.set_xlabel("Ci")
         ax1.set_ylabel("Residuals")
@@ -775,7 +777,7 @@ class FitMe(object):
         
         ax2.axes.get_yaxis().set_visible(False)
         ax2.plot(df["Tleaf"]-self.deg2kelvin, residualsx, 
-                ls="", lw=1.5, marker="o", c="red")
+                ls="", lw=1.5, marker="o", c="red", alpha=0.7)
         
         ax2.set_xlabel("Leaf Temperature (deg C)")
         #ax2.set_ylabel("Residuals")
