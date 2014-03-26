@@ -120,7 +120,7 @@ class FitMe(object):
                 # Test sensitivity, are we falling into local mins?
                 lowest_rmse = self.high_number
                 for i, iter in enumerate(xrange(self.num_iter)): 
-                    print group, i
+                    #print group, i
                     # pick new initial parameter guesses, but dont rebuild 
                     # params object
                     if i > 0:
@@ -624,7 +624,12 @@ class FitMe(object):
                                            deltaSj=delSj, deltaSv=delSv, Rd25=Rd25, 
                                            Ear=Ear, Hdv=Hdv, Hdj=Hdj)
             residuals = curve_df["Photo"] - An
-              
+            print 
+            print "%s %d" % (curve_df["fitgroup"].values[0], curve_num)
+            print "Residuals : mu = %.3f,  sigma = %.3f" % (np.mean(residuals), np.std(residuals, ddof=1))
+            print residuals
+            print
+            
             ofname = "%s/%s_%s_%s_%s_fit_and_residual.png" % \
                      (self.plot_dir, species, season, leaf, curve_num)
             
