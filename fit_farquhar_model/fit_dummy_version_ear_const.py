@@ -53,7 +53,7 @@ class FitMe(object):
     """
     def __init__(self, model=None, ofname=None, results_dir=None, 
                  data_dir=None, plot_dir=None, num_iter=10, peaked=True, 
-                 delimiter=","):
+                 delimiter=",", residuals_ofname=None):
         """
         Parameters
         ----------
@@ -74,6 +74,8 @@ class FitMe(object):
         self.results_dir = results_dir
         if ofname is not None:
             self.ofname = os.path.join(self.results_dir, ofname)
+        if residuals_ofname is None:
+            self.residuals_ofname = os.path.join(self.results_dir, "residuals.csv")
         self.data_dir = data_dir 
         self.plot_dir = plot_dir    
         self.farq = model.calc_photosynthesis
@@ -96,10 +98,17 @@ class FitMe(object):
             print fitting result to screen? Default is no!
         """
         # open files and write header information
-        ofile = self.open_output_files()
+        (ofile, oresidfile) = self.open_output_files()
         writer = csv.writer(ofile, delimiter=',', quoting=csv.QUOTE_NONE, 
                             escapechar=' ')
-               
+        writer_resid = csv.writer(oresidfile, delimiter=',', 
+                                  quoting=csv.QUOTE_NONE, escapechar=' ')
+        hdr = ["Group","Curve Number","Obs An","Obs Tleaf","Obs Ci",\
+               "Predicted An", "Residual"] 
+        writer_resid.writerow(hdr)
+        
+        
+        
         for fname in glob.glob(os.path.join(self.data_dir, infname_tag)):
             df = self.read_data(fname)
             
@@ -152,11 +161,13 @@ class FitMe(object):
                     hdr_written = self.report_fits(writer, best_result, 
                                                    os.path.basename(fname), 
                                                    dfr, An, hdr_written)
-                    self.make_plots(dfr, An, Anc, Anj, best_result)
+                    self.make_plots(dfr, An, Anc, Anj, best_result, 
+                                     writer_resid)
                 else:
                     print "Fit failed, fitgroup = %d" % (group)          
         # tidy up
         ofile.close()
+        oresidfile.close()
          
     def open_output_files(self):
         """
@@ -169,13 +180,20 @@ class FitMe(object):
         """
         if os.path.isfile(self.ofname):
             os.remove(self.ofname)
-        
+        if os.path.isfile(self.residuals_ofname):
+            os.remove(self.residuals_ofname)
+            
         try:
             ofile = open(self.ofname, 'wb')
         except IOError:
             raise IOError("Can't open %s file for write" % self.ofname)     
         
-        return ofile
+        try:
+            oresidfile = open(self.residuals_ofname, 'wb')
+        except IOError:
+            raise IOError("Can't open %s file for write" % self.residuals_ofname) 
+        
+        return ofile, oresidfile
         
     def read_data(self, fname):
         """ Reads in the A-Ci data if infile_type="aci" is true, otherwise this
@@ -442,6 +460,25 @@ class FitMe(object):
         
         return (An, Anc, Anj)
     
+    def save_residuals(self, curve_num, curve_df, An, writer_resid):
+        """ Save the residuals of each fit to a file """
+        
+        
+        for i in xrange(len(curve_df)):
+            row = []
+            row.append("%s" % (curve_df["fitgroup"].values[0]))
+            row.append("%d" % (curve_num))
+            
+            
+            row.append("%.4f" % (curve_df["Photo"].values[i]))
+            row.append("%.4f" % (curve_df["Tleaf"].values[i]))
+            row.append("%.4f" % (curve_df["Ci"].values[i]))
+            row.append("%.4f" % (An.values[i]))
+            row.append("%.4f" % (curve_df["Photo"].values[i] - An.values[i]))
+            writer_resid.writerow(row)
+        
+         
+    
     def report_fits(self, writer, result, fname, df, An_fit, 
                     hdr_written=False):
         """ Save fitting results to a file... 
@@ -556,7 +593,7 @@ class FitMe(object):
 
     
     
-    def make_plots(self, df, An_fit, Anc_fit, Anj_fit, result):
+    def make_plots(self, df, An_fit, Anc_fit, Anj_fit, result, writer_resid):
         """ Make some plots to show how good our fitted model is to the data 
         
         * Plots A-Ci model fits vs. data
@@ -623,12 +660,10 @@ class FitMe(object):
                                            Q10=None, Eaj=Eaj, Eav=Eav, 
                                            deltaSj=delSj, deltaSv=delSv, Rd25=Rd25, 
                                            Ear=Ear, Hdv=Hdv, Hdj=Hdj)
+            
             residuals = curve_df["Photo"] - An
-            print 
-            print "%s %d" % (curve_df["fitgroup"].values[0], curve_num)
-            print "Residuals : mu = %.3f,  sigma = %.3f" % (np.mean(residuals), np.std(residuals, ddof=1))
-            print residuals
-            print
+            self.save_residuals(curve_num, curve_df, An, writer_resid)
+            
             
             ofname = "%s/%s_%s_%s_%s_fit_and_residual.png" % \
                      (self.plot_dir, species, season, leaf, curve_num)
@@ -670,7 +705,45 @@ class FitMe(object):
         
             fig.savefig(ofname)
             plt.close(fig)
-    
+            
+            
+            ofname = "%s/%s_%s_%s_%s_residual_vs_ci_and_temp.png" % \
+                     (self.plot_dir, species, season, leaf, curve_num)
+            
+        
+            
+            plt.rcParams['figure.subplot.hspace'] = 0.05
+            plt.rcParams['figure.subplot.wspace'] = 0.05
+            plt.rcParams['font.size'] = 10
+            plt.rcParams['legend.fontsize'] = 10
+            plt.rcParams['xtick.labelsize'] = 10.0
+            plt.rcParams['ytick.labelsize'] = 10.0
+            plt.rcParams['axes.labelsize'] = 10.0
+        
+            fig = plt.figure(figsize=(8,6)) 
+        
+            ax1 = fig.add_subplot(121)
+            ax2 = fig.add_subplot(122)
+        
+            ax1.plot(curve_df["Ci"], residuals, 
+                    ls="", lw=1.5, marker="o", c="red")
+            
+            ax1.set_xlabel("Ci")
+            ax1.set_ylabel("Residuals")
+            ax1.set_xlim(0, 1600)
+            ax1.set_ylim(-2, 2)
+            
+            ax2.axes.get_yaxis().set_visible(False)
+            ax2.plot(curve_df["Tleaf"]-self.deg2kelvin, residuals, 
+                    ls="", lw=1.5, marker="o", c="red")
+            
+            ax2.set_xlabel("Leaf Temperature (deg C)")
+            #ax2.set_ylabel("Residuals")
+            #ax1.set_xlim(0, 1600)
+            ax2.set_ylim(-2, 2)
+            fig.savefig(ofname)
+            plt.close(fig)
+            
     def calc_Topt(self, Hd, Ha, delS, RGAS=8.314):
         """ Calculate the temperature optimum 
         
