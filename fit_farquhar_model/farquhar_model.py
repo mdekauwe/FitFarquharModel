@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+# -*- coding: utf-8 -*-
 """
 Model of C3 photosynthesis, this is passed to fitting function and we are 
 optimising Jmax25, Vcmax25, Rd, Eaj, Eav, deltaS
