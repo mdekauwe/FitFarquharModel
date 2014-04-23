@@ -18,7 +18,7 @@ That's all folks.
 """
 
 __author__ = "Martin De Kauwe"
-__version__ = "1.0 (26.03.2014)"
+__version__ = "1.0 (23.04.2014)"
 __email__ = "mdekauwe@gmail.com"
 
 import os
@@ -75,7 +75,8 @@ class FitMe(object):
         if ofname is not None:
             self.ofname = os.path.join(self.results_dir, ofname)
         if residuals_ofname is None:
-            self.residuals_ofname = os.path.join(self.results_dir, "residuals.csv")
+            self.residuals_ofname = os.path.join(self.results_dir, 
+                                                 "residuals.csv")
         self.data_dir = data_dir 
         self.plot_dir = plot_dir    
         self.farq = model.calc_photosynthesis
@@ -84,7 +85,6 @@ class FitMe(object):
         self.deg2kelvin = 273.15
         self.num_iter = num_iter
         self.delimiter = delimiter
-        
         self.peaked = peaked
         self.high_number = 99999.9
         
@@ -107,8 +107,6 @@ class FitMe(object):
                "Predicted An", "Residual"] 
         writer_resid.writerow(hdr)
         
-        
-        
         for fname in glob.glob(os.path.join(self.data_dir, infname_tag)):
             df = self.read_data(fname)
             
@@ -129,18 +127,13 @@ class FitMe(object):
                 # Test sensitivity, are we falling into local mins?
                 lowest_rmse = self.high_number
                 for i, iter in enumerate(xrange(self.num_iter)): 
-                    #print group, i
+                   
                     # pick new initial parameter guesses, but dont rebuild 
                     # params object
                     if i > 0:
                         params = self.change_param_values(dfr, params)
                 
                     result = minimize(self.residual, params, args=(dfr,))
-                    #report_fit(params, show_correl=False)
-                    
-                    #ci = conf_interval(result, trace=False)
-                    #report_ci(ci)
-                    
                     
                     (An, Anc, Anj) = self.forward_run(result, dfr)
                     # Successful fit?
@@ -234,29 +227,18 @@ class FitMe(object):
             lmfit object containing parameters to fit
         """
         
+        # Need to loop over all the leaves, fitting separate Vcmax25 
+        # parameters values by leaf
         params = Parameters()
-        # Need to loop over all the leaves, fitting separate Jmax25, Vcmax25 
-        # and Rd25 parameter values by leaf
-        
         for leaf_num in np.unique(df["Leaf"]):
              
-            (Jmax25_guess, Vcmax25_guess, 
-             Rd25_guess, Eaj_guess, 
-             Eav_guess, Ear_guess, 
-             delSj_guess, delSv_guess) = self.pick_random_starting_point()
+            (Vcmax25_guess, Rdfac_guess,
+             Jfac_guess, Eaj_guess, 
+             Eav_guess, delSj_guess, 
+             delSv_guess) = self.pick_random_starting_point()
             
-            #params.add('Jmax25_%d' % (leaf_num), value=Jmax25_guess, min=0.0, 
-            #            max=600.0)
             params.add('Vcmax25_%d' % (leaf_num), value=Vcmax25_guess , min=0.0, 
                         max=600.0)
-            
-            #params.add('Rdfac_%d' % (leaf_num), value=0.015, min=0.005, max=0.03) 
-            #params.add('Rd25_%d' % (leaf_num), value=Rd25_guess, 
-            #           expr='rdfac_%d * Vcmax25_%d' % (leaf_num, leaf_num))      
-            
-            #params.add('Rd25_%d' % (leaf_num), value=Rd25_guess, min=0.0, 
-            #            max=6.0)      
-            
             
             # Need to build dummy variable identifier for each leaf.
             col_id = "f_%d" % (leaf_num)
@@ -264,41 +246,33 @@ class FitMe(object):
             temp = np.where(temp==leaf_num, 1.0, 0.0)
             df[col_id] = temp
         
-        params.add('Rdfac', value=0.015, min=0.005, max=0.05) 
-        params.add('Jfac',value = 2.0, min = 0.5, max = 3.0)
-        
         # Temp dependancy values do not vary by leaf, so only need one set of 
         # params.
         params.add('Eaj', value=Eaj_guess, min=20000.0, max=120000.0)
-        params.add('delSj', value=delSj_guess, min=600.0, max=700.0)  
-        #params.add('Hdj', value=200000.0, vary=False)
         params.add('Eav', value=Eav_guess, min=20000.0, max=119999.9)
+        params.add('delSj', value=delSj_guess, min=600.0, max=700.0)  
         params.add('delSv', value=delSv_guess, min=600.0, max=700.0)  
-        #params.add('Hdv', value=200000.0, vary=False)
-        #params.add('Ear', value=Ear_guess, min=5000.0, max=199999.9)
-            
+        params.add('Rdfac', value=0.015, min=0.005, max=0.05) 
+        params.add('Jfac', value=2.0, min=0.5, max=3.0)
+          
         return params, df
     
     def change_param_values(self, df, params):
         """ pick new guesses for parameter values """
         for leaf_num in np.unique(df["Leaf"]):
             
-            (Jfac_guess, Vcmax25_guess, 
-             Rdfac_guess, Eaj_guess, 
-             Eav_guess, Ear_guess, 
-             delSj_guess, delSv_guess) = self.pick_random_starting_point()
+            (Vcmax25_guess, Rdfac_guess,
+             Jfac_guess, Eaj_guess, 
+             Eav_guess, delSj_guess, 
+             delSv_guess) = self.pick_random_starting_point()
             
-            #params['Jmax25_%d' % (leaf_num)].value = Jmax25_guess
             params['Vcmax25_%d' % (leaf_num)].value = Vcmax25_guess
-            #params['Rd25_%d' % (leaf_num)].value = Rd25_guess
-            #params['Rdfac_%d'% (leaf_num)].value = Rdfac_guess
-        params['Jfac'].value = Jfac_guess
-        params['Rdfac'].value = Rdfac_guess
         params['Eaj'].value = Eaj_guess
         params['Eav'].value = Eav_guess
-        #params['Ear'].value = Ear_guess
         params['delSj'].value = delSj_guess
         params['delSv'].value = delSv_guess
+        params['Jfac'].value = Jfac_guess
+        params['Rdfac'].value = Rdfac_guess
         
         return params
         
@@ -313,22 +287,18 @@ class FitMe(object):
         retval * 3 : float
             Three starting guesses for Jmax, Vcmax and Rd
         """
-        #Jmax25 = np.random.uniform(5.0, 550) 
-        Jfac = np.random.uniform(0.5, 3.0)
         Vcmax25 = np.random.uniform(10.0, 120) 
         Rdfac = np.random.uniform(0.005, 0.05) 
-        #Rd25 = np.random.uniform(0.0, 5.0)
+        Jfac = np.random.uniform(0.5, 3.0)
         Eaj = np.random.uniform(20000.0, 80000.0)
         Eav = np.random.uniform(20000.0, 80000.0)
-        #Ear = np.random.uniform(5000.0, 80000.0)
-        Ear = 34000.0
         delSj = np.random.uniform(550.0, 700.0)
         delSv = np.random.uniform(550.0, 700.0)
         if not self.peaked:
             delSj = None
             delSv = None
         
-        return Jfac, Vcmax25, Rdfac, Eaj, Eav, Ear, delSj, delSv
+        return Vcmax25, Rdfac, Jfac, Eaj, Eav, delSj, delSv
     
                   
     def residual(self, params, df):
@@ -361,27 +331,20 @@ class FitMe(object):
         # Need to build dummy variables.
         for i in np.unique(df["Leaf"]):
             col_id = "f_%d" % (i)
-            #Jmax25 += params['Jmax25_%d' % (i)].value * df[col_id]
+            
             Vcmax25 += params['Vcmax25_%d' % (i)].value * df[col_id]
-            #Rd25 += params['Rd25_%d' % (i)].value * df[col_id]
-            #Rd25 += (params['Rdfac_%d' % (i)].value * 
-            #         params['Vcmax25_%d' % (i)].value * df[col_id])
             Rd25 += (params['Rdfac'].value * 
                      params['Vcmax25_%d' % (i)].value * df[col_id])
             Jmax25 += (params['Jfac'].value * 
-                     params['Vcmax25_%d' % (i)].value * df[col_id])
+                       params['Vcmax25_%d' % (i)].value * df[col_id])
         
-        Eaj = params['Eaj'].value
-        delSj = params['delSj'].value
-        #Hdj = params['Hdj'].value
         Eav = params['Eav'].value
-        delSv = params['delSv'].value
-        #Hdv = params['Hdv'].value
-        #Ear = params['Ear'].value
-        #Ear = 20000.0
+        Eaj = params['Eaj'].value
         Ear = 34000.0
-        Hdv = 200000.00000000
-        Hdj = 200000.00000000
+        delSv = params['delSv'].value
+        delSj = params['delSj'].value
+        Hdv = 200000.0
+        Hdj = 200000.0
         if hasattr(df, "Par"):
             (An, Anc, Anj) = self.farq(Ci=df["Ci"], Tleaf=df["Tleaf"], 
                                        Par=df["Par"], Jmax=None, Vcmax=None, 
@@ -424,23 +387,18 @@ class FitMe(object):
 
         for i in np.unique(df["Leaf"]):
             col_id = "f_%d" % (i)
-            #Jmax25 += result.params['Jmax25_%d' % (i)].value * df[col_id]
+    
             Vcmax25 += result.params['Vcmax25_%d' % (i)].value * df[col_id]
-            #Rd25 += result.params['Rd25_%d' % (i)].value * df[col_id]
             Rd25 += (result.params['Rdfac'].value * 
                      result.params['Vcmax25_%d' % (i)].value * df[col_id])
             Jmax25 += (result.params['Jfac'].value * 
-                     result.params['Vcmax25_%d' % (i)].value * df[col_id])
-                     
-        Eaj = result.params['Eaj'].value
-        delSj = result.params['delSj'].value
-        #Hdj = result.params['Hdj'].value
+                       result.params['Vcmax25_%d' % (i)].value * df[col_id])
+        
         Eav = result.params['Eav'].value
-        delSv = result.params['delSv'].value
-        #Hdv = result.params['Hdv'].value
-        #Ear = result.params['Ear'].value
-        #Ear = 20000.0
+        Eaj = result.params['Eaj'].value
         Ear = 34000.0
+        delSj = result.params['delSj'].value
+        delSv = result.params['delSv'].value
         Hdv = 200000.0
         Hdj = 200000.0
         if hasattr(df, "Par"):
@@ -457,19 +415,15 @@ class FitMe(object):
                                        Q10=None, Eaj=Eaj, Eav=Eav, 
                                        deltaSj=delSj, deltaSv=delSv, Rd25=Rd25, 
                                        Ear=Ear, Hdv=Hdv, Hdj=Hdj)
-        
         return (An, Anc, Anj)
     
     def save_residuals(self, curve_num, curve_df, An, writer_resid):
         """ Save the residuals of each fit to a file """
         
-        
         for i in xrange(len(curve_df)):
             row = []
             row.append("%s" % (curve_df["fitgroup"].values[0]))
             row.append("%d" % (curve_num))
-            
-            
             row.append("%.4f" % (curve_df["Photo"].values[i]))
             row.append("%.4f" % (curve_df["Tleaf"].values[i]-self.deg2kelvin))
             row.append("%.4f" % (curve_df["Ci"].values[i]))
@@ -477,8 +431,6 @@ class FitMe(object):
             row.append("%.4f" % (curve_df["Photo"].values[i] - An.values[i]))
             writer_resid.writerow(row)
         
-         
-    
     def report_fits(self, writer, result, fname, df, An_fit, 
                     hdr_written=False):
         """ Save fitting results to a file... 
@@ -498,8 +450,6 @@ class FitMe(object):
             Flag to stop the header being rewritten when in a loop    
         
         """
-        
-        
         remaining_header = ["Tav", "Var", "R2", "SSQ", "MSE", "DOF", "n", \
                             "Species", "Season", "Leaf", "Filename", \
                             "Topt_J", "Topt_V", "id"]
@@ -527,20 +477,12 @@ class FitMe(object):
         row.append("%s" % (df["Leaf"][0]))
         row.append("%s" % (fname))
         
-        Hdv = 200000.00000000
-        Hdj = 200000.00000000
-        Topt_J = (self.calc_Topt(Hdj, 
-                                 result.params["Eaj"].value, 
+        Hdv = 200000.0
+        Hdj = 200000.0
+        Topt_J = (self.calc_Topt(Hdj, result.params["Eaj"].value, 
                                  result.params["delSj"].value))
-        Topt_V = (self.calc_Topt(Hdv, 
-                                 result.params["Eav"].value, 
+        Topt_V = (self.calc_Topt(Hdv, result.params["Eav"].value, 
                                  result.params["delSv"].value))
-        #Topt_J = (self.calc_Topt(result.params["Hdj"].value, 
-        #                         result.params["Eaj"].value, 
-        #                         result.params["delSj"].value))
-        #Topt_V = (self.calc_Topt(result.params["Hdv"].value, 
-        #                         result.params["Eav"].value, 
-        #                         result.params["delSv"].value))
         row.append("%f" % (Topt_J))
         row.append("%f" % (Topt_V))
         row.append("%s%s%s" % (str(df["Species"][0]), \
@@ -591,8 +533,6 @@ class FitMe(object):
             
         return bad
 
-    
-    
     def make_plots(self, df, An_fit, Anc_fit, Anj_fit, result, writer_resid):
         """ Make some plots to show how good our fitted model is to the data 
         
@@ -630,21 +570,14 @@ class FitMe(object):
             
             col_id = "f_%d" % (i)
             
-            #Jmax25 = result.params['Jmax25_%d' % (i)].value
             Vcmax25 = result.params['Vcmax25_%d' % (i)].value
             Jmax25 = result.params['Jfac'].value *  Vcmax25  
             Rd25 = result.params['Rdfac'].value *  Vcmax25   
-            #Rd25 = result.params['Rdfac_%d' % (i)].value *  Vcmax25      
-            #Rd25 = result.params['Rd25_%d' % (i)].value        
-            Eaj = result.params['Eaj'].value
-            delSj = result.params['delSj'].value
-            #Hdj = result.params['Hdj'].value
             Eav = result.params['Eav'].value
-            delSv = result.params['delSv'].value
-            #Hdv = result.params['Hdv'].value
-            #Ear = result.params['Ear'].value
-            #Ear = 20000.0
+            Eaj = result.params['Eaj'].value
             Ear = 34000.0
+            delSj = result.params['delSj'].value
+            delSv = result.params['delSv'].value
             Hdv = 200000.0
             Hdj = 200000.0
             if hasattr(curve_df, "Par"):
