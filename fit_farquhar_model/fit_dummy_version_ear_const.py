@@ -135,7 +135,14 @@ class FitMe(object):
                 
                     result = minimize(self.residual, params, args=(dfr,))
                     
-                    (An, Anc, Anj) = self.forward_run(result, dfr)
+                    (Vcmax25, Rd25, Jmax25, 
+                     Eav, Eaj, Ear, delSv, 
+                     delSj, Hdv, 
+                     Hdj) = self.extract_param_values(result.params, dfr)
+                    (An, Anc, Anj) = self.run_model(dfr, Vcmax25, Rd25, Jmax25, 
+                                                    Eav, Eaj, Ear, delSv, delSj, 
+                                                    Hdv, Hdj)
+                    
                     # Successful fit?
                     # See comment above about why errorbars might not be 
                     # resolved.
@@ -319,6 +326,21 @@ class FitMe(object):
             residual of fit between model and obs, based on current parameter
             set
         """
+        
+        (Vcmax25, Rd25, Jmax25, 
+         Eav, Eaj, Ear, delSv, 
+         delSj, Hdv, Hdj) = self.extract_param_values(params, df)
+        
+        (An, Anc, Anj) = self.run_model(df, Vcmax25, Rd25, Jmax25, 
+                                        Eav, Eaj, Ear, delSv, delSj, 
+                                        Hdv, Hdj)
+        
+        return (df["Photo"] - An)
+    
+    def extract_param_values(self, params, df):
+        """ Extract the param values from the lmfit object, flag lets us
+        switch between params and fitted params"""
+        
         # Need to employ dummy variables to fit model parameters
         # e.g. Jmax = Jmax_leaf1 * f1 + Jmax_leaf2 * f2 etc
         # where f1=1 for matching leaf data and 0 elsewhere, ditto f2.
@@ -345,24 +367,11 @@ class FitMe(object):
         delSj = params['delSj'].value
         Hdv = 200000.0
         Hdj = 200000.0
-        if hasattr(df, "Par"):
-            (An, Anc, Anj) = self.farq(Ci=df["Ci"], Tleaf=df["Tleaf"], 
-                                       Par=df["Par"], Jmax=None, Vcmax=None, 
-                                       Jmax25=Jmax25, Vcmax25=Vcmax25, Rd=None, 
-                                       Q10=None, Eaj=Eaj, Eav=Eav, 
-                                       deltaSj=delSj, deltaSv=delSv, Rd25=Rd25, 
-                                       Ear=Ear, Hdv=Hdv, Hdj=Hdj)
-        else:
-            (An, Anc, Anj) = self.farq(Ci=df["Ci"], Tleaf=df["Tleaf"], 
-                                       Par=None, Jmax=None, Vcmax=None, 
-                                       Jmax25=Jmax25, Vcmax25=Vcmax25, Rd=None, 
-                                       Q10=None, Eaj=Eaj, Eav=Eav, 
-                                       deltaSj=delSj, deltaSv=delSv, Rd25=Rd25, 
-                                       Ear=Ear, Hdv=Hdv, Hdj=Hdj)
         
-        return (df["Photo"] - An)
+        return (Vcmax25, Rd25, Jmax25, Eav, Eaj, Ear, delSv, delSj, Hdv, Hdj)
     
-    def forward_run(self, result, df):
+    def run_model(self, df, Vcmax25, Rd25, Jmax25, Eav, Eaj, Ear, delSv, delSj, 
+                  Hdv, Hdj):
         """ Run farquhar model with fitted parameters and return result 
         
         Parameters
@@ -381,26 +390,6 @@ class FitMe(object):
         Ajn : float
             Net RuBP-regeneration-limited leaf assimilation rate [umol m-2 s-1]
         """
-        Jmax25 = np.zeros(len(df))
-        Vcmax25 = np.zeros(len(df))
-        Rd25 = np.zeros(len(df))
-
-        for i in np.unique(df["Leaf"]):
-            col_id = "f_%d" % (i)
-    
-            Vcmax25 += result.params['Vcmax25_%d' % (i)].value * df[col_id]
-            Rd25 += (result.params['Rdfac'].value * 
-                     result.params['Vcmax25_%d' % (i)].value * df[col_id])
-            Jmax25 += (result.params['Jfac'].value * 
-                       result.params['Vcmax25_%d' % (i)].value * df[col_id])
-        
-        Eav = result.params['Eav'].value
-        Eaj = result.params['Eaj'].value
-        Ear = 34000.0
-        delSj = result.params['delSj'].value
-        delSv = result.params['delSv'].value
-        Hdv = 200000.0
-        Hdj = 200000.0
         if hasattr(df, "Par"):
             (An, Anc, Anj) = self.farq(Ci=df["Ci"], Tleaf=df["Tleaf"], 
                                        Par=df["Par"], Jmax=None, Vcmax=None, 
@@ -415,6 +404,7 @@ class FitMe(object):
                                        Q10=None, Eaj=Eaj, Eav=Eav, 
                                        deltaSj=delSj, deltaSv=delSv, Rd25=Rd25, 
                                        Ear=Ear, Hdv=Hdv, Hdj=Hdj)
+        
         return (An, Anc, Anj)
     
     def save_residuals(self, curve_num, curve_df, An, writer_resid):
