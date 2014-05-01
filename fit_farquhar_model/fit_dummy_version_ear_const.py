@@ -152,6 +152,7 @@ class FitMe(object):
                         if rmse < lowest_rmse:
                             lowest_rmse = rmse
                             best_result = result
+                            best_An = An
                         
                 # Pick the best fit...
                 if lowest_rmse < self.high_number and best_result.errorbars:
@@ -160,7 +161,7 @@ class FitMe(object):
                         
                     hdr_written = self.report_fits(writer, best_result, 
                                                    os.path.basename(fname), 
-                                                   dfr, An, hdr_written)
+                                                   dfr, best_An, hdr_written)
                     self.make_plots(dfr, An, Anc, Anj, best_result, 
                                      writer_resid)
                 else:
