@@ -83,4 +83,6 @@ created using...
      
 Contact
 =======
-Martin De Kauwe (mdekauwe at gmail.com), Yan-Shih Lin (yanshihl at gmail.com) or Belinda Medlyn (bmedlyn at bio.mq.edu.au).
+Martin De Kauwe (mdekauwe at gmail.com) or
+Yan-Shih Lin (yanshihl at gmail.com) or 
+Belinda Medlyn (bmedlyn at bio.mq.edu.au).
