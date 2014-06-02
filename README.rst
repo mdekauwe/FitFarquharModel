@@ -15,7 +15,7 @@ Our previous approach (Lin et al. 2013), broke the fitting approach down into a 
 (iii) a series of stats tests to explore differences in the data (not part of the package - but we can help you out if you email one of us), e.g. differences between season, species etc.
 (iv) finally, based on (iii) fit the model parameters Eaj, Eav, deltaSj and deltaSv.
 
-Note in all cases the code has some expectations that the data is supplied in a consistent format, i.e. not the original Licor file. This should be easy to work out from the examples files, but feel free to contact one of us. *YS do you want to add anything?*.
+Note in all cases the code has some expectations that the data is supplied in a consistent format, i.e. not the original Licor file. This should be easy to work out from the examples files, but feel free to contact one of us. Each A-Ci curve should be assigned to a unique curve number and curves measured at the same leaf should have the same leaf number.
 
 In all cases the Levenberg-Marquardt minimization algorithm is used to fit the non-linear A-Ci curve data, using the lmfit package (see below).
 
