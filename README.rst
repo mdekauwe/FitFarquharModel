@@ -55,12 +55,21 @@ Running the code
 The examples directory contains a series of self contained example scripts. Names should be obvious, but the typical order of running them would be... ::
 
     create_example_data.py
+    
+If fitting everything in a single step then ::
+
+    fit_all_curves_together.py
+
+If using the two step fitting approach then ::    
+    
     fit_jmax_vcmax_rd.py
     normalise_data.py
     fit_ea_dels.py
 
 Of course with real data a series of stats test should be carried out before
 fitting the final Eav, Eaj, deltaSv and deltaSj parameters. This is left up to the individual user.
+
+Massive disclaimer, I made these example files a while again! I probably haven't made a great deal of effort to maintain them, but email me if they don't work!
     
 Documentation
 =============
@@ -68,4 +77,4 @@ Minimal python docstring documentation output as html files in subdirectory
 html_documentation.
 
 created using... 
-    pydoc -w ./
+     pydoc -w ../fit_farquhar_model/*.py

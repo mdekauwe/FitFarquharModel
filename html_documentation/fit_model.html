@@ -70,7 +70,7 @@ That's&nbsp;all&nbsp;folks.</tt></p>
 </dl>
 <hr>
 Methods defined here:<br>
-<dl><dt><a name="FitEaDels-__init__"><strong>__init__</strong></a>(self, model<font color="#909090">=None</font>, infname<font color="#909090">=None</font>, ofname<font color="#909090">=None</font>, results_dir<font color="#909090">=None</font>, data_dir<font color="#909090">=None</font>)</dt><dd><tt>Parameters<br>
+<dl><dt><a name="FitEaDels-__init__"><strong>__init__</strong></a>(self, model<font color="#909090">=None</font>, infname<font color="#909090">=None</font>, ofname<font color="#909090">=None</font>, results_dir<font color="#909090">=None</font>, data_dir<font color="#909090">=None</font>, peaked<font color="#909090">=True</font>)</dt><dd><tt>Parameters<br>
 ----------<br>
 model&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp;model&nbsp;that&nbsp;we&nbsp;are&nbsp;fitting&nbsp;measurements&nbsp;against...<br>
@@ -83,32 +83,7 @@ data_dir&nbsp;:&nbsp;string<br>
 plot_dir&nbsp;:&nbsp;string<br>
 &nbsp;&nbsp;&nbsp;&nbsp;directory&nbsp;to&nbsp;save&nbsp;plots&nbsp;of&nbsp;various&nbsp;fitting&nbsp;routines</tt></dd></dl>
 
-<dl><dt><a name="FitEaDels-calc_Topt"><strong>calc_Topt</strong></a>(self, Hd, Ha, delS, RGAS<font color="#909090">=8.3140000000000001</font>)</dt><dd><tt>Calculate&nbsp;the&nbsp;temperature&nbsp;optimum&nbsp;<br>
-&nbsp;<br>
-Parameters<br>
-----------<br>
-Hd&nbsp;:&nbsp;float<br>
-&nbsp;&nbsp;&nbsp;&nbsp;describes&nbsp;rate&nbsp;of&nbsp;decrease&nbsp;about&nbsp;the&nbsp;optimum&nbsp;temp&nbsp;[KJ&nbsp;mol-1]<br>
-Ha&nbsp;:&nbsp;float<br>
-&nbsp;&nbsp;&nbsp;&nbsp;activation&nbsp;energy&nbsp;for&nbsp;the&nbsp;parameter&nbsp;[kJ&nbsp;mol-1]<br>
-delS&nbsp;:&nbsp;float<br>
-&nbsp;&nbsp;&nbsp;&nbsp;entropy&nbsp;factor&nbsp;[J&nbsp;mol-1&nbsp;K-1)<br>
-RGAS&nbsp;:&nbsp;float<br>
-&nbsp;&nbsp;&nbsp;&nbsp;Universal&nbsp;gas&nbsp;constant&nbsp;[J&nbsp;mol-1&nbsp;K-1]<br>
-&nbsp;<br>
-Returns<br>
---------<br>
-Topt&nbsp;:&nbsp;float<br>
-&nbsp;&nbsp;&nbsp;&nbsp;optimum&nbsp;temperature&nbsp;[deg&nbsp;C]<br>
-&nbsp;<br>
-Reference<br>
-----------<br>
-*&nbsp;Medlyn,&nbsp;B.&nbsp;E.,&nbsp;Dreyer,&nbsp;E.,&nbsp;Ellsworth,&nbsp;D.,&nbsp;Forstreuter,&nbsp;M.,&nbsp;Harley,&nbsp;<br>
-&nbsp;&nbsp;P.C.,&nbsp;Kirschbaum,&nbsp;M.U.F.,&nbsp;Leroux,&nbsp;X.,&nbsp;Montpied,&nbsp;P.,&nbsp;Strassemeyer,&nbsp;J.,&nbsp;<br>
-&nbsp;&nbsp;Walcroft,&nbsp;A.,&nbsp;Wang,&nbsp;K.&nbsp;and&nbsp;Loustau,&nbsp;D.&nbsp;(2002)&nbsp;Temperature&nbsp;response&nbsp;of&nbsp;<br>
-&nbsp;&nbsp;parameters&nbsp;of&nbsp;a&nbsp;biochemically&nbsp;based&nbsp;model&nbsp;of&nbsp;photosynthesis.&nbsp;II.&nbsp;<br>
-&nbsp;&nbsp;A&nbsp;review&nbsp;of&nbsp;experimental&nbsp;data.&nbsp;Plant,&nbsp;Cell&nbsp;and&nbsp;Enviroment&nbsp;25,&nbsp;<br>
-&nbsp;&nbsp;1167-1179.</tt></dd></dl>
+<dl><dt><a name="FitEaDels-do_minimisation"><strong>do_minimisation</strong></a>(self, data, obs)</dt></dl>
 
 <dl><dt><a name="FitEaDels-forward_run"><strong>forward_run</strong></a>(self, result, data)</dt><dd><tt>Run&nbsp;peaked&nbsp;Arrhenius&nbsp;model&nbsp;with&nbsp;fitted&nbsp;parameters&nbsp;and&nbsp;return&nbsp;result&nbsp;<br>
 &nbsp;<br>
@@ -124,18 +99,6 @@ Returns<br>
 model_fit&nbsp;:&nbsp;array<br>
 &nbsp;&nbsp;&nbsp;&nbsp;fitted&nbsp;result</tt></dd></dl>
 
-<dl><dt><a name="FitEaDels-get_data"><strong>get_data</strong></a>(self, infname)</dt><dd><tt>Read&nbsp;in&nbsp;some&nbsp;of&nbsp;the&nbsp;fitted&nbsp;results&nbsp;<br>
-&nbsp;<br>
-Parameters<br>
-----------<br>
-infname&nbsp;:&nbsp;string<br>
-&nbsp;&nbsp;&nbsp;&nbsp;filename&nbsp;to&nbsp;read<br>
-&nbsp;<br>
-Returns&nbsp;<br>
--------<br>
-all_data&nbsp;:&nbsp;array<br>
-&nbsp;&nbsp;&nbsp;&nbsp;read&nbsp;data</tt></dd></dl>
-
 <dl><dt><a name="FitEaDels-main"><strong>main</strong></a>(self, print_to_screen)</dt><dd><tt>Loop&nbsp;over&nbsp;all&nbsp;our&nbsp;A-Ci&nbsp;measured&nbsp;curves&nbsp;and&nbsp;fit&nbsp;the&nbsp;Farquhar&nbsp;model<br>
 parameters&nbsp;to&nbsp;this&nbsp;data&nbsp;<br>
 &nbsp;<br>
@@ -143,6 +106,20 @@ Parameters<br>
 ----------<br>
 print_to_screen&nbsp;:&nbsp;logical<br>
 &nbsp;&nbsp;&nbsp;&nbsp;print&nbsp;fitting&nbsp;result&nbsp;to&nbsp;screen?&nbsp;Default&nbsp;is&nbsp;no!</tt></dd></dl>
+
+<dl><dt><a name="FitEaDels-pick_random_starting_point"><strong>pick_random_starting_point</strong></a>(self)</dt><dd><tt>random&nbsp;pick&nbsp;starting&nbsp;point&nbsp;for&nbsp;parameter&nbsp;values&nbsp;<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+data&nbsp;:&nbsp;array<br>
+&nbsp;&nbsp;&nbsp;&nbsp;model&nbsp;driving&nbsp;data<br>
+grid_size&nbsp;:&nbsp;int<br>
+&nbsp;&nbsp;&nbsp;&nbsp;hardwired,&nbsp;number&nbsp;of&nbsp;samples<br>
+&nbsp;<br>
+Returns:&nbsp;<br>
+--------<br>
+retval&nbsp;*&nbsp;3&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Three&nbsp;starting&nbsp;guesses&nbsp;for&nbsp;Jmax,&nbsp;Vcmax&nbsp;and&nbsp;Rd</tt></dd></dl>
 
 <dl><dt><a name="FitEaDels-pick_starting_point"><strong>pick_starting_point</strong></a>(self, data, obs, grid_size<font color="#909090">=50</font>)</dt><dd><tt>High-density&nbsp;grid&nbsp;search&nbsp;to&nbsp;overcome&nbsp;issues&nbsp;with&nbsp;ending&nbsp;up&nbsp;in&nbsp;a&nbsp;<br>
 local&nbsp;minima.&nbsp;Values&nbsp;that&nbsp;yield&nbsp;the&nbsp;lowest&nbsp;RMSE&nbsp;(without&nbsp;minimisation)<br>
@@ -154,7 +131,7 @@ Dubois&nbsp;et&nbsp;al&nbsp;(2007)&nbsp;Optimizing&nbsp;the&nbsp;statistical&nbs
 parameters&nbsp;of&nbsp;the&nbsp;Farquhar-von&nbsp;Caemmerer-Berry&nbsp;model&nbsp;of&nbsp;photosynthesis.&nbsp;<br>
 New&nbsp;Phytologist,&nbsp;176,&nbsp;402--414</tt></dd></dl>
 
-<dl><dt><a name="FitEaDels-report_fits"><strong>report_fits</strong></a>(self, f, result, data, obs, fit, pname, Topt)</dt><dd><tt>Save&nbsp;fitting&nbsp;results&nbsp;to&nbsp;a&nbsp;file...&nbsp;<br>
+<dl><dt><a name="FitEaDels-report_fits"><strong>report_fits</strong></a>(self, f, result, data, obs, fit, pname, Topt, id)</dt><dd><tt>Save&nbsp;fitting&nbsp;results&nbsp;to&nbsp;a&nbsp;file...&nbsp;<br>
 &nbsp;<br>
 Parameters<br>
 ----------<br>
@@ -194,9 +171,52 @@ residual&nbsp;:&nbsp;array<br>
 &nbsp;&nbsp;&nbsp;&nbsp;residual&nbsp;of&nbsp;fit&nbsp;between&nbsp;model&nbsp;and&nbsp;obs,&nbsp;based&nbsp;on&nbsp;current&nbsp;parameter<br>
 &nbsp;&nbsp;&nbsp;&nbsp;set</tt></dd></dl>
 
+<dl><dt><a name="FitEaDels-setup_model_params"><strong>setup_model_params</strong></a>(self, data, obs, grid_search<font color="#909090">=True</font>)</dt><dd><tt>Setup&nbsp;lmfit&nbsp;Parameters&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+data&nbsp;:&nbsp;array<br>
+&nbsp;&nbsp;&nbsp;&nbsp;driving&nbsp;data<br>
+obs&nbsp;:&nbsp;array<br>
+&nbsp;&nbsp;&nbsp;&nbsp;observed&nbsp;responses<br>
+grid_search&nbsp;:&nbsp;logical<br>
+&nbsp;&nbsp;&nbsp;&nbsp;try&nbsp;and&nbsp;optimise&nbsp;starting&nbsp;position&nbsp;first?<br>
+&nbsp;<br>
+Returns<br>
+-------<br>
+params&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;lmfit&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;containing&nbsp;parameters&nbsp;to&nbsp;fit</tt></dd></dl>
+
 <hr>
 Methods inherited from <a href="fit_model.html#FitMe">FitMe</a>:<br>
-<dl><dt><a name="FitEaDels-make_plot"><strong>make_plot</strong></a>(self, data, curve_num, An_fit, Anc_fit, Anj_fit)</dt><dd><tt>Make&nbsp;some&nbsp;plots&nbsp;to&nbsp;show&nbsp;how&nbsp;good&nbsp;our&nbsp;fitted&nbsp;model&nbsp;is&nbsp;to&nbsp;the&nbsp;data&nbsp;<br>
+<dl><dt><a name="FitEaDels-calc_Topt"><strong>calc_Topt</strong></a>(self, Hd, Ha, delS, RGAS<font color="#909090">=8.314</font>)</dt><dd><tt>Calculate&nbsp;the&nbsp;temperature&nbsp;optimum&nbsp;<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+Hd&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;describes&nbsp;rate&nbsp;of&nbsp;decrease&nbsp;about&nbsp;the&nbsp;optimum&nbsp;temp&nbsp;[KJ&nbsp;mol-1]<br>
+Ha&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;activation&nbsp;energy&nbsp;for&nbsp;the&nbsp;parameter&nbsp;[kJ&nbsp;mol-1]<br>
+delS&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;entropy&nbsp;factor&nbsp;[J&nbsp;mol-1&nbsp;K-1)<br>
+RGAS&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Universal&nbsp;gas&nbsp;constant&nbsp;[J&nbsp;mol-1&nbsp;K-1]<br>
+&nbsp;<br>
+Returns<br>
+--------<br>
+Topt&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;optimum&nbsp;temperature&nbsp;[deg&nbsp;C]<br>
+&nbsp;<br>
+Reference<br>
+----------<br>
+*&nbsp;Medlyn,&nbsp;B.&nbsp;E.,&nbsp;Dreyer,&nbsp;E.,&nbsp;Ellsworth,&nbsp;D.,&nbsp;Forstreuter,&nbsp;M.,&nbsp;Harley,&nbsp;<br>
+&nbsp;&nbsp;P.C.,&nbsp;Kirschbaum,&nbsp;M.U.F.,&nbsp;Leroux,&nbsp;X.,&nbsp;Montpied,&nbsp;P.,&nbsp;Strassemeyer,&nbsp;J.,&nbsp;<br>
+&nbsp;&nbsp;Walcroft,&nbsp;A.,&nbsp;Wang,&nbsp;K.&nbsp;and&nbsp;Loustau,&nbsp;D.&nbsp;(2002)&nbsp;Temperature&nbsp;response&nbsp;of&nbsp;<br>
+&nbsp;&nbsp;parameters&nbsp;of&nbsp;a&nbsp;biochemically&nbsp;based&nbsp;model&nbsp;of&nbsp;photosynthesis.&nbsp;II.&nbsp;<br>
+&nbsp;&nbsp;A&nbsp;review&nbsp;of&nbsp;experimental&nbsp;data.&nbsp;Plant,&nbsp;Cell&nbsp;and&nbsp;Enviroment&nbsp;25,&nbsp;<br>
+&nbsp;&nbsp;1167-1179.</tt></dd></dl>
+
+<dl><dt><a name="FitEaDels-make_plot"><strong>make_plot</strong></a>(self, data, curve_num, An_fit, Anc_fit, Anj_fit, result)</dt><dd><tt>Make&nbsp;some&nbsp;plots&nbsp;to&nbsp;show&nbsp;how&nbsp;good&nbsp;our&nbsp;fitted&nbsp;model&nbsp;is&nbsp;to&nbsp;the&nbsp;data&nbsp;<br>
 &nbsp;<br>
 *&nbsp;Plots&nbsp;A-Ci&nbsp;model&nbsp;fits&nbsp;vs.&nbsp;data<br>
 *&nbsp;Residuals&nbsp;between&nbsp;fit&nbsp;and&nbsp;measured&nbsp;A<br>
@@ -215,7 +235,9 @@ Anc_fit&nbsp;:&nbsp;array<br>
 &nbsp;&nbsp;&nbsp;&nbsp;assimilation&nbsp;rate&nbsp;[umol&nbsp;m-2&nbsp;s-1]<br>
 Anj_fit&nbsp;:&nbsp;array<br>
 &nbsp;&nbsp;&nbsp;&nbsp;best&nbsp;model&nbsp;fit&nbsp;using&nbsp;optimised&nbsp;parameters,&nbsp;Net&nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;RuBP-regeneration-limited&nbsp;leaf&nbsp;assimilation&nbsp;rate&nbsp;[umol&nbsp;m-2&nbsp;s-1]</tt></dd></dl>
+&nbsp;&nbsp;&nbsp;&nbsp;RuBP-regeneration-limited&nbsp;leaf&nbsp;assimilation&nbsp;rate&nbsp;[umol&nbsp;m-2&nbsp;s-1]<br>
+result&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;fitting&nbsp;result,&nbsp;param,&nbsp;std.&nbsp;error&nbsp;etc.</tt></dd></dl>
 
 <dl><dt><a name="FitEaDels-open_output_files"><strong>open_output_files</strong></a>(self, ofname)</dt><dd><tt>Opens&nbsp;output&nbsp;file&nbsp;for&nbsp;recording&nbsp;fit&nbsp;information<br>
 &nbsp;<br>
@@ -236,9 +258,10 @@ Parameters<br>
 result&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp;fitting&nbsp;result,&nbsp;param,&nbsp;std.&nbsp;error&nbsp;etc.</tt></dd></dl>
 
-<dl><dt><a name="FitEaDels-read_data"><strong>read_data</strong></a>(self, fname, delimiter<font color="#909090">=','</font>)</dt><dd><tt>Read&nbsp;the&nbsp;A-Ci&nbsp;data.&nbsp;<br>
+<dl><dt><a name="FitEaDels-read_data"><strong>read_data</strong></a>(self, fname, infile_type<font color="#909090">='aci'</font>, delimiter<font color="#909090">=','</font>)</dt><dd><tt>Reads&nbsp;in&nbsp;the&nbsp;A-Ci&nbsp;data&nbsp;if&nbsp;infile_type="aci"&nbsp;is&nbsp;true,&nbsp;otherwise&nbsp;this<br>
+reads&nbsp;in&nbsp;the&nbsp;fitted&nbsp;results...&nbsp;<br>
 &nbsp;<br>
-Expects&nbsp;a&nbsp;format&nbsp;of:<br>
+For&nbsp;A-Ci&nbsp;data,&nbsp;code&nbsp;expects&nbsp;a&nbsp;format&nbsp;of:<br>
 -&gt;&nbsp;Curve,&nbsp;Tleaf,&nbsp;Ci,&nbsp;Photo,&nbsp;Species,&nbsp;Season,&nbsp;Leaf<br>
 &nbsp;<br>
 Parameters<br>
@@ -250,34 +273,6 @@ Returns:&nbsp;<br>
 --------<br>
 data&nbsp;:&nbsp;array<br>
 &nbsp;&nbsp;&nbsp;&nbsp;numpy&nbsp;array&nbsp;containing&nbsp;the&nbsp;data</tt></dd></dl>
-
-<dl><dt><a name="FitEaDels-setup_model_params"><strong>setup_model_params</strong></a>(self, jmax_guess<font color="#909090">=None</font>, vcmax_guess<font color="#909090">=None</font>, rd_guess<font color="#909090">=None</font>, hd_guess<font color="#909090">=None</font>, ea_guess<font color="#909090">=None</font>, dels_guess<font color="#909090">=None</font>)</dt><dd><tt>Setup&nbsp;lmfit&nbsp;Parameters&nbsp;<a href="__builtin__.html#object">object</a><br>
-&nbsp;<br>
-Parameters<br>
-----------<br>
-jmax_guess&nbsp;:&nbsp;value<br>
-&nbsp;&nbsp;&nbsp;&nbsp;initial&nbsp;parameter&nbsp;guess,&nbsp;if&nbsp;nothing&nbsp;is&nbsp;passed,&nbsp;i.e.&nbsp;it&nbsp;is&nbsp;None,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;parameter&nbsp;is&nbsp;not&nbsp;fitted<br>
-vcmax_guess&nbsp;:&nbsp;value<br>
-&nbsp;&nbsp;&nbsp;&nbsp;initial&nbsp;parameter&nbsp;guess,&nbsp;if&nbsp;nothing&nbsp;is&nbsp;passed,&nbsp;i.e.&nbsp;it&nbsp;is&nbsp;None,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;parameter&nbsp;is&nbsp;not&nbsp;fitted<br>
-rd_guess&nbsp;:&nbsp;value<br>
-&nbsp;&nbsp;&nbsp;&nbsp;initial&nbsp;parameter&nbsp;guess,&nbsp;if&nbsp;nothing&nbsp;is&nbsp;passed,&nbsp;i.e.&nbsp;it&nbsp;is&nbsp;None,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;parameter&nbsp;is&nbsp;not&nbsp;fitted<br>
-hd_guess&nbsp;:&nbsp;value<br>
-&nbsp;&nbsp;&nbsp;&nbsp;initial&nbsp;parameter&nbsp;guess,&nbsp;if&nbsp;nothing&nbsp;is&nbsp;passed,&nbsp;i.e.&nbsp;it&nbsp;is&nbsp;None,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;parameter&nbsp;is&nbsp;not&nbsp;fitted<br>
-ea_guess&nbsp;:&nbsp;value<br>
-&nbsp;&nbsp;&nbsp;&nbsp;initial&nbsp;parameter&nbsp;guess,&nbsp;if&nbsp;nothing&nbsp;is&nbsp;passed,&nbsp;i.e.&nbsp;it&nbsp;is&nbsp;None,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;parameter&nbsp;is&nbsp;not&nbsp;fitted<br>
-dels_guess&nbsp;:&nbsp;value<br>
-&nbsp;&nbsp;&nbsp;&nbsp;initial&nbsp;parameter&nbsp;guess,&nbsp;if&nbsp;nothing&nbsp;is&nbsp;passed,&nbsp;i.e.&nbsp;it&nbsp;is&nbsp;None,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;parameter&nbsp;is&nbsp;not&nbsp;fitted<br>
-&nbsp;<br>
-Returns<br>
--------<br>
-params&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;lmfit&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;containing&nbsp;parameters&nbsp;to&nbsp;fit</tt></dd></dl>
 
 <dl><dt><a name="FitEaDels-tidy_up"><strong>tidy_up</strong></a>(self, fp<font color="#909090">=None</font>)</dt><dd><tt>Clean&nbsp;up&nbsp;at&nbsp;the&nbsp;end&nbsp;of&nbsp;fitting&nbsp;<br>
 &nbsp;<br>
@@ -340,7 +335,7 @@ data_dir&nbsp;:&nbsp;string<br>
 plot_dir&nbsp;:&nbsp;string<br>
 &nbsp;&nbsp;&nbsp;&nbsp;directory&nbsp;to&nbsp;save&nbsp;plots&nbsp;of&nbsp;various&nbsp;fitting&nbsp;routines</tt></dd></dl>
 
-<dl><dt><a name="FitJmaxVcmaxRd-main"><strong>main</strong></a>(self, print_to_screen)</dt><dd><tt>Loop&nbsp;over&nbsp;all&nbsp;our&nbsp;A-Ci&nbsp;measured&nbsp;curves&nbsp;and&nbsp;fit&nbsp;the&nbsp;Farquhar&nbsp;model<br>
+<dl><dt><a name="FitJmaxVcmaxRd-main"><strong>main</strong></a>(self, print_to_screen, infname_tag<font color="#909090">='*.csv'</font>)</dt><dd><tt>Loop&nbsp;over&nbsp;all&nbsp;our&nbsp;A-Ci&nbsp;measured&nbsp;curves&nbsp;and&nbsp;fit&nbsp;the&nbsp;Farquhar&nbsp;model<br>
 parameters&nbsp;to&nbsp;this&nbsp;data&nbsp;<br>
 &nbsp;<br>
 Parameters<br>
@@ -350,6 +345,33 @@ print_to_screen&nbsp;:&nbsp;logical<br>
 
 <hr>
 Methods inherited from <a href="fit_model.html#FitMe">FitMe</a>:<br>
+<dl><dt><a name="FitJmaxVcmaxRd-calc_Topt"><strong>calc_Topt</strong></a>(self, Hd, Ha, delS, RGAS<font color="#909090">=8.314</font>)</dt><dd><tt>Calculate&nbsp;the&nbsp;temperature&nbsp;optimum&nbsp;<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+Hd&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;describes&nbsp;rate&nbsp;of&nbsp;decrease&nbsp;about&nbsp;the&nbsp;optimum&nbsp;temp&nbsp;[KJ&nbsp;mol-1]<br>
+Ha&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;activation&nbsp;energy&nbsp;for&nbsp;the&nbsp;parameter&nbsp;[kJ&nbsp;mol-1]<br>
+delS&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;entropy&nbsp;factor&nbsp;[J&nbsp;mol-1&nbsp;K-1)<br>
+RGAS&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Universal&nbsp;gas&nbsp;constant&nbsp;[J&nbsp;mol-1&nbsp;K-1]<br>
+&nbsp;<br>
+Returns<br>
+--------<br>
+Topt&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;optimum&nbsp;temperature&nbsp;[deg&nbsp;C]<br>
+&nbsp;<br>
+Reference<br>
+----------<br>
+*&nbsp;Medlyn,&nbsp;B.&nbsp;E.,&nbsp;Dreyer,&nbsp;E.,&nbsp;Ellsworth,&nbsp;D.,&nbsp;Forstreuter,&nbsp;M.,&nbsp;Harley,&nbsp;<br>
+&nbsp;&nbsp;P.C.,&nbsp;Kirschbaum,&nbsp;M.U.F.,&nbsp;Leroux,&nbsp;X.,&nbsp;Montpied,&nbsp;P.,&nbsp;Strassemeyer,&nbsp;J.,&nbsp;<br>
+&nbsp;&nbsp;Walcroft,&nbsp;A.,&nbsp;Wang,&nbsp;K.&nbsp;and&nbsp;Loustau,&nbsp;D.&nbsp;(2002)&nbsp;Temperature&nbsp;response&nbsp;of&nbsp;<br>
+&nbsp;&nbsp;parameters&nbsp;of&nbsp;a&nbsp;biochemically&nbsp;based&nbsp;model&nbsp;of&nbsp;photosynthesis.&nbsp;II.&nbsp;<br>
+&nbsp;&nbsp;A&nbsp;review&nbsp;of&nbsp;experimental&nbsp;data.&nbsp;Plant,&nbsp;Cell&nbsp;and&nbsp;Enviroment&nbsp;25,&nbsp;<br>
+&nbsp;&nbsp;1167-1179.</tt></dd></dl>
+
 <dl><dt><a name="FitJmaxVcmaxRd-forward_run"><strong>forward_run</strong></a>(self, result, data)</dt><dd><tt>Run&nbsp;farquhar&nbsp;model&nbsp;with&nbsp;fitted&nbsp;parameters&nbsp;and&nbsp;return&nbsp;result&nbsp;<br>
 &nbsp;<br>
 Parameters<br>
@@ -368,7 +390,7 @@ Acn&nbsp;:&nbsp;float<br>
 Ajn&nbsp;:&nbsp;float<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Net&nbsp;RuBP-regeneration-limited&nbsp;leaf&nbsp;assimilation&nbsp;rate&nbsp;[umol&nbsp;m-2&nbsp;s-1]</tt></dd></dl>
 
-<dl><dt><a name="FitJmaxVcmaxRd-make_plot"><strong>make_plot</strong></a>(self, data, curve_num, An_fit, Anc_fit, Anj_fit)</dt><dd><tt>Make&nbsp;some&nbsp;plots&nbsp;to&nbsp;show&nbsp;how&nbsp;good&nbsp;our&nbsp;fitted&nbsp;model&nbsp;is&nbsp;to&nbsp;the&nbsp;data&nbsp;<br>
+<dl><dt><a name="FitJmaxVcmaxRd-make_plot"><strong>make_plot</strong></a>(self, data, curve_num, An_fit, Anc_fit, Anj_fit, result)</dt><dd><tt>Make&nbsp;some&nbsp;plots&nbsp;to&nbsp;show&nbsp;how&nbsp;good&nbsp;our&nbsp;fitted&nbsp;model&nbsp;is&nbsp;to&nbsp;the&nbsp;data&nbsp;<br>
 &nbsp;<br>
 *&nbsp;Plots&nbsp;A-Ci&nbsp;model&nbsp;fits&nbsp;vs.&nbsp;data<br>
 *&nbsp;Residuals&nbsp;between&nbsp;fit&nbsp;and&nbsp;measured&nbsp;A<br>
@@ -387,7 +409,9 @@ Anc_fit&nbsp;:&nbsp;array<br>
 &nbsp;&nbsp;&nbsp;&nbsp;assimilation&nbsp;rate&nbsp;[umol&nbsp;m-2&nbsp;s-1]<br>
 Anj_fit&nbsp;:&nbsp;array<br>
 &nbsp;&nbsp;&nbsp;&nbsp;best&nbsp;model&nbsp;fit&nbsp;using&nbsp;optimised&nbsp;parameters,&nbsp;Net&nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;RuBP-regeneration-limited&nbsp;leaf&nbsp;assimilation&nbsp;rate&nbsp;[umol&nbsp;m-2&nbsp;s-1]</tt></dd></dl>
+&nbsp;&nbsp;&nbsp;&nbsp;RuBP-regeneration-limited&nbsp;leaf&nbsp;assimilation&nbsp;rate&nbsp;[umol&nbsp;m-2&nbsp;s-1]<br>
+result&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;fitting&nbsp;result,&nbsp;param,&nbsp;std.&nbsp;error&nbsp;etc.</tt></dd></dl>
 
 <dl><dt><a name="FitJmaxVcmaxRd-open_output_files"><strong>open_output_files</strong></a>(self, ofname)</dt><dd><tt>Opens&nbsp;output&nbsp;file&nbsp;for&nbsp;recording&nbsp;fit&nbsp;information<br>
 &nbsp;<br>
@@ -401,7 +425,21 @@ Returns:&nbsp;<br>
 fp&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp;file&nbsp;pointer</tt></dd></dl>
 
-<dl><dt><a name="FitJmaxVcmaxRd-pick_starting_point"><strong>pick_starting_point</strong></a>(self, data, grid_size<font color="#909090">=50</font>)</dt><dd><tt>Figure&nbsp;out&nbsp;a&nbsp;good&nbsp;starting&nbsp;parameter&nbsp;guess<br>
+<dl><dt><a name="FitJmaxVcmaxRd-pick_random_starting_point"><strong>pick_random_starting_point</strong></a>(self)</dt><dd><tt>random&nbsp;pick&nbsp;starting&nbsp;point&nbsp;for&nbsp;parameter&nbsp;values&nbsp;<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+data&nbsp;:&nbsp;array<br>
+&nbsp;&nbsp;&nbsp;&nbsp;model&nbsp;driving&nbsp;data<br>
+grid_size&nbsp;:&nbsp;int<br>
+&nbsp;&nbsp;&nbsp;&nbsp;hardwired,&nbsp;number&nbsp;of&nbsp;samples<br>
+&nbsp;<br>
+Returns:&nbsp;<br>
+--------<br>
+retval&nbsp;*&nbsp;3&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Three&nbsp;starting&nbsp;guesses&nbsp;for&nbsp;Jmax,&nbsp;Vcmax&nbsp;and&nbsp;Rd</tt></dd></dl>
+
+<dl><dt><a name="FitJmaxVcmaxRd-pick_starting_point"><strong>pick_starting_point</strong></a>(self, data, grid_size<font color="#909090">=100</font>)</dt><dd><tt>Figure&nbsp;out&nbsp;a&nbsp;good&nbsp;starting&nbsp;parameter&nbsp;guess<br>
 &nbsp;<br>
 High-density&nbsp;grid&nbsp;search&nbsp;to&nbsp;overcome&nbsp;issues&nbsp;with&nbsp;ending&nbsp;up&nbsp;in&nbsp;a&nbsp;<br>
 local&nbsp;minima.&nbsp;Values&nbsp;that&nbsp;yield&nbsp;the&nbsp;lowest&nbsp;RMSE&nbsp;(without&nbsp;minimisation)<br>
@@ -432,9 +470,10 @@ Parameters<br>
 result&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp;fitting&nbsp;result,&nbsp;param,&nbsp;std.&nbsp;error&nbsp;etc.</tt></dd></dl>
 
-<dl><dt><a name="FitJmaxVcmaxRd-read_data"><strong>read_data</strong></a>(self, fname, delimiter<font color="#909090">=','</font>)</dt><dd><tt>Read&nbsp;the&nbsp;A-Ci&nbsp;data.&nbsp;<br>
+<dl><dt><a name="FitJmaxVcmaxRd-read_data"><strong>read_data</strong></a>(self, fname, infile_type<font color="#909090">='aci'</font>, delimiter<font color="#909090">=','</font>)</dt><dd><tt>Reads&nbsp;in&nbsp;the&nbsp;A-Ci&nbsp;data&nbsp;if&nbsp;infile_type="aci"&nbsp;is&nbsp;true,&nbsp;otherwise&nbsp;this<br>
+reads&nbsp;in&nbsp;the&nbsp;fitted&nbsp;results...&nbsp;<br>
 &nbsp;<br>
-Expects&nbsp;a&nbsp;format&nbsp;of:<br>
+For&nbsp;A-Ci&nbsp;data,&nbsp;code&nbsp;expects&nbsp;a&nbsp;format&nbsp;of:<br>
 -&gt;&nbsp;Curve,&nbsp;Tleaf,&nbsp;Ci,&nbsp;Photo,&nbsp;Species,&nbsp;Season,&nbsp;Leaf<br>
 &nbsp;<br>
 Parameters<br>
@@ -553,7 +592,7 @@ fitting&nbsp;routines,&nbsp;e.g.&nbsp;plotting,&nbsp;file&nbsp;reporting&nbsp;et
 to&nbsp;be&nbsp;subclased.<br>&nbsp;</tt></td></tr>
 <tr><td>&nbsp;</td>
 <td width="100%">Methods defined here:<br>
-<dl><dt><a name="FitMe-__init__"><strong>__init__</strong></a>(self, model<font color="#909090">=None</font>, ofname<font color="#909090">=None</font>, results_dir<font color="#909090">=None</font>, data_dir<font color="#909090">=None</font>, plot_dir<font color="#909090">=None</font>)</dt><dd><tt>Parameters<br>
+<dl><dt><a name="FitMe-__init__"><strong>__init__</strong></a>(self, model<font color="#909090">=None</font>, ofname<font color="#909090">=None</font>, results_dir<font color="#909090">=None</font>, data_dir<font color="#909090">=None</font>, plot_dir<font color="#909090">=None</font>, Niter<font color="#909090">=500</font>)</dt><dd><tt>Parameters<br>
 ----------<br>
 model&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp;model&nbsp;that&nbsp;we&nbsp;are&nbsp;fitting&nbsp;measurements&nbsp;against...<br>
@@ -564,7 +603,36 @@ results_dir&nbsp;:&nbsp;string<br>
 data_dir&nbsp;:&nbsp;string<br>
 &nbsp;&nbsp;&nbsp;&nbsp;input&nbsp;directory&nbsp;path&nbsp;where&nbsp;measured&nbsp;A-Ci&nbsp;files&nbsp;live<br>
 plot_dir&nbsp;:&nbsp;string<br>
-&nbsp;&nbsp;&nbsp;&nbsp;directory&nbsp;to&nbsp;save&nbsp;plots&nbsp;of&nbsp;various&nbsp;fitting&nbsp;routines</tt></dd></dl>
+&nbsp;&nbsp;&nbsp;&nbsp;directory&nbsp;to&nbsp;save&nbsp;plots&nbsp;of&nbsp;various&nbsp;fitting&nbsp;routines<br>
+Niter&nbsp;:&nbsp;int<br>
+&nbsp;&nbsp;&nbsp;&nbsp;number&nbsp;of&nbsp;different&nbsp;attempts&nbsp;to&nbsp;refit&nbsp;code</tt></dd></dl>
+
+<dl><dt><a name="FitMe-calc_Topt"><strong>calc_Topt</strong></a>(self, Hd, Ha, delS, RGAS<font color="#909090">=8.314</font>)</dt><dd><tt>Calculate&nbsp;the&nbsp;temperature&nbsp;optimum&nbsp;<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+Hd&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;describes&nbsp;rate&nbsp;of&nbsp;decrease&nbsp;about&nbsp;the&nbsp;optimum&nbsp;temp&nbsp;[KJ&nbsp;mol-1]<br>
+Ha&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;activation&nbsp;energy&nbsp;for&nbsp;the&nbsp;parameter&nbsp;[kJ&nbsp;mol-1]<br>
+delS&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;entropy&nbsp;factor&nbsp;[J&nbsp;mol-1&nbsp;K-1)<br>
+RGAS&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Universal&nbsp;gas&nbsp;constant&nbsp;[J&nbsp;mol-1&nbsp;K-1]<br>
+&nbsp;<br>
+Returns<br>
+--------<br>
+Topt&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;optimum&nbsp;temperature&nbsp;[deg&nbsp;C]<br>
+&nbsp;<br>
+Reference<br>
+----------<br>
+*&nbsp;Medlyn,&nbsp;B.&nbsp;E.,&nbsp;Dreyer,&nbsp;E.,&nbsp;Ellsworth,&nbsp;D.,&nbsp;Forstreuter,&nbsp;M.,&nbsp;Harley,&nbsp;<br>
+&nbsp;&nbsp;P.C.,&nbsp;Kirschbaum,&nbsp;M.U.F.,&nbsp;Leroux,&nbsp;X.,&nbsp;Montpied,&nbsp;P.,&nbsp;Strassemeyer,&nbsp;J.,&nbsp;<br>
+&nbsp;&nbsp;Walcroft,&nbsp;A.,&nbsp;Wang,&nbsp;K.&nbsp;and&nbsp;Loustau,&nbsp;D.&nbsp;(2002)&nbsp;Temperature&nbsp;response&nbsp;of&nbsp;<br>
+&nbsp;&nbsp;parameters&nbsp;of&nbsp;a&nbsp;biochemically&nbsp;based&nbsp;model&nbsp;of&nbsp;photosynthesis.&nbsp;II.&nbsp;<br>
+&nbsp;&nbsp;A&nbsp;review&nbsp;of&nbsp;experimental&nbsp;data.&nbsp;Plant,&nbsp;Cell&nbsp;and&nbsp;Enviroment&nbsp;25,&nbsp;<br>
+&nbsp;&nbsp;1167-1179.</tt></dd></dl>
 
 <dl><dt><a name="FitMe-forward_run"><strong>forward_run</strong></a>(self, result, data)</dt><dd><tt>Run&nbsp;farquhar&nbsp;model&nbsp;with&nbsp;fitted&nbsp;parameters&nbsp;and&nbsp;return&nbsp;result&nbsp;<br>
 &nbsp;<br>
@@ -584,7 +652,7 @@ Acn&nbsp;:&nbsp;float<br>
 Ajn&nbsp;:&nbsp;float<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Net&nbsp;RuBP-regeneration-limited&nbsp;leaf&nbsp;assimilation&nbsp;rate&nbsp;[umol&nbsp;m-2&nbsp;s-1]</tt></dd></dl>
 
-<dl><dt><a name="FitMe-make_plot"><strong>make_plot</strong></a>(self, data, curve_num, An_fit, Anc_fit, Anj_fit)</dt><dd><tt>Make&nbsp;some&nbsp;plots&nbsp;to&nbsp;show&nbsp;how&nbsp;good&nbsp;our&nbsp;fitted&nbsp;model&nbsp;is&nbsp;to&nbsp;the&nbsp;data&nbsp;<br>
+<dl><dt><a name="FitMe-make_plot"><strong>make_plot</strong></a>(self, data, curve_num, An_fit, Anc_fit, Anj_fit, result)</dt><dd><tt>Make&nbsp;some&nbsp;plots&nbsp;to&nbsp;show&nbsp;how&nbsp;good&nbsp;our&nbsp;fitted&nbsp;model&nbsp;is&nbsp;to&nbsp;the&nbsp;data&nbsp;<br>
 &nbsp;<br>
 *&nbsp;Plots&nbsp;A-Ci&nbsp;model&nbsp;fits&nbsp;vs.&nbsp;data<br>
 *&nbsp;Residuals&nbsp;between&nbsp;fit&nbsp;and&nbsp;measured&nbsp;A<br>
@@ -603,7 +671,9 @@ Anc_fit&nbsp;:&nbsp;array<br>
 &nbsp;&nbsp;&nbsp;&nbsp;assimilation&nbsp;rate&nbsp;[umol&nbsp;m-2&nbsp;s-1]<br>
 Anj_fit&nbsp;:&nbsp;array<br>
 &nbsp;&nbsp;&nbsp;&nbsp;best&nbsp;model&nbsp;fit&nbsp;using&nbsp;optimised&nbsp;parameters,&nbsp;Net&nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;RuBP-regeneration-limited&nbsp;leaf&nbsp;assimilation&nbsp;rate&nbsp;[umol&nbsp;m-2&nbsp;s-1]</tt></dd></dl>
+&nbsp;&nbsp;&nbsp;&nbsp;RuBP-regeneration-limited&nbsp;leaf&nbsp;assimilation&nbsp;rate&nbsp;[umol&nbsp;m-2&nbsp;s-1]<br>
+result&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;fitting&nbsp;result,&nbsp;param,&nbsp;std.&nbsp;error&nbsp;etc.</tt></dd></dl>
 
 <dl><dt><a name="FitMe-open_output_files"><strong>open_output_files</strong></a>(self, ofname)</dt><dd><tt>Opens&nbsp;output&nbsp;file&nbsp;for&nbsp;recording&nbsp;fit&nbsp;information<br>
 &nbsp;<br>
@@ -617,7 +687,21 @@ Returns:&nbsp;<br>
 fp&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp;file&nbsp;pointer</tt></dd></dl>
 
-<dl><dt><a name="FitMe-pick_starting_point"><strong>pick_starting_point</strong></a>(self, data, grid_size<font color="#909090">=50</font>)</dt><dd><tt>Figure&nbsp;out&nbsp;a&nbsp;good&nbsp;starting&nbsp;parameter&nbsp;guess<br>
+<dl><dt><a name="FitMe-pick_random_starting_point"><strong>pick_random_starting_point</strong></a>(self)</dt><dd><tt>random&nbsp;pick&nbsp;starting&nbsp;point&nbsp;for&nbsp;parameter&nbsp;values&nbsp;<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+data&nbsp;:&nbsp;array<br>
+&nbsp;&nbsp;&nbsp;&nbsp;model&nbsp;driving&nbsp;data<br>
+grid_size&nbsp;:&nbsp;int<br>
+&nbsp;&nbsp;&nbsp;&nbsp;hardwired,&nbsp;number&nbsp;of&nbsp;samples<br>
+&nbsp;<br>
+Returns:&nbsp;<br>
+--------<br>
+retval&nbsp;*&nbsp;3&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Three&nbsp;starting&nbsp;guesses&nbsp;for&nbsp;Jmax,&nbsp;Vcmax&nbsp;and&nbsp;Rd</tt></dd></dl>
+
+<dl><dt><a name="FitMe-pick_starting_point"><strong>pick_starting_point</strong></a>(self, data, grid_size<font color="#909090">=100</font>)</dt><dd><tt>Figure&nbsp;out&nbsp;a&nbsp;good&nbsp;starting&nbsp;parameter&nbsp;guess<br>
 &nbsp;<br>
 High-density&nbsp;grid&nbsp;search&nbsp;to&nbsp;overcome&nbsp;issues&nbsp;with&nbsp;ending&nbsp;up&nbsp;in&nbsp;a&nbsp;<br>
 local&nbsp;minima.&nbsp;Values&nbsp;that&nbsp;yield&nbsp;the&nbsp;lowest&nbsp;RMSE&nbsp;(without&nbsp;minimisation)<br>
@@ -648,9 +732,10 @@ Parameters<br>
 result&nbsp;:&nbsp;<a href="__builtin__.html#object">object</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp;fitting&nbsp;result,&nbsp;param,&nbsp;std.&nbsp;error&nbsp;etc.</tt></dd></dl>
 
-<dl><dt><a name="FitMe-read_data"><strong>read_data</strong></a>(self, fname, delimiter<font color="#909090">=','</font>)</dt><dd><tt>Read&nbsp;the&nbsp;A-Ci&nbsp;data.&nbsp;<br>
+<dl><dt><a name="FitMe-read_data"><strong>read_data</strong></a>(self, fname, infile_type<font color="#909090">='aci'</font>, delimiter<font color="#909090">=','</font>)</dt><dd><tt>Reads&nbsp;in&nbsp;the&nbsp;A-Ci&nbsp;data&nbsp;if&nbsp;infile_type="aci"&nbsp;is&nbsp;true,&nbsp;otherwise&nbsp;this<br>
+reads&nbsp;in&nbsp;the&nbsp;fitted&nbsp;results...&nbsp;<br>
 &nbsp;<br>
-Expects&nbsp;a&nbsp;format&nbsp;of:<br>
+For&nbsp;A-Ci&nbsp;data,&nbsp;code&nbsp;expects&nbsp;a&nbsp;format&nbsp;of:<br>
 -&gt;&nbsp;Curve,&nbsp;Tleaf,&nbsp;Ci,&nbsp;Photo,&nbsp;Species,&nbsp;Season,&nbsp;Leaf<br>
 &nbsp;<br>
 Parameters<br>

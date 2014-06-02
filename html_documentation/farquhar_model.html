@@ -49,9 +49,9 @@ That's&nbsp;all&nbsp;folks.</tt></p>
 carboxylation&nbsp;(Ac)&nbsp;and&nbsp;the&nbsp;regeneration&nbsp;of&nbsp;ribulose-1,5-bisphosphate&nbsp;(RuBP)&nbsp;<br>
 catalysed&nbsp;by&nbsp;the&nbsp;enzyme&nbsp;RUBISCO&nbsp;(Aj).&nbsp;This&nbsp;class&nbsp;returns&nbsp;the&nbsp;net&nbsp;leaf&nbsp;<br>
 photosynthesis&nbsp;(An)&nbsp;which&nbsp;is&nbsp;the&nbsp;minimum&nbsp;of&nbsp;this&nbsp;two&nbsp;limiting&nbsp;processes&nbsp;<br>
-less&nbsp;the&nbsp;rate&nbsp;of&nbsp;mitochondrial&nbsp;(dark)&nbsp;respiration&nbsp;(Rd).&nbsp;We&nbsp;are&nbsp;ignoring&nbsp;the<br>
-the&nbsp;"export"&nbsp;limitation&nbsp;(Ap)&nbsp;which&nbsp;could&nbsp;occur&nbsp;under&nbsp;high&nbsp;levels&nbsp;of&nbsp;<br>
-irradiance.<br>
+less&nbsp;the&nbsp;rate&nbsp;of&nbsp;mitochondrial&nbsp;respiration&nbsp;in&nbsp;the&nbsp;light&nbsp;(Rd).&nbsp;We&nbsp;are&nbsp;<br>
+ignoring&nbsp;the&nbsp;the&nbsp;"export"&nbsp;limitation&nbsp;(Ap)&nbsp;which&nbsp;could&nbsp;occur&nbsp;under&nbsp;high&nbsp;<br>
+levels&nbsp;of&nbsp;irradiance.<br>
 &nbsp;<br>
 Model&nbsp;assumes&nbsp;conductance&nbsp;between&nbsp;intercellular&nbsp;space&nbsp;and&nbsp;the&nbsp;site&nbsp;of&nbsp;<br>
 carboxylation&nbsp;is&nbsp;zero.&nbsp;The&nbsp;models&nbsp;parameters&nbsp;Vcmax,&nbsp;Jmax,&nbsp;Rd&nbsp;along&nbsp;with<br>
@@ -78,26 +78,24 @@ References:<br>
 &nbsp;&nbsp;A&nbsp;review&nbsp;of&nbsp;experimental&nbsp;data.&nbsp;Plant,&nbsp;Cell&nbsp;and&nbsp;Enviroment&nbsp;25,&nbsp;1167-1179.<br>&nbsp;</tt></td></tr>
 <tr><td>&nbsp;</td>
 <td width="100%">Methods defined here:<br>
-<dl><dt><a name="FarquharC3-__init__"><strong>__init__</strong></a>(self, peaked_Jmax<font color="#909090">=False</font>, peaked_Vcmax<font color="#909090">=False</font>, Oi<font color="#909090">=205.0</font>, gamstar25<font color="#909090">=42.75</font>, Kc25<font color="#909090">=404.89999999999998</font>, Ko25<font color="#909090">=278.39999999999998</font>, Ec<font color="#909090">=79430.0</font>, Eo<font color="#909090">=36380.0</font>, Egamma<font color="#909090">=37830.0</font>, theta_hyperbol<font color="#909090">=0.99950000000000006</font>, theta_J<font color="#909090">=0.69999999999999996</font>, alpha<font color="#909090">=None</font>, quantum_yield<font color="#909090">=0.29999999999999999</font>, absorptance<font color="#909090">=0.80000000000000004</font>)</dt><dd><tt>Parameters<br>
+<dl><dt><a name="FarquharC3-__init__"><strong>__init__</strong></a>(self, peaked_Jmax<font color="#909090">=False</font>, peaked_Vcmax<font color="#909090">=False</font>, Oi<font color="#909090">=205.0</font>, gamstar25<font color="#909090">=42.75</font>, Kc25<font color="#909090">=404.9</font>, Ko25<font color="#909090">=278.4</font>, Ec<font color="#909090">=79430.0</font>, Eo<font color="#909090">=36380.0</font>, Eag<font color="#909090">=37830.0</font>, theta_hyperbol<font color="#909090">=0.9995</font>, theta_J<font color="#909090">=0.7</font>, force_vcmax_fit_pts<font color="#909090">=None</font>, alpha<font color="#909090">=None</font>, quantum_yield<font color="#909090">=0.3</font>, absorptance<font color="#909090">=0.8</font>, change_over_pt<font color="#909090">=None</font>, model_Q10<font color="#909090">=False</font>)</dt><dd><tt>Parameters<br>
 ----------<br>
 Oi&nbsp;:&nbsp;float<br>
 &nbsp;&nbsp;&nbsp;&nbsp;intercellular&nbsp;concentration&nbsp;of&nbsp;O2&nbsp;[mmol&nbsp;mol-1]<br>
 gamstar25&nbsp;:&nbsp;float<br>
-&nbsp;&nbsp;&nbsp;&nbsp;co2&nbsp;compensation&nbsp;point&nbsp;(i.e.&nbsp;the&nbsp;value&nbsp;of&nbsp;Ci&nbsp;at&nbsp;which&nbsp;net&nbsp;CO2&nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;uptake&nbsp;is&nbsp;zero&nbsp;due&nbsp;to&nbsp;photorespiration)&nbsp;in&nbsp;the&nbsp;absence&nbsp;of&nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;dark&nbsp;resp&nbsp;at&nbsp;25&nbsp;degC&nbsp;[umol&nbsp;mol-1]&nbsp;or&nbsp;298&nbsp;K<br>
+&nbsp;&nbsp;&nbsp;&nbsp;CO2&nbsp;compensation&nbsp;point&nbsp;-&nbsp;base&nbsp;rate&nbsp;at&nbsp;25&nbsp;deg&nbsp;C&nbsp;/&nbsp;298&nbsp;K&nbsp;[umol&nbsp;mol-1]<br>
 Kc25&nbsp;:&nbsp;float<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Michaelis-Menten&nbsp;coefficents&nbsp;for&nbsp;carboxylation&nbsp;by&nbsp;Rubisco&nbsp;at&nbsp;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;25degC&nbsp;[umol&nbsp;mol-1]&nbsp;or&nbsp;298&nbsp;K<br>
 Ko25:&nbsp;float<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Michaelis-Menten&nbsp;coefficents&nbsp;for&nbsp;oxygenation&nbsp;by&nbsp;Rubisco&nbsp;at&nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;25degC&nbsp;[umol&nbsp;mol-1].&nbsp;Note&nbsp;value&nbsp;in&nbsp;Bernacchie&nbsp;2001&nbsp;is&nbsp;in&nbsp;mmol!!<br>
+&nbsp;&nbsp;&nbsp;&nbsp;25degC&nbsp;[mmol&nbsp;mol-1].&nbsp;Note&nbsp;value&nbsp;in&nbsp;Bernacchie&nbsp;2001&nbsp;is&nbsp;in&nbsp;mmol!!<br>
 &nbsp;&nbsp;&nbsp;&nbsp;or&nbsp;298&nbsp;K<br>
 Ec&nbsp;:&nbsp;float<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Activation&nbsp;energy&nbsp;for&nbsp;carboxylation&nbsp;[J&nbsp;mol-1]<br>
 Eo&nbsp;:&nbsp;float<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Activation&nbsp;energy&nbsp;for&nbsp;oxygenation&nbsp;[J&nbsp;mol-1]<br>
-Egamma&nbsp;:&nbsp;float<br>
+Eag&nbsp;:&nbsp;float<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Activation&nbsp;energy&nbsp;at&nbsp;CO2&nbsp;compensation&nbsp;point&nbsp;[J&nbsp;mol-1]<br>
 RGAS&nbsp;:&nbsp;float<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Universal&nbsp;gas&nbsp;constant&nbsp;[J&nbsp;mol-1&nbsp;K-1]<br>
@@ -112,7 +110,12 @@ alpha&nbsp;:&nbsp;float<br>
 peaked_Jmax&nbsp;:&nbsp;logical<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Use&nbsp;the&nbsp;peaked&nbsp;Arrhenius&nbsp;function&nbsp;(if&nbsp;true)<br>
 peaked_Vcmax&nbsp;:&nbsp;logical<br>
-&nbsp;&nbsp;&nbsp;&nbsp;Use&nbsp;the&nbsp;peaked&nbsp;Arrhenius&nbsp;function&nbsp;(if&nbsp;true)</tt></dd></dl>
+&nbsp;&nbsp;&nbsp;&nbsp;Use&nbsp;the&nbsp;peaked&nbsp;Arrhenius&nbsp;function&nbsp;(if&nbsp;true)<br>
+&nbsp;<br>
+force_vcmax_fit_pts&nbsp;:&nbsp;None&nbsp;or&nbsp;npts<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Force&nbsp;Ac&nbsp;fit&nbsp;for&nbsp;first&nbsp;X&nbsp;points<br>
+change_over_pt&nbsp;:&nbsp;None&nbsp;or&nbsp;value&nbsp;of&nbsp;Ci<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Explicitly&nbsp;set&nbsp;the&nbsp;transition&nbsp;point&nbsp;between&nbsp;Aj&nbsp;and&nbsp;Ac.</tt></dd></dl>
 
 <dl><dt><a name="FarquharC3-arrh"><strong>arrh</strong></a>(self, k25, Ea, Tk)</dt><dd><tt>Temperature&nbsp;dependence&nbsp;of&nbsp;kinetic&nbsp;parameters&nbsp;is&nbsp;described&nbsp;by&nbsp;an<br>
 Arrhenius&nbsp;function.&nbsp;&nbsp;&nbsp;&nbsp;<br>
@@ -122,7 +125,7 @@ Parameters:<br>
 k25&nbsp;:&nbsp;float<br>
 &nbsp;&nbsp;&nbsp;&nbsp;rate&nbsp;parameter&nbsp;value&nbsp;at&nbsp;25&nbsp;degC&nbsp;or&nbsp;298&nbsp;K<br>
 Ea&nbsp;:&nbsp;float<br>
-&nbsp;&nbsp;&nbsp;&nbsp;activation&nbsp;energy&nbsp;for&nbsp;the&nbsp;parameter&nbsp;[kJ&nbsp;mol-1]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;activation&nbsp;energy&nbsp;for&nbsp;the&nbsp;parameter&nbsp;[J&nbsp;mol-1]<br>
 Tk&nbsp;:&nbsp;float<br>
 &nbsp;&nbsp;&nbsp;&nbsp;leaf&nbsp;temperature&nbsp;[deg&nbsp;K]<br>
 &nbsp;<br>
@@ -135,7 +138,38 @@ References:<br>
 -----------<br>
 *&nbsp;Medlyn&nbsp;et&nbsp;al.&nbsp;2002,&nbsp;PCE,&nbsp;25,&nbsp;1167-1179.</tt></dd></dl>
 
-<dl><dt><a name="FarquharC3-calc_photosynthesis"><strong>calc_photosynthesis</strong></a>(self, Ci, Tleaf, Par<font color="#909090">=None</font>, Jmax<font color="#909090">=None</font>, Vcmax<font color="#909090">=None</font>, Jmax25<font color="#909090">=None</font>, Vcmax25<font color="#909090">=None</font>, Rd<font color="#909090">=None</font>, Q10<font color="#909090">=None</font>, Eaj<font color="#909090">=None</font>, Eav<font color="#909090">=None</font>, deltaSj<font color="#909090">=None</font>, deltaSv<font color="#909090">=None</font>, r25<font color="#909090">=None</font>, Hdv<font color="#909090">=200000.0</font>, Hdj<font color="#909090">=200000.0</font>)</dt><dd><tt>Parameters<br>
+<dl><dt><a name="FarquharC3-assim"><strong>assim</strong></a>(self, Ci, gamma_star, a1, a2)</dt><dd><tt>calculation&nbsp;of&nbsp;photosynthesis&nbsp;with&nbsp;the&nbsp;limitation&nbsp;defined&nbsp;by&nbsp;the&nbsp;<br>
+variables&nbsp;passed&nbsp;as&nbsp;a1&nbsp;and&nbsp;a2,&nbsp;i.e.&nbsp;if&nbsp;we&nbsp;are&nbsp;calculating&nbsp;vcmax&nbsp;or&nbsp;<br>
+jmax&nbsp;limited&nbsp;assimilation&nbsp;rates.<br>
+&nbsp;<br>
+Parameters:<br>
+----------<br>
+Ci&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;intercellular&nbsp;CO2&nbsp;concentration.<br>
+gamma_star&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;CO2&nbsp;compensation&nbsp;point&nbsp;in&nbsp;the&nbsp;abscence&nbsp;of&nbsp;mitochondrial&nbsp;respiration<br>
+a1&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;depends&nbsp;on&nbsp;whether&nbsp;the&nbsp;calculation&nbsp;is&nbsp;light&nbsp;or&nbsp;rubisco&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;limited.<br>
+a2&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;depends&nbsp;on&nbsp;whether&nbsp;the&nbsp;calculation&nbsp;is&nbsp;light&nbsp;or&nbsp;rubisco&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;limited.<br>
+&nbsp;<br>
+Returns:<br>
+-------<br>
+assimilation_rate&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;assimilation&nbsp;rate&nbsp;assuming&nbsp;either&nbsp;light&nbsp;or&nbsp;rubisco&nbsp;limitation.</tt></dd></dl>
+
+<dl><dt><a name="FarquharC3-calc_michaelis_menten_constants"><strong>calc_michaelis_menten_constants</strong></a>(self, Tleaf)</dt><dd><tt>Michaelis-Menten&nbsp;constant&nbsp;for&nbsp;O2/CO2,&nbsp;Arrhenius&nbsp;temp&nbsp;dependancy&nbsp;<br>
+Parameters:<br>
+----------<br>
+Tleaf&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;leaf&nbsp;temperature&nbsp;[deg&nbsp;K]<br>
+&nbsp;<br>
+Returns:&nbsp;<br>
+Km&nbsp;:&nbsp;float</tt></dd></dl>
+
+<dl><dt><a name="FarquharC3-calc_photosynthesis"><strong>calc_photosynthesis</strong></a>(self, Ci<font color="#909090">=None</font>, Tleaf<font color="#909090">=None</font>, Par<font color="#909090">=None</font>, Jmax<font color="#909090">=None</font>, Vcmax<font color="#909090">=None</font>, Jmax25<font color="#909090">=None</font>, Vcmax25<font color="#909090">=None</font>, Rd<font color="#909090">=None</font>, Rd25<font color="#909090">=None</font>, Q10<font color="#909090">=None</font>, Eaj<font color="#909090">=None</font>, Eav<font color="#909090">=None</font>, deltaSj<font color="#909090">=None</font>, deltaSv<font color="#909090">=None</font>, Hdv<font color="#909090">=200000.0</font>, Hdj<font color="#909090">=200000.0</font>, Ear<font color="#909090">=None</font>)</dt><dd><tt>Parameters<br>
 ----------<br>
 Ci&nbsp;:&nbsp;float<br>
 &nbsp;&nbsp;&nbsp;&nbsp;intercellular&nbsp;CO2&nbsp;concentration&nbsp;[umol&nbsp;mol-1]<br>
@@ -153,14 +187,14 @@ Jmax25&nbsp;:&nbsp;float<br>
 Vcmax25&nbsp;:&nbsp;float<br>
 &nbsp;&nbsp;&nbsp;&nbsp;max&nbsp;rate&nbsp;of&nbsp;rubisco&nbsp;activity&nbsp;at&nbsp;25&nbsp;deg&nbsp;or&nbsp;298&nbsp;K<br>
 Rd&nbsp;:&nbsp;float<br>
-&nbsp;&nbsp;&nbsp;&nbsp;Dark&nbsp;(mitochondrial)&nbsp;respiration&nbsp;[umol&nbsp;m-2&nbsp;time&nbsp;unit-1]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Day&nbsp;"light"&nbsp;respiration&nbsp;[umol&nbsp;m-2&nbsp;time&nbsp;unit-1]<br>
 Q10&nbsp;:&nbsp;float<br>
 &nbsp;&nbsp;&nbsp;&nbsp;ratio&nbsp;of&nbsp;respiration&nbsp;at&nbsp;a&nbsp;given&nbsp;temperature&nbsp;divided&nbsp;by&nbsp;respiration&nbsp;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;at&nbsp;a&nbsp;temperature&nbsp;10&nbsp;degrees&nbsp;lower<br>
 Eaj&nbsp;:&nbsp;float<br>
-&nbsp;&nbsp;&nbsp;&nbsp;activation&nbsp;energy&nbsp;for&nbsp;the&nbsp;parameter&nbsp;[kJ&nbsp;mol-1]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;activation&nbsp;energy&nbsp;for&nbsp;the&nbsp;parameter&nbsp;[J&nbsp;mol-1]<br>
 Eav&nbsp;:&nbsp;float<br>
-&nbsp;&nbsp;&nbsp;&nbsp;activation&nbsp;energy&nbsp;for&nbsp;the&nbsp;parameter&nbsp;[kJ&nbsp;mol-1]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;activation&nbsp;energy&nbsp;for&nbsp;the&nbsp;parameter&nbsp;[J&nbsp;mol-1]<br>
 deltaSj&nbsp;:&nbsp;float<br>
 &nbsp;&nbsp;&nbsp;&nbsp;entropy&nbsp;factor&nbsp;[J&nbsp;mol-1&nbsp;K-1)<br>
 deltaSv&nbsp;:&nbsp;float<br>
@@ -169,7 +203,7 @@ HdV&nbsp;:&nbsp;float<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Deactivation&nbsp;energy&nbsp;for&nbsp;Vcmax&nbsp;[J&nbsp;mol-1]<br>
 Hdj&nbsp;:&nbsp;float<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Deactivation&nbsp;energy&nbsp;for&nbsp;Jmax&nbsp;[J&nbsp;mol-1]<br>
-r25&nbsp;:&nbsp;float<br>
+Rd25&nbsp;:&nbsp;float<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Estimate&nbsp;of&nbsp;respiration&nbsp;rate&nbsp;at&nbsp;the&nbsp;reference&nbsp;temperature&nbsp;25&nbsp;deg&nbsp;C<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or&nbsp;298&nbsp;K&nbsp;[deg&nbsp;K]<br>
 Par&nbsp;:&nbsp;float<br>
@@ -185,7 +219,30 @@ Acn&nbsp;:&nbsp;float<br>
 Ajn&nbsp;:&nbsp;float<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Net&nbsp;RuBP-regeneration-limited&nbsp;leaf&nbsp;assimilation&nbsp;rate&nbsp;[umol&nbsp;m-2&nbsp;s-1]</tt></dd></dl>
 
-<dl><dt><a name="FarquharC3-check_supplied_args"><strong>check_supplied_args</strong></a>(self, Jmax, Vcmax, Rd, Jmax25, Vcmax25, r25)</dt><dd><tt>Check&nbsp;the&nbsp;user&nbsp;supplied&nbsp;arguments,&nbsp;either&nbsp;they&nbsp;supply&nbsp;the&nbsp;values<br>
+<dl><dt><a name="FarquharC3-calc_resp"><strong>calc_resp</strong></a>(self, Tleaf<font color="#909090">=None</font>, Q10<font color="#909090">=None</font>, Rd25<font color="#909090">=None</font>, Ear<font color="#909090">=None</font>, Tref<font color="#909090">=25.0</font>)</dt><dd><tt>Calculate&nbsp;leaf&nbsp;respiration&nbsp;accounting&nbsp;for&nbsp;temperature&nbsp;dependence.<br>
+&nbsp;<br>
+Parameters:<br>
+----------<br>
+Rd25&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Estimate&nbsp;of&nbsp;respiration&nbsp;rate&nbsp;at&nbsp;the&nbsp;reference&nbsp;temperature&nbsp;25&nbsp;deg&nbsp;C<br>
+&nbsp;&nbsp;&nbsp;&nbsp;or&nbsp;or&nbsp;298&nbsp;K<br>
+Tref&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;reference&nbsp;temperature<br>
+Q10&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;ratio&nbsp;of&nbsp;respiration&nbsp;at&nbsp;a&nbsp;given&nbsp;temperature&nbsp;divided&nbsp;by&nbsp;respiration&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;at&nbsp;a&nbsp;temperature&nbsp;10&nbsp;degrees&nbsp;lower<br>
+Ear&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;activation&nbsp;energy&nbsp;for&nbsp;the&nbsp;parameter&nbsp;[J&nbsp;mol-1]<br>
+Returns:<br>
+-------<br>
+Rt&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;leaf&nbsp;respiration<br>
+&nbsp;<br>
+References:<br>
+-----------<br>
+Tjoelker&nbsp;et&nbsp;al&nbsp;(2001)&nbsp;GCB,&nbsp;7,&nbsp;223-230.</tt></dd></dl>
+
+<dl><dt><a name="FarquharC3-check_supplied_args"><strong>check_supplied_args</strong></a>(self, Jmax, Vcmax, Rd, Jmax25, Vcmax25, Rd25)</dt><dd><tt>Check&nbsp;the&nbsp;user&nbsp;supplied&nbsp;arguments,&nbsp;either&nbsp;they&nbsp;supply&nbsp;the&nbsp;values<br>
 at&nbsp;25&nbsp;deg&nbsp;C,&nbsp;or&nbsp;the&nbsp;supply&nbsp;Jmax&nbsp;and&nbsp;Vcmax&nbsp;at&nbsp;the&nbsp;measurement&nbsp;temp.&nbsp;It<br>
 is&nbsp;of&nbsp;course&nbsp;possible&nbsp;they&nbsp;accidentally&nbsp;supply&nbsp;both&nbsp;or&nbsp;a&nbsp;random&nbsp;<br>
 combination,&nbsp;so&nbsp;raise&nbsp;an&nbsp;exception&nbsp;if&nbsp;so&nbsp;<br>
@@ -198,12 +255,12 @@ Jmax&nbsp;:&nbsp;float<br>
 Vcmax&nbsp;:&nbsp;float<br>
 &nbsp;&nbsp;&nbsp;&nbsp;max&nbsp;rate&nbsp;of&nbsp;rubisco&nbsp;activity&nbsp;at&nbsp;measurement&nbsp;temperature&nbsp;[deg&nbsp;K]<br>
 Rd&nbsp;:&nbsp;float<br>
-&nbsp;&nbsp;&nbsp;&nbsp;Dark&nbsp;(mitochondrial)&nbsp;respiration&nbsp;[umol&nbsp;m-2&nbsp;time&nbsp;unit-1]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Day&nbsp;"light"&nbsp;respiration&nbsp;[umol&nbsp;m-2&nbsp;time&nbsp;unit-1]<br>
 Jmax25&nbsp;:&nbsp;float<br>
 &nbsp;&nbsp;&nbsp;&nbsp;potential&nbsp;rate&nbsp;of&nbsp;electron&nbsp;transport&nbsp;at&nbsp;25&nbsp;deg&nbsp;or&nbsp;298&nbsp;K<br>
 Vcmax25&nbsp;:&nbsp;float<br>
 &nbsp;&nbsp;&nbsp;&nbsp;max&nbsp;rate&nbsp;of&nbsp;rubisco&nbsp;activity&nbsp;at&nbsp;25&nbsp;deg&nbsp;or&nbsp;298&nbsp;K&nbsp;&nbsp;&nbsp;&nbsp;<br>
-r25&nbsp;:&nbsp;float<br>
+Rd25&nbsp;:&nbsp;float<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Estimate&nbsp;of&nbsp;respiration&nbsp;rate&nbsp;at&nbsp;the&nbsp;reference&nbsp;temperature&nbsp;25&nbsp;deg&nbsp;C<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or&nbsp;298&nbsp;K&nbsp;[deg&nbsp;K]<br>
 &nbsp;<br>
@@ -219,13 +276,13 @@ Parameters:<br>
 k25&nbsp;:&nbsp;float<br>
 &nbsp;&nbsp;&nbsp;&nbsp;rate&nbsp;parameter&nbsp;value&nbsp;at&nbsp;25&nbsp;degC&nbsp;or&nbsp;298&nbsp;K<br>
 Ea&nbsp;:&nbsp;float<br>
-&nbsp;&nbsp;&nbsp;&nbsp;activation&nbsp;energy&nbsp;for&nbsp;the&nbsp;parameter&nbsp;[kJ&nbsp;mol-1]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;activation&nbsp;energy&nbsp;for&nbsp;the&nbsp;parameter&nbsp;[J&nbsp;mol-1]<br>
 Tk&nbsp;:&nbsp;float<br>
 &nbsp;&nbsp;&nbsp;&nbsp;leaf&nbsp;temperature&nbsp;[deg&nbsp;K]<br>
 deltaS&nbsp;:&nbsp;float<br>
 &nbsp;&nbsp;&nbsp;&nbsp;entropy&nbsp;factor&nbsp;[J&nbsp;mol-1&nbsp;K-1)<br>
 Hd&nbsp;:&nbsp;float<br>
-&nbsp;&nbsp;&nbsp;&nbsp;describes&nbsp;rate&nbsp;of&nbsp;decrease&nbsp;about&nbsp;the&nbsp;optimum&nbsp;temp&nbsp;[KJ&nbsp;mol-1]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;describes&nbsp;rate&nbsp;of&nbsp;decrease&nbsp;about&nbsp;the&nbsp;optimum&nbsp;temp&nbsp;[J&nbsp;mol-1]<br>
 &nbsp;<br>
 Returns:<br>
 -------<br>
@@ -236,9 +293,9 @@ References:<br>
 -----------<br>
 *&nbsp;Medlyn&nbsp;et&nbsp;al.&nbsp;2002,&nbsp;PCE,&nbsp;25,&nbsp;1167-1179.</tt></dd></dl>
 
-<dl><dt><a name="FarquharC3-quadratic"><strong>quadratic</strong></a>(self, a, b, c)</dt><dd><tt>minimilist&nbsp;quadratic&nbsp;solution&nbsp;as&nbsp;root&nbsp;for&nbsp;J&nbsp;solution&nbsp;should&nbsp;always<br>
-be&nbsp;positive,&nbsp;so&nbsp;I&nbsp;have&nbsp;excluded&nbsp;other&nbsp;quadratic&nbsp;solution&nbsp;steps.&nbsp;If&nbsp;<br>
-roots&nbsp;for&nbsp;J&nbsp;are&nbsp;negative&nbsp;or&nbsp;equal&nbsp;to&nbsp;zero&nbsp;then&nbsp;the&nbsp;data&nbsp;is&nbsp;bogus&nbsp;<br>
+<dl><dt><a name="FarquharC3-quadratic"><strong>quadratic</strong></a>(self, a<font color="#909090">=None</font>, b<font color="#909090">=None</font>, c<font color="#909090">=None</font>)</dt><dd><tt>minimilist&nbsp;quadratic&nbsp;solution&nbsp;as&nbsp;root&nbsp;for&nbsp;J&nbsp;solution&nbsp;should&nbsp;always<br>
+be&nbsp;positive,&nbsp;so&nbsp;I&nbsp;have&nbsp;excluded&nbsp;other&nbsp;quadratic&nbsp;solution&nbsp;steps.&nbsp;I&nbsp;am&nbsp;<br>
+only&nbsp;returning&nbsp;the&nbsp;smallest&nbsp;of&nbsp;the&nbsp;two&nbsp;roots&nbsp;<br>
 &nbsp;<br>
 Parameters:<br>
 ----------<br>
@@ -253,28 +310,6 @@ Returns:<br>
 -------<br>
 val&nbsp;:&nbsp;float<br>
 &nbsp;&nbsp;&nbsp;&nbsp;positive&nbsp;root</tt></dd></dl>
-
-<dl><dt><a name="FarquharC3-resp"><strong>resp</strong></a>(self, Tleaf, Q10, r25, Tref<font color="#909090">=25.0</font>)</dt><dd><tt>Calculate&nbsp;leaf&nbsp;respiration&nbsp;accounting&nbsp;for&nbsp;temperature&nbsp;dependence.<br>
-&nbsp;<br>
-Parameters:<br>
-----------<br>
-r25&nbsp;:&nbsp;float<br>
-&nbsp;&nbsp;&nbsp;&nbsp;Estimate&nbsp;of&nbsp;respiration&nbsp;rate&nbsp;at&nbsp;the&nbsp;reference&nbsp;temperature&nbsp;25&nbsp;deg&nbsp;C<br>
-&nbsp;&nbsp;&nbsp;&nbsp;or&nbsp;or&nbsp;298&nbsp;K<br>
-Tref&nbsp;:&nbsp;float<br>
-&nbsp;&nbsp;&nbsp;&nbsp;reference&nbsp;temperature<br>
-Q10&nbsp;:&nbsp;float<br>
-&nbsp;&nbsp;&nbsp;&nbsp;ratio&nbsp;of&nbsp;respiration&nbsp;at&nbsp;a&nbsp;given&nbsp;temperature&nbsp;divided&nbsp;by&nbsp;respiration&nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;at&nbsp;a&nbsp;temperature&nbsp;10&nbsp;degrees&nbsp;lower<br>
-&nbsp;<br>
-Returns:<br>
--------<br>
-Rt&nbsp;:&nbsp;float<br>
-&nbsp;&nbsp;&nbsp;&nbsp;leaf&nbsp;respiration<br>
-&nbsp;<br>
-References:<br>
------------<br>
-Tjoelker&nbsp;et&nbsp;al&nbsp;(2001)&nbsp;GCB,&nbsp;7,&nbsp;223-230.</tt></dd></dl>
 
 <hr>
 Data descriptors defined here:<br>
