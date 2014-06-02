@@ -15,6 +15,8 @@ Our previous approach (Lin et al. 2013), broke the fitting approach down into a 
 (iii) a series of stats tests to explore differences in the data (not part of the package - but we can help you out if you email one of us), e.g. differences between season, species etc.
 (iv) finally, based on (iii) fit the model parameters Eaj, Eav, deltaSj and deltaSv.
 
+Note in all cases the code has some expectations that the data is supplied in a consistent format, i.e. not the original Licor file. This should be easy to work out from the examples files, but feel free to contact one of us. *YS do you want to add anything?*.
+
 In all cases the Levenberg-Marquardt minimization algorithm is used to fit the non-linear A-Ci curve data, using the lmfit package (see below).
 
 The model is coded entirely in `Python 
@@ -81,4 +83,4 @@ created using...
      
 Contact
 =======
-Martin De Kauwe (mdekauwe at gmail.com), Yan-Shih Lin (yanshihl at gmail.com) or Belinda Medlyn (bmedlyn@bio.mq.edu.au).
+Martin De Kauwe (mdekauwe at gmail.com), Yan-Shih Lin (yanshihl at gmail.com) or Belinda Medlyn (bmedlyn at bio.mq.edu.au).
