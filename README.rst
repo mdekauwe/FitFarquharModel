@@ -78,3 +78,7 @@ html_documentation.
 
 created using... 
      pydoc -w ../fit_farquhar_model/*.py
+     
+Contact
+=======
+Martin De Kauwe (mdekauwe at gmail.com), Yan-Shih Lin (yanshihl at gmail.com) or Belinda Medlyn (bmedlyn@bio.mq.edu.au).
