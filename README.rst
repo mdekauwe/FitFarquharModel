@@ -65,6 +65,10 @@ If using the two step fitting approach then ::
     normalise_data.py
     fit_ea_dels.py
 
+```python
+print 'bar'
+```
+
 Of course with real data a series of stats test should be carried out before
 fitting the final Eav, Eaj, deltaSv and deltaSj parameters. This is left up to the individual user.
 
