@@ -80,6 +80,8 @@ Massive disclaimer, I made these example files a while again! I probably haven't
 
 It should be apparent that to translate these example scripts to your own workspace is easy. If you didn't want to change the defaults then you would need to create a series of directories: data, plots, results. Inside the data directory you would place all your measurements. The code loops over all the files in this directory! The example scripts can be edited and used in your personal workspace, just remove the junk at the bottom which is read the fits back in and printing to the screen. For example, fit_all_curves_together.py would be edited so that this was all it contained ::
 ```python
+
+
     import os
     import sys
     import glob
