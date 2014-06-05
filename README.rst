@@ -4,11 +4,11 @@ FitFarquharModel
 
 Fitting routine for the Farquhar model parameters to a series of, or single measured A-Ci curve(s). 
 
-Currently we have implemented two different fitting approaches. We now favour fitting all the A-Ci curves in a single step with associated temperature dependancies, whereas previously we fit each A-Ci curve separately (see below and Lin et al. 2013).
+Currently we have implemented two different fitting approaches. We now favour fitting all the A-Ci curves in a single step with associated temperature dependancies, whereas previously we fit each A-Ci curve separately (see below and Lin *et al*. 2013).
 
 Our preferred fitting approach involves the assumption that the Vcmax, Rdfac and Jfac vary between leaves of a single species, however the temperature dependancies (Eav, Eaj, delSv and delSj) of these leaves do not. In addition we are fixing Hdv, Hdj and Ear.
 
-Our previous approach (Lin et al. 2013), broke the fitting approach down into a series of steps:
+Our previous approach (Lin *et al*. 2013), broke the fitting approach down into a series of steps:
 
 (i) fitting Jmax, Vcmax and Rd at the measurement temperature, 
 (ii) normalising the data to 25 degrees,
