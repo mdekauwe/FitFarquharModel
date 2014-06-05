@@ -8,7 +8,7 @@ Currently we have implemented two different fitting approaches. We now favour fi
 
 Our preferred fitting approach involves the assumption that the Vcmax, Rdfac and Jfac vary between leaves of a single species, however the temperature dependancies (Eav, Eaj, delSv and delSj) of these leaves do not. In addition we are fixing Hdv, Hdj and Ear.
 
-Our previous approach (Lin *et al*. 2013), broke the fitting approach down into a series of steps:
+Our previous approach (Lin *et al*. 2013), split the fitting approach down into a series of steps:
 
 1. fitting Jmax, Vcmax and Rd at the measurement temperature, 
 2. normalising the data to 25 degrees,
@@ -18,8 +18,7 @@ Our previous approach (Lin *et al*. 2013), broke the fitting approach down into 
 In all cases the `Levenberg-Marquardt minimization algorithm < http://en.wikipedia.org/wiki/Levenberg%E2%80%93Marquardt_algorithm>`_ is used to fit the non-linear A-Ci curve data, using the lmfit package (see below).
 
 The model is coded entirely in `Python 
-<http://www.python.org/>`_.
-
+<http://www.python.org/>`_ and we have some example 'R <http://www.r-project.org/>`_ scripts for any stats analysis (just ask).
 
 
 Installation
