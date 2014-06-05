@@ -80,7 +80,7 @@ fitting the final Eav, Eaj, deltaSv and deltaSj parameters. This is left up to t
 
 Massive disclaimer, I made these example files a (long) while again! I (certainly) probably haven't made a great deal of effort to maintain them, but email me if they don't work!
 
-It should be apparent that to translate these example scripts to your own workspace is easy. If you didn't want to change the defaults then you would need to create a series of directories: data, plots, results. Inside the data directory you would place all your measurements. The code loops over all the files in this directory! The example scripts can be edited and used in your personal workspace, just remove the junk at the bottom which is read the fits back in and printing to the screen. For example, fit_all_curves_together.py would be edited so that this was all it contained. ::
+It should be apparent that to translate these example scripts to your own workspace is easy. If you didn't want to change the defaults then you would need to create a series of directories: data, plots, results. Inside the data directory you would place CSV files with your measured data. The code loops over all the files in this directory. The example scripts can be edited and used in your personal workspace, just remove the junk at the bottom which I added just to read the fitted data back in and print to the screen for the examples. For example, fit_all_curves_together.py would be edited so that this was all it contained. ::
 
     import os
     import sys
