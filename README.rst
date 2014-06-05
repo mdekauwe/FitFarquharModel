@@ -22,15 +22,7 @@ In all cases the Levenberg-Marquardt minimization algorithm is used to fit the n
 The model is coded entirely in `Python 
 <http://www.python.org/>`_.
 
-Key References
-==============
-1. Farquhar, G.D., Caemmerer, S. V. and Berry, J. A. (1980) A biochemical model of photosynthetic CO2 assimilation in leaves of C3 species. *Planta*, **149**, 78-90.
 
-2. Medlyn, B. E., Dreyer, E., Ellsworth, D., Forstreuter, M., Harley, P.C., Kirschbaum, M.U.F., Leroux, X., Montpied, P., Strassemeyer, J., Walcroft, A., Wang, K. and Loustau, D. (2002) Temperature response of parameters of a biochemically based model of photosynthesis. II. A review of experimental data. *Plant, Cell and Enviroment*, **25**, 1167-1179.
-
-3. Lin, Y-S., Medlyn, B. E., De Kauwe, M. G., and Ellsworth D. E. (2013) Biochemical photosynthetic responses to temperature: how do interspecific differences compare with seasonal shifts? *Tree Physiology*, **33**, 793-806.
-
-.. contents:: :local:
 
 Installation
 =============
@@ -106,6 +98,16 @@ html_documentation.
 
 created using... 
      pydoc -w ../fit_farquhar_model/*.py
+
+
+Key References
+==============
+1. Farquhar, G.D., Caemmerer, S. V. and Berry, J. A. (1980) A biochemical model of photosynthetic CO2 assimilation in leaves of C3 species. *Planta*, **149**, 78-90.
+
+2. Medlyn, B. E., Dreyer, E., Ellsworth, D., Forstreuter, M., Harley, P.C., Kirschbaum, M.U.F., Leroux, X., Montpied, P., Strassemeyer, J., Walcroft, A., Wang, K. and Loustau, D. (2002) Temperature response of parameters of a biochemically based model of photosynthesis. II. A review of experimental data. *Plant, Cell and Enviroment*, **25**, 1167-1179.
+
+3. Lin, Y-S., Medlyn, B. E., De Kauwe, M. G., and Ellsworth D. E. (2013) Biochemical photosynthetic responses to temperature: how do interspecific differences compare with seasonal shifts? *Tree Physiology*, **33**, 793-806.
+
      
 Contacts
 ========
