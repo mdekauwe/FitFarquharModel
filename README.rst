@@ -22,6 +22,11 @@ The model is coded entirely in `Python
 
 We have extensive tested the robustness of the fitting approach to retrieving model parameters under a series of scenarios where different levels of noise are added to synthetic datasets and results obtained using a bayesian approach. The code for the later I could probably dig out and I may add it to this package if I remember.
 
+```ruby
+require 'redcarpet'
+markdown = Redcarpet.new("Hello World!")
+puts markdown.to_html
+```
 
 Installation
 =============
