@@ -51,7 +51,11 @@ or the standard python approach ::
 Setting the input files up
 ==========================
 
-Note in all cases the code has some expectations that the data is supplied in a consistent format, i.e. not the original Licor file. This should be easy to work out from the examples files, but feel free to contact one of us. Each A-Ci curve should be assigned to a unique curve number and curves measured at the same leaf should have the same leaf number.
+Note in all cases the code has some expectations that the data is supplied in a consistent format, i.e. not the original Licor file. This should be easy to work out from the examples files (examples/data/example.csv), but feel free to contact one of us. Each A-Ci curve should be assigned to a unique curve number and curves measured at the same leaf should have the same leaf number. The usual format of the input file has the following columns: Curve, Tleaf, Ci, Photo, Species, Season, Leaf, fitgroup.
+
+If your data doesn't have a different season that just put a unique identifier which is the same for all curves. So for example just fill the season column with summer for example.
+
+Tleaf is expected to be supplied in degrees C. I ought to write something that checks this is the case (note to self), but given that the code will convert back and forth if the output looks bogus this would be the first thing I would check!
 
 
 Running the code
