@@ -18,7 +18,7 @@ Our previous approach (Lin *et al*. 2013), split the fitting approach down into 
 In all cases the `Levenberg-Marquardt minimization algorithm < http://en.wikipedia.org/wiki/Levenberg%E2%80%93Marquardt_algorithm>`_ is used to fit the non-linear A-Ci curve data, using the lmfit package (see below).
 
 The model is coded entirely in `Python 
-<http://www.python.org/>`_ and we have some example 'R <http://www.r-project.org/>`_ scripts for any stats analysis (just ask).
+<http://www.python.org/>`_ and we have some example `R <http://www.r-project.org/>`_ scripts for any stats analysis (just ask).
 
 We have extensive tested the robustness of the fitting approach to retrieving model parameters under a series of scenarios where different levels of noise are added to synthetic datasets and results obtained using a bayesian approach. The code for the later I could probably dig out and I may add it to this package if I remember.
 
