@@ -2,9 +2,9 @@
 FitFarquharModel
 ====================
 
-Fitting routine for the Farquhar model parameters to a series of (or single) measured A-Ci curve data. 
+Fitting routine for the Farquhar model parameters to a series of, or single measured A-Ci curve(s). 
 
-Currently we have implemented two different fitting approaches. We now favour fitting all the A-Ci curves in a single step, whereas previously we fit each A-Ci curve separately (see below and Lin et al. 2013).
+Currently we have implemented two different fitting approaches. We now favour fitting all the A-Ci curves in a single step with associated temperature dependancies, whereas previously we fit each A-Ci curve separately (see below and Lin et al. 2013).
 
 Our preferred fitting approach involves the assumption that the Vcmax, Rdfac and Jfac vary between leaves of a single species, however the temperature dependancies (Eav, Eaj, delSv and delSj) of these leaves do not. In addition we are fixing Hdv, Hdj and Ear.
 
@@ -24,11 +24,12 @@ The model is coded entirely in `Python
 
 Key References
 ==============
-1). Farquhar, G.D., Caemmerer, S. V. and Berry, J. A. (1980) A biochemical model of photosynthetic CO2 assimilation in leaves of C3 species. Planta, 149, 78-90.
+1). Farquhar, G.D., Caemmerer, S. V. and Berry, J. A. (1980) A biochemical model of photosynthetic CO2 assimilation in leaves of C3 species. _Planta_, __149__, 78-90.
 
-2). Medlyn, B. E., Dreyer, E., Ellsworth, D., Forstreuter, M., Harley, P.C., Kirschbaum, M.U.F., Leroux, X., Montpied, P., Strassemeyer, J., Walcroft, A., Wang, K. and Loustau, D. (2002) Temperature response of parameters of a biochemically based model of photosynthesis. II. A review of experimental data. Plant, Cell and Enviroment 25, 1167-1179.
+2). Medlyn, B. E., Dreyer, E., Ellsworth, D., Forstreuter, M., Harley, P.C., Kirschbaum, M.U.F., Leroux, X., Montpied, P., Strassemeyer, J., Walcroft, A., Wang, K. and Loustau, D. (2002) Temperature response of parameters of a biochemically based model of photosynthesis. II. A review of experimental data. _Plant, Cell and Enviroment_, __25__, 1167-1179.
 
-3). Lin, Y-S., Medlyn, B. E., De Kauwe, M. G., and Ellsworth D. E. (2013) Biochemical photosynthetic responses to temperature: how do interspecific differences compare with seasonal shifts? Tree Physiology, 33, 793-806.
+3). Lin, Y-S., Medlyn, B. E., De Kauwe, M. G., and Ellsworth D. E. (2013) Biochemical photosynthetic responses to temperature: how do interspecific differences compare with seasonal shifts? _Tree Physiology_, __33__, 793-806.
+
 .. contents:: :local:
 
 Installation
