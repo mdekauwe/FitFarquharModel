@@ -15,7 +15,7 @@ Our previous approach (Lin *et al*. 2013), split the fitting approach down into 
 3. a series of stats tests to explore differences in the data (not part of the package - but we can help you out if you email one of us), e.g. differences between season, species etc.
 4. finally, based on these stats tests, fit the model parameters Eaj, Eav, deltaSj and deltaSv.
 
-In all cases the `Levenberg-Marquardt minimization algorithm < http://en.wikipedia.org/wiki/Levenberg%E2%80%93Marquardt_algorithm>`_ is used to fit the non-linear A-Ci curve data, using the lmfit package (see below).
+In all cases the `Levenberg-Marquardt minimization algorithm <http://en.wikipedia.org/wiki/Levenberg%E2%80%93Marquardt_algorithm>`_ is used to fit the non-linear A-Ci curve data, using the lmfit package (see below).
 
 The model is coded entirely in `Python 
 <http://www.python.org/>`_ and we have some example `R <http://www.r-project.org/>`_ scripts for any stats analysis (just ask).
