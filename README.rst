@@ -99,7 +99,7 @@ created using... (for my own reference!)
 
 Key References
 ==============
-1. Farquhar, G.D., Caemmerer, S. V. and Berry, J. A. (1980) A biochemical model of photosynthetic CO<sub>2</sub> assimilation in leaves of C3 species. *Planta*, **149**, 78-90.
+1. Farquhar, G.D., Caemmerer, S. V. and Berry, J. A. (1980) A biochemical model of photosynthetic CO~2 assimilation in leaves of C3 species. *Planta*, **149**, 78-90.
 
 2. Medlyn, B. E., Dreyer, E., Ellsworth, D., Forstreuter, M., Harley, P.C., Kirschbaum, M.U.F., Leroux, X., Montpied, P., Strassemeyer, J., Walcroft, A., Wang, K. and Loustau, D. (2002) Temperature response of parameters of a biochemically based model of photosynthesis. II. A review of experimental data. *Plant, Cell and Enviroment*, **25**, 1167-1179.
 
