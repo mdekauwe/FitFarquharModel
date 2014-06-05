@@ -91,10 +91,9 @@ It should be apparent that to translate these example scripts to your own worksp
     
 Documentation
 =============
-Minimal python docstring documentation output as html files in subdirectory
-html_documentation.
+Each class/method/function is typical documented and I have built html documentation pages which will outline usage, parameters etc. If you open any of the html files in your web browser you should be able to se these.
 
-created using... 
+created using... (for my own reference!)
      pydoc -w ../fit_farquhar_model/*.py
 
 
