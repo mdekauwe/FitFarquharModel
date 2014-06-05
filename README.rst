@@ -109,8 +109,6 @@ Key References
      
 Contacts
 ========
-Martin De Kauwe (mdekauwe at gmail.com)
-
-Yan-Shih Lin (yanshihl at gmail.com)
-
-Belinda Medlyn (bmedlyn at bio.mq.edu.au).
+* Martin De Kauwe (mdekauwe at gmail.com)
+* Yan-Shih Lin (yanshihl at gmail.com)
+* Belinda Medlyn (bmedlyn at bio.mq.edu.au).
