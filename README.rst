@@ -24,11 +24,11 @@ The model is coded entirely in `Python
 
 Key References
 ==============
-1. Farquhar, G.D., Caemmerer, S. V. and Berry, J. A. (1980) A biochemical model of photosynthetic CO2 assimilation in leaves of C3 species. *Planta*, **149, 78-90.
+1. Farquhar, G.D., Caemmerer, S. V. and Berry, J. A. (1980) A biochemical model of photosynthetic CO2 assimilation in leaves of C3 species. *Planta*, **149**, 78-90.
 
-2. Medlyn, B. E., Dreyer, E., Ellsworth, D., Forstreuter, M., Harley, P.C., Kirschbaum, M.U.F., Leroux, X., Montpied, P., Strassemeyer, J., Walcroft, A., Wang, K. and Loustau, D. (2002) Temperature response of parameters of a biochemically based model of photosynthesis. II. A review of experimental data. _Plant, Cell and Enviroment_, __25__, 1167-1179.
+2. Medlyn, B. E., Dreyer, E., Ellsworth, D., Forstreuter, M., Harley, P.C., Kirschbaum, M.U.F., Leroux, X., Montpied, P., Strassemeyer, J., Walcroft, A., Wang, K. and Loustau, D. (2002) Temperature response of parameters of a biochemically based model of photosynthesis. II. A review of experimental data. *Plant, Cell and Enviroment*, **25**, 1167-1179.
 
-3. Lin, Y-S., Medlyn, B. E., De Kauwe, M. G., and Ellsworth D. E. (2013) Biochemical photosynthetic responses to temperature: how do interspecific differences compare with seasonal shifts? _Tree Physiology_, __33__, 793-806.
+3. Lin, Y-S., Medlyn, B. E., De Kauwe, M. G., and Ellsworth D. E. (2013) Biochemical photosynthetic responses to temperature: how do interspecific differences compare with seasonal shifts? *Tree Physiology*, **33**, 793-806.
 
 .. contents:: :local:
 
@@ -78,7 +78,7 @@ fitting the final Eav, Eaj, deltaSv and deltaSj parameters. This is left up to t
 
 Massive disclaimer, I made these example files a while again! I probably haven't made a great deal of effort to maintain them, but email me if they don't work!
 
-It should be apparent that to translate these example scripts to your own workspace is easy. If you didn't want to change the defaults then you would need to create a series of directories: data, plots, results. Inside the data directory you would place all your measurements. The code loops over all the files in this directory! The example scripts can be edited and used in your personal workspace, just remove the junk at the bottom which is read the fits back in and printing to the screen. For example, fit_all_curves_together.py would be edited so that this was all it contained ::
+It should be apparent that to translate these example scripts to your own workspace is easy. If you didn't want to change the defaults then you would need to create a series of directories: data, plots, results. Inside the data directory you would place all your measurements. The code loops over all the files in this directory! The example scripts can be edited and used in your personal workspace, just remove the junk at the bottom which is read the fits back in and printing to the screen. For example, fit_all_curves_together.py would be edited so that this was all it contained
 ```python
 
 
