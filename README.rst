@@ -41,7 +41,7 @@ They code has very few dependancies and depending on your operating system the e
 * `matplotlib <http://matplotlib.sourceforge.net/>`_ 
 * `lmfit <http://newville.github.com/lmfit-py/>`_  
 
-All of these packages are widely used scientific packages which build easily on multiple platforms. For window users the `Enthought <http://www.enthought.com/>`_ or Anaconda (http://continuum.io/downloads) python packages are perhaps your simplest avenue. We have set up the necessary packages above and it very straightforward. On a Linux machine it is simply as case of using whatever your default package manager is, e.g. sudo apt-get install python2.7. If you are on a mac then python comes as standard. However, in my personal experience I've found that it is easier to set up your own separate working copy using a package manager such as Macports (http://www.macports.org/) or Homebrew (http://brew.sh/). I read that all the cool kids are now using the later, but personally I've had no issues with Macports. Python, numpy, scipy and matplotlib should all install via your package manager described above. You may need to install lmfit yourself (not sure). But regardless it is simple, there are instructions on the webpage listed above or just download the code, extract it and type ::
+All of these packages are widely used scientific packages which build easily on multiple platforms. For window users the `Enthought <http://www.enthought.com/>`_ or `Anaconda <http://continuum.io/downloads>`_ python packages are perhaps your simplest avenue. We have set up the necessary packages above and it very straightforward. On a Linux machine it is simply as case of using whatever your default package manager is, e.g. sudo apt-get install python2.7. If you are on a mac then python comes as standard. However, in my personal experience I've found that it is easier to set up your own separate working copy using a package manager such as `Macports <http://www.macports.org/>`_ or `Homebrew <http://brew.sh/>`_. I read that all the cool kids are now using the later, but personally I've had no issues with Macports. Python, numpy, scipy and matplotlib should all install via your package manager described above. You may need to install lmfit yourself (not sure). But regardless it is simple, there are instructions on the webpage listed above or just download the code, extract it and type ::
 
     python setup.py install
 
@@ -77,23 +77,23 @@ fitting the final Eav, Eaj, deltaSv and deltaSj parameters. This is left up to t
 
 Massive disclaimer, I made these example files a while again! I probably haven't made a great deal of effort to maintain them, but email me if they don't work!
 
-It should be apparent that to translate these example scripts to your own workspace is easy. If you didn't want to change the defaults then you would need to create a series of directories: data, plots, results. Inside the data directory you would place all your measurements. The code loops over all the files in this directory! The example scripts can be edited and used in your personal workspace, just remove the junk at the bottom which is read the fits back in and printing to the screen. For example, fit_all_curves_together.py would be edited so that this was all it contained
+It should be apparent that to translate these example scripts to your own workspace is easy. If you didn't want to change the defaults then you would need to create a series of directories: data, plots, results. Inside the data directory you would place all your measurements. The code loops over all the files in this directory! The example scripts can be edited and used in your personal workspace, just remove the junk at the bottom which is read the fits back in and printing to the screen. For example, fit_all_curves_together.py would be edited so that this was all it contained ::
 
-import os
-import sys
-import glob
+    import os
+    import sys
+    import glob
 
-from fit_farquhar_model.farquhar_model import FarquharC3
-from fit_farquhar_model.fit_dummy_version_ear_const import FitMe
+    from fit_farquhar_model.farquhar_model import FarquharC3
+    from fit_farquhar_model.fit_dummy_version_ear_const import FitMe
 
-ofname = "fitting_results.csv"
-results_dir = "results"
-data_dir = "data"
-plot_dir = "plots"
-model = FarquharC3(peaked_Jmax=True, peaked_Vcmax=True, model_Q10=False)
+    ofname = "fitting_results.csv"
+    results_dir = "results"
+    data_dir = "data"
+    plot_dir = "plots"
+    model = FarquharC3(peaked_Jmax=True, peaked_Vcmax=True, model_Q10=False)
 
-F = FitMe(model, ofname, results_dir, data_dir, plot_dir)
-F.main(print_to_screen=False)     
+    F = FitMe(model, ofname, results_dir, data_dir, plot_dir)
+    F.main(print_to_screen=False)     
 
     
 Documentation
