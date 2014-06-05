@@ -27,7 +27,7 @@ The model is coded entirely in `Python
 Installation
 =============
 
-They code has very few dependancies and depending on your operating system the ease of setup will vary. The dependancies are:
+They code has been written such that it has very few dependancies to ease personal set up. It depends on a series of standard python packages which install easily on all systems and a single fitting package which has installed with a single command on windows, macs and linux machines. The dependancies are:
 
 * `numpy <http://numpy.scipy.org/>`_ 
 * `scipy <http://www.scipy.org/>`_ 
