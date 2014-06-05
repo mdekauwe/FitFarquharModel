@@ -117,6 +117,6 @@ Key References
      
 Contacts
 ========
-* Martin De Kauwe (mdekauwe at gmail.com)
-* Yan-Shih Lin (yanshihl at gmail.com)
-* Belinda Medlyn (bmedlyn at bio.mq.edu.au).
+* `Martin De Kauwe <http://mdekauwe.github.io/>`_  (mdekauwe at gmail.com)
+* `Yan-Shih Lin <https://sites.google.com/site/yanshihlin/>`_ (yanshihl at gmail.com)
+* `Belinda Medlyn <http://bio.mq.edu.au/people/person.php?user=bmedlyn>`_ (bmedlyn at bio.mq.edu.au).
