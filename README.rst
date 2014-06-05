@@ -56,10 +56,6 @@ If your data doesn't have a different season that just put a unique identifier w
 
 Tleaf is expected to be supplied in degrees C. I ought to write something that checks this is the case (note to self), but given that the code will convert back and forth if the output looks bogus this would be the first thing I would check!
 
-```python
-s = "Python syntax highlighting"
-print s
-```
 
 Running the code
 =================
