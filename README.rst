@@ -10,10 +10,10 @@ Our preferred fitting approach involves the assumption that the Vcmax, Rdfac and
 
 Our previous approach (Lin *et al*. 2013), broke the fitting approach down into a series of steps:
 
-(i) fitting Jmax, Vcmax and Rd at the measurement temperature, 
-(ii) normalising the data to 25 degrees,
-(iii) a series of stats tests to explore differences in the data (not part of the package - but we can help you out if you email one of us), e.g. differences between season, species etc.
-(iv) finally, based on (iii) fit the model parameters Eaj, Eav, deltaSj and deltaSv.
+1. fitting Jmax, Vcmax and Rd at the measurement temperature, 
+2. normalising the data to 25 degrees,
+3. a series of stats tests to explore differences in the data (not part of the package - but we can help you out if you email one of us), e.g. differences between season, species etc.
+4. finally, based on these stats tests, fit the model parameters Eaj, Eav, deltaSj and deltaSv.
 
 Note in all cases the code has some expectations that the data is supplied in a consistent format, i.e. not the original Licor file. This should be easy to work out from the examples files, but feel free to contact one of us. Each A-Ci curve should be assigned to a unique curve number and curves measured at the same leaf should have the same leaf number.
 
@@ -99,7 +99,7 @@ created using... (for my own reference!)
 
 Key References
 ==============
-1. Farquhar, G.D., Caemmerer, S. V. and Berry, J. A. (1980) A biochemical model of photosynthetic CO~2 assimilation in leaves of C3 species. *Planta*, **149**, 78-90.
+1. Farquhar, G.D., Caemmerer, S. V. and Berry, J. A. (1980) A biochemical model of photosynthetic CO2 assimilation in leaves of C3 species. *Planta*, **149**, 78-90.
 
 2. Medlyn, B. E., Dreyer, E., Ellsworth, D., Forstreuter, M., Harley, P.C., Kirschbaum, M.U.F., Leroux, X., Montpied, P., Strassemeyer, J., Walcroft, A., Wang, K. and Loustau, D. (2002) Temperature response of parameters of a biochemically based model of photosynthesis. II. A review of experimental data. *Plant, Cell and Enviroment*, **25**, 1167-1179.
 
