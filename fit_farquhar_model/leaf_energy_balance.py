@@ -18,9 +18,12 @@ import math
 import sys
 
 class LeafEnergyBalance(object):
-    """ Calculate the net leaf enegy balance, given Tleaf and gs """
+    """
+        Calculate the net leaf enegy balance, given Tleaf and gs
+        - only works for single sided leaves!
+    """
 
-    def __init__(self, one_sided=True):
+    def __init__(self):
 
         # constants
         self.sigma = 5.6704E-08  # stefan boltzmann constant, (w m-2 k-4)
@@ -33,12 +36,6 @@ class LeafEnergyBalance(object):
         self.dheat = 21.5E-6     # molecular diffusivity for heat
         self.DEG_TO_KELVIN = 273.15
         self.RGAS = 8.314
-
-        if one_sided:
-            self.stomatal_ratio = 1.0
-        else:
-            self.stomtal_ratio = 2.0
-
 
     def main(self, tleaf=None, tair=None, gs=None, par=None, vpd=None,
                     pressure=None, wind=None, leaf_width=None,
