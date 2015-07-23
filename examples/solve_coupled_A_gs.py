@@ -18,7 +18,6 @@ from fit_farquhar_model.farquhar_model import FarquharC3
 from fit_farquhar_model.stomtal_conductance_models import StomtalConductance
 from fit_farquhar_model.leaf_energy_balance import LeafEnergyBalance
 
-
 def main(tair, par, vpd, wind, leaf_width, leaf_absorptance, pressure, g0, g1,
          D0, Vcmax25, Jmax25, Rd25, Eaj, Eav, deltaSj, deltaSv, Hdv, Hdj,
          Q10, Ca):
@@ -26,37 +25,33 @@ def main(tair, par, vpd, wind, leaf_width, leaf_absorptance, pressure, g0, g1,
     # Ratio of Gbh:Gbc
     GBHGBC = 1.32
     deg2kelvin = 273.15
+    iter_max = 100
 
     F = FarquharC3(peaked_Jmax=True, peaked_Vcmax=False, model_Q10=True)
     S = StomtalConductance(g0=g0, g1=g1, D0=D0)
     L = LeafEnergyBalance(leaf_width, leaf_absorptance)
 
     # set initialise values
-    Cs = Ca  # start at Ca
+    dleaf = vpd
+    Cs = Ca
     Tleaf = tair
     Tleaf_K = Tleaf + deg2kelvin
-    dleaf = vpd
-    iter_max = 500
-
 
     print "Start: %.3f %.3f %.3f" % (Cs, Tleaf, dleaf)
     print
-
 
     iter = 0
     while True:
 
         (An, Acn, Ajn) = F.calc_photosynthesis(Ci=Cs, Tleaf=Tleaf_K, Par=par,
                                                Jmax25=Jmax25, Vcmax25=Vcmax25,
-                                               Q10=Q10, Eaj=Eaj,
-                                               Eav=Eav, deltaSj=deltaSj,
-                                               deltaSv=deltaSv, Rd25=Rd25,
-                                               Hdv=Hdv, Hdj=Hdj)
+                                               Q10=Q10, Eaj=Eaj, Eav=Eav,
+                                               deltaSj=deltaSj, deltaSv=deltaSv,
+                                               Rd25=Rd25, Hdv=Hdv, Hdj=Hdj)
         gs = S.leuning(dleaf, An, Cs)
 
-
         (new_tleaf, et, gbH, gv) = L.calc_leaf_temp(Tleaf, tair, gs, par, dleaf,
-                                                  pressure, wind)
+                                                    pressure, wind)
 
         # update Cs and VPD
         gbc = gbH / GBHGBC
