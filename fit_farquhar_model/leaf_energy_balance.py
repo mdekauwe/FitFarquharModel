@@ -81,7 +81,7 @@ if __name__ == '__main__':
     pressure = 101.0
     wind = 2.0
     leaf_width = 0.02
-    leaf_absorptance = 0.86 # leaf absorptance of solar radiation [0,1]
+    leaf_absorptance = 0.5 # leaf absorptance of solar radiation [0,1]
 
 
     L = LeafEnergyBalance(leaf_width, leaf_absorptance)

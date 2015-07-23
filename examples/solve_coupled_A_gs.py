@@ -36,12 +36,12 @@ def main(tair, par, vpd, wind, leaf_width, leaf_absorptance, pressure, g0, g1,
     Tleaf = tair
     Tleaf_K = Tleaf + deg2kelvin
     dleaf = vpd
-    iter_max = 100
+    iter_max = 500
 
 
-    print "start"
-    print Cs, Tleaf, dleaf
+    print "Start: %.3f %.3f %.3f" % (Cs, Tleaf, dleaf)
     print
+
 
     iter = 0
     while True:
@@ -63,13 +63,13 @@ def main(tair, par, vpd, wind, leaf_width, leaf_absorptance, pressure, g0, g1,
         Cs = Ca - An / gbc
         dleaf = et * pressure / gv
 
-        print Cs, Tleaf, dleaf, An, gs
+        print "%.3f %.3f %.3f %.3f %.3f" %  (Cs, Tleaf, dleaf, An, gs)
 
         if math.fabs(Tleaf - new_tleaf) < 0.02:
             break
 
         if iter > iter_max:
-            raise Exception('No convergence!')
+            raise Exception('No convergence: %d' % (iter))
 
         Tleaf = new_tleaf
         Tleaf_K = Tleaf + deg2kelvin
@@ -85,8 +85,7 @@ def main(tair, par, vpd, wind, leaf_width, leaf_absorptance, pressure, g0, g1,
     gs = S.leuning(dleaf, An, Cs)
 
     print
-    print "End"
-    print Cs, Tleaf, dleaf, An, gs
+    print "End: %.3f %.3f %.3f %.3f %.3f" % (Cs, Tleaf, dleaf, An, gs)
 
 
 
@@ -114,9 +113,9 @@ if __name__ == '__main__':
     vpd = 2.0
     wind = 2.5
     leaf_width = 0.02
-    leaf_absorptance = 0.86 # leaf absorptance of solar radiation [0,1]
+    leaf_absorptance = 0.5 # leaf absorptance of solar radiation [0,1]
     pressure = 101.0
-    Ca = 400.0
+    Ca = 500.0
     main(tair, par, vpd, wind, leaf_width, leaf_absorptance, pressure, g0, g1,
          D0, Vcmax25, Jmax25, Rd25, Eaj, Eav, deltaSj, deltaSv, Hdv, Hdj,
          Q10, Ca)
