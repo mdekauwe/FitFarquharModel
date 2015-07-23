@@ -76,6 +76,7 @@ class PenmanMonteith(object):
         excessively high.
 
         Leuning 1995, appendix E
+        Medlyn et al. 2007 appendix, for need for cmolar
         """
 
         # radiation conductance (mol m-2 s-1)
