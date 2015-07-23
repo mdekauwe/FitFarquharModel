@@ -53,7 +53,8 @@ class LeafEnergyBalance(object):
         air_density = pressure * 1000.0 / (287.058 * tair_k)
         cmolar = pressure * 1000.0 / (self.RGAS * tair_k)
 
-        rnet_iso = self.calc_rnet(esat, leaf_absorptance, par, tair_k, tleaf_k)
+        rnet_iso = self.calc_rnet(esat, leaf_absorptance, par, tair_k, tleaf_k,
+                                  vpd)
 
         # radiation conductance (mol m-2 s-1)
         (grad, gbh,
@@ -135,7 +136,7 @@ class LeafEnergyBalance(object):
 
         return (grad, gbh, gbhr, gw)
 
-    def calc_rnet(self, esat, leaf_absorptance, par, tair_k, tleaf_k):
+    def calc_rnet(self, esat, leaf_absorptance, par, tair_k, tleaf_k, vpd):
 
         kpa_2_pa = 1000.0
         umol_m2_s_to_W_m2 = 2.0 / self.umol_to_j
