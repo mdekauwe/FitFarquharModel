@@ -9,5 +9,8 @@ fit_farquhar_model/farquhar_model.py
 fit_farquhar_model/fit_dummy_version_ear_const.py
 fit_farquhar_model/fit_model.py
 fit_farquhar_model/generate_synthetic_data_to_fit.py
+fit_farquhar_model/leaf_energy_balance.py
 fit_farquhar_model/normalise.py
 fit_farquhar_model/plot_priors.py
+fit_farquhar_model/solve_coupled_model.py
+fit_farquhar_model/stomtal_conductance_models.py

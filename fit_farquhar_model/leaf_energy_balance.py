@@ -164,7 +164,7 @@ class LeafEnergyBalance(object):
 
         but see Jones 1992 too.
         """
-        Tk = tair + self.DEG_TO_KELVIN
+        Tk = temp + self.DEG_TO_KELVIN
         A = 17.27
         T_star = 273.0
         T_dash = 36.0
