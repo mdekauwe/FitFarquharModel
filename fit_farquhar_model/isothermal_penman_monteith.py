@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Calculate the leaf energy balance based on Leuning.
+Isothermal Penman-Monteith
 
 Reference:
 ==========
@@ -10,23 +10,20 @@ Reference:
 
 """
 __author__ = "Martin De Kauwe"
-__version__ = "1.0 (20.12.2013)"
+__version__ = "1.0 (23.07.2015)"
 __email__ = "mdekauwe@gmail.com"
 
 
 import math
 import sys
-from isothermal_penman_monteith import PenmanMonteith
 
-class LeafEnergyBalance(object):
-    """
-        Calculate the net leaf enegy balance, given Tleaf and gs
-        - only works for single sided leaves!
-    """
 
+class PenmanMonteith(object):
+
+    """docstring for PenmanMonteith"""
     def __init__(self, leaf_width, leaf_absorptance):
 
-        # constants
+        self.kpa_2_pa = 1000.
         self.sigma = 5.6704E-08  # stefan boltzmann constant, (w m-2 k-4)
         self.emissivity_leaf = 0.99   # emissivity of leaf (-)
         self.cp = 1010.0         # specific heat of dry air (j kg-1 k-1)
@@ -37,67 +34,11 @@ class LeafEnergyBalance(object):
         self.dheat = 21.5E-6     # molecular diffusivity for heat
         self.DEG_TO_KELVIN = 273.15
         self.RGAS = 8.314
-        self.leaf_width = leaf_width
         self.leaf_absorptance = leaf_absorptance
+        self.leaf_width = leaf_width
 
-    def main(self, tleaf=None, tair=None, gs=None, par=None, vpd=None,
-                    pressure=None, wind=None, leaf_width=None):
-
-        P = PenmanMonteith(self.leaf_width, self.leaf_absorptance)
-
-        tleaf_k = tleaf + self.DEG_TO_KELVIN
-        tair_k = tair + self.DEG_TO_KELVIN
-
-        tleaf_k = tleaf + self.DEG_TO_KELVIN
-        tair_k = tair + self.DEG_TO_KELVIN
-        esat = self.calc_esat(tair, pressure)
-        esat_inc = self.calc_esat(tair + 0.1, pressure)
-
-        # density of dry air
-        air_density = pressure * 1000.0 / (287.058 * tair_k)
-        cmolar = pressure * 1000.0 / (self.RGAS * tair_k)
-
-        rnet_iso = P.calc_rnet(esat, par, tair_k, tleaf_k,
-                                  vpd)
-
-        (grad, gbh,
-         gbhr, gw, gv) = P.calc_conductances(tair_k, tleaf, tair, pressure,
-                                                wind, gs, cmolar)
-        (et, lambda_et) = P.calc_et(tleaf, tair, gs, vpd, pressure, wind, par,
-                                    gbhr, gw, esat, esat_inc, rnet_iso)
-
-
-        #rnet_iso = self.calc_rnet(esat, leaf_absorptance, par, tair_k, tleaf_k,
-        #                          vpd)
-
-        # radiation conductance (mol m-2 s-1)
-        #(grad, gbh,
-        # gbhr, gw, gv) = self.calc_conductances(tair_k, tleaf, tair, pressure,
-        #                                    wind, leaf_width, gs, cmolar)
-
-
-        #(et, lambda_et) = self.calc_isothermal_transp(tair, vpd, pressure, esat,
-        #                                                  esat_inc, rnet_iso,
-        #                                              grad, gbh, gbhr, gw)
-
-        # D6 in Leuning
-        Y = 1.0 / (1.0 + grad / gbh)
-
-        # sensible heat exchanged between leaf and surroundings
-        sensible_heat = Y * (rnet_iso - lambda_et)
-
-        # leaf-air temperature difference recalculated from energy balance.
-        # (same equation as above!)
-        new_Tleaf = (tair + sensible_heat /
-                     (self.cp * air_density * (gbh / cmolar)))
-
-        return (new_Tleaf, et, gbh, gv)
-
-    def calc_isothermal_transp(self, tair, vpd, pressure, esat, esat_inc,
-                                rnet_iso, grad, gbh, gbhr, gw):
-        """ Isothermal form of the Penman-Monteith equation """
-
-        kpa_2_pa = 1000.
+    def calc_et(self, tleaf, tair, gs, vpd, pressure, wind, par, gbhr, gw,
+                esat, esat_inc, rnet_iso):
 
         # latent heat of water vapour at air temperature (j mol-1)
         lhv = (self.h2olv0 - 2.365e3 * tair) * self.h2omw
@@ -109,7 +50,7 @@ class LeafEnergyBalance(object):
         gamma = self.cp * self.air_mass * pressure * 1000.0 / lhv
 
         # Y cancels in eqn 10
-        arg1 = (slope * rnet_iso + (vpd * kpa_2_pa) * gbh * self.cp *
+        arg1 = (slope * rnet_iso + (vpd * self.kpa_2_pa) * gbhr * self.cp *
                 self.air_mass)
         arg2 = slope + gamma * gbhr / gw
         et = arg1 / arg2
@@ -122,8 +63,8 @@ class LeafEnergyBalance(object):
         # to get to kg m2 d-1 or mm d-1
         return et / lhv, LE_et
 
-    def calc_conductances(self, tair_k, tleaf, tair, pressure, wind, leaf_width,
-                          gs, cmolar):
+    def calc_conductances(self, tair_k, tleaf, tair, pressure, wind, gs,
+                          cmolar):
         """
         Leuning 1995, appendix E
         """
@@ -133,13 +74,13 @@ class LeafEnergyBalance(object):
                 (self.cp * self.air_mass))
 
         # boundary layer conductance for 1 side of leaf from forced convection
-        gbhw = 0.003 * math.sqrt(wind / leaf_width) * cmolar
+        gbhw = 0.003 * math.sqrt(wind / self.leaf_width) * cmolar
 
         # grashof number
-        grashof_num = 1.6e8 * math.fabs(tleaf - tair) * leaf_width**3
+        grashof_num = 1.6e8 * math.fabs(tleaf - tair) * self.leaf_width**3
 
         # boundary layer conductance for free convection
-        gbhf = 0.5 * self.dheat * (grashof_num**0.25) / leaf_width * cmolar
+        gbhf = 0.5 * self.dheat * (grashof_num**0.25) / self.leaf_width * cmolar
 
         # total conductance to heat
         gbh = 2.0 * (gbhf + gbhw)
@@ -163,7 +104,7 @@ class LeafEnergyBalance(object):
 
         return (grad, gbh, gbhr, gw, gv)
 
-    def calc_rnet(self, esat, leaf_absorptance, par, tair_k, tleaf_k, vpd):
+    def calc_rnet(self, esat, par, tair_k, tleaf_k, vpd):
 
         kpa_2_pa = 1000.0
         umol_m2_s_to_W_m2 = 2.0 / self.umol_to_j
@@ -181,7 +122,7 @@ class LeafEnergyBalance(object):
         isothermal_net_lw = rlw_up - rlw_down
 
         # isothermal net radiation
-        return (leaf_absorptance * par - isothermal_net_lw)
+        return (self.leaf_absorptance * par - isothermal_net_lw)
 
     def calc_esat(self, temp, pressure):
         """
@@ -204,22 +145,18 @@ class LeafEnergyBalance(object):
 
         return esat
 
-
 if __name__ == '__main__':
 
+    par = 1000.0
     tleaf = 21.5
     tair = 20.0
     gs = 0.15
-    par = 1000
     vpd = 2.0
     pressure = 101.0
     wind = 2.0
     leaf_width = 0.02
     leaf_absorptance = 0.86 # leaf absorptance of solar radiation [0,1]
 
-
-    L = LeafEnergyBalance(leaf_width, leaf_absorptance)
-    new_Tleaf, et, gbh, gv = L.main(tleaf, tair, gs, par, vpd, pressure,
-                                    wind, leaf_width)
-
-    print new_Tleaf, et, et*18*0.001*86400.
+    P = PenmanMonteith(leaf_width, leaf_absorptance)
+    et, le_et = P.main(tleaf, tair, gs, vpd, pressure, wind, par)
+    print et, le_et
