@@ -5,8 +5,12 @@ Various stomatal conductance models
 
 Reference:
 ==========
-* Leuning et al. (2002)
-* Medlyn et al. (2011)
+* Leuning, R.: A critical appraisal of a combined stomatal- photosynthesis
+  model for C3 plants, Plant Cell Environ., 18, 339–355, 1995.
+* Medlyn, B. E., Duursma, R. A., Eamus, D., Ellsworth, D. S., Pren- tice,
+  I. C., Barton, C. V. M., Crous, K. Y., De Angelis, P., Free- man, M., and
+  Wingate, L.: Reconciling the optimal and empirical approaches to modelling
+  stomatal conductance, Global Change Biol., 17, 2134–2144, 2011.
 
 """
 __author__ = "Martin De Kauwe"
