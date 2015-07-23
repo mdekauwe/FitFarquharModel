@@ -13,5 +13,4 @@ fit_farquhar_model/isothermal_penman_monteith.py
 fit_farquhar_model/leaf_energy_balance.py
 fit_farquhar_model/normalise.py
 fit_farquhar_model/plot_priors.py
-fit_farquhar_model/solve_coupled_model.py
 fit_farquhar_model/stomtal_conductance_models.py

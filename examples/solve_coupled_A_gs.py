@@ -27,7 +27,7 @@ def main(tair, par, vpd, wind, leaf_width, leaf_absorptance, pressure, g0, g1,
     GBHGBC = 1.32
     deg2kelvin = 273.15
 
-    F = FarquharC3(peaked_Jmax=True, peaked_Vcmax=True, model_Q10=True)
+    F = FarquharC3(peaked_Jmax=True, peaked_Vcmax=False, model_Q10=True)
     S = StomtalConductance(g0=g0, g1=g1, D0=D0)
     L = LeafEnergyBalance(leaf_width, leaf_absorptance)
 
@@ -109,9 +109,9 @@ if __name__ == '__main__':
     Hdv = 200000.0
     Hdj = 200000.0
     Q10 = 2.0
-    par = 800.0
-    tair = 15.0
-    vpd = 1.0
+    par = 1500.0
+    tair = 20.0
+    vpd = 2.0
     wind = 2.5
     leaf_width = 0.02
     leaf_absorptance = 0.86 # leaf absorptance of solar radiation [0,1]

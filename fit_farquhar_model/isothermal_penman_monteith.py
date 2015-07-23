@@ -128,6 +128,7 @@ class PenmanMonteith(object):
         ea = self.calc_esat(tair, pressure) - (vpd * kpa_2_pa)
 
         # eqn D4
+        print ea, self.calc_esat(tair, pressure), (vpd * kpa_2_pa), tair_k, tair, vpd
         emissivity_atm = 0.642 * (ea / tair_k)**(1.0 / 7.0)
 
         rlw_down = emissivity_atm * self.sigma * tair_k**4
@@ -158,18 +159,16 @@ class PenmanMonteith(object):
         Values of saturation vapour pressure from the Tetens formula are
         within 1 Pa of the exact values.
 
-        but see Jones 1992 too.
+        Taken from Stull 2000 Meteorology for Scientist and Engineers, but see
+        also Jones 1992 p 110 (note error in a - wrong units)
         """
         Tk = temp + self.DEG_TO_KELVIN
-        A = 17.27
-        T_star = 273.0
-        T_dash = 36.0
-        es_T_star = 0.611
-
-        esat = es_T_star * math.exp(A * (Tk - T_star) / (Tk - T_dash))
-        esat *= self.kpa_2_pa
-
-        return esat
+        e0 = 0.611 * self.kpa_2_pa
+        b = 17.2694
+        T1 = 273.16 # kelvin
+        T2 = 35.86  # kelvin
+        
+        return e0 * math.exp(b * (Tk - T1) / (Tk - T2))
 
     def main(self, tleaf, tair, gs, vpd, pressure, wind, par):
         tleaf_k = tleaf + DEG_TO_KELVIN
