@@ -16,7 +16,7 @@ __email__ = "mdekauwe@gmail.com"
 
 import math
 import sys
-from isothermal_penman_monteith import PenmanMonteith
+from fit_farquhar_model.isothermal_penman_monteith import PenmanMonteith
 
 class LeafEnergyBalance(object):
     """
