@@ -67,6 +67,14 @@ class PenmanMonteith(object):
     def calc_conductances(self, tair_k, tleaf, tair, pressure, wind, gs,
                           cmolar):
         """
+        Both forced and free convection contribute to exchange of heat and mass
+        through leaf boundary layers at the wind speeds typically encountered
+        within plant canopies (<0-5ms~'). It is particularly imponant to
+        includethe contribution of buoyancy forces to the boundary
+        conductance for sunlit leaves deep within the canopy where wind speeds
+        are low, for without this mechanism computed leaf temperatures become
+        excessively high.
+
         Leuning 1995, appendix E
         """
 
@@ -75,28 +83,25 @@ class PenmanMonteith(object):
                 (self.cp * self.air_mass))
 
         # boundary layer conductance for 1 side of leaf from forced convection
-        gbhw = 0.003 * math.sqrt(wind / self.leaf_width) * cmolar
+        gbHw = 0.003 * math.sqrt(wind / self.leaf_width) * cmolar
 
         # grashof number
         grashof_num = 1.6e8 * math.fabs(tleaf - tair) * self.leaf_width**3
 
         # boundary layer conductance for free convection
-        gbhf = 0.5 * self.dheat * (grashof_num**0.25) / self.leaf_width * cmolar
+        gbHf = 0.5 * self.dheat * grashof_num**0.25 / self.leaf_width * cmolar
 
-        # total conductance to heat
-        gbh = 2.0 * (gbhf + gbhw)
+        # total boundary layer conductance to heat for one side of the leaf
+        gbH = gbHw + gbHf
 
-        # total conductance to heat for one side of the leaf
-        gbh = gbhw + gbhf
-
-        # ... for hypostomatous leaves only g^H should be doubled and the
+        # ... for hypostomatous leaves only gbH should be doubled and the
         # single-sided value used for gbw
 
         # heat and radiative conductance
-        gbhr = 2.0 * (gbh + grad)
+        gbhr = 2.0 * (gbH + grad)
 
         # boundary layer conductance for water (mol m-2 s-1)
-        gbw = 1.075 * gbh
+        gbw = 1.075 * gbH
         gw = gs * gbw / (gs + gbw)
 
         # total conductance for water vapour
