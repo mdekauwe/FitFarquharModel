@@ -31,11 +31,11 @@ class PenmanMonteith(object):
         self.h2omw = 18E-3       # mol mass H20 (kg mol-1)
         self.air_mass = 29.0E-3     # mol mass air (kg mol-1)
         self.umol_to_j = 4.57    # conversion from J to umol quanta
-        self.dheat = 21.5E-6     # molecular diffusivity for heat
+        self.dheat = 21.5E-6     # molecular diffusivity for heat (m2 s-1)
         self.DEG_TO_KELVIN = 273.15
-        self.RGAS = 8.314
+        self.RGAS = 8.314        # universal gas constant (mol-1 K-1)
         self.leaf_absorptance = leaf_absorptance
-        self.leaf_width = leaf_width
+        self.leaf_width = leaf_width # (m)
 
     def calc_et(self, tleaf, tair, gs, vpd, pressure, wind, par, gbhr, gw,
                 rnet_iso):
@@ -80,16 +80,18 @@ class PenmanMonteith(object):
         """
 
         # radiation conductance (mol m-2 s-1)
-        grad = ((4.0 * self.sigma * tair_k**3 * self.emissivity_leaf) /
-                (self.cp * self.air_mass))
+        grn = ((4.0 * self.sigma * tair_k**3 * self.emissivity_leaf) /
+               (self.cp * self.air_mass))
 
         # boundary layer conductance for 1 side of leaf from forced convection
+        # (mol m-2 s-1)
         gbHw = 0.003 * math.sqrt(wind / self.leaf_width) * cmolar
 
         # grashof number
         grashof_num = 1.6e8 * math.fabs(tleaf - tair) * self.leaf_width**3
 
         # boundary layer conductance for free convection
+        # (mol m-2 s-1)
         gbHf = 0.5 * self.dheat * grashof_num**0.25 / self.leaf_width * cmolar
 
         # total boundary layer conductance to heat for one side of the leaf
@@ -99,7 +101,7 @@ class PenmanMonteith(object):
         # single-sided value used for gbw
 
         # heat and radiative conductance
-        gbhr = 2.0 * (gbH + grad)
+        gbhr = 2.0 * (gbH + grn)
 
         # boundary layer conductance for water (mol m-2 s-1)
         gbw = 1.075 * gbH
@@ -109,7 +111,7 @@ class PenmanMonteith(object):
         gsv = 1.57 * gs
         gv = (gbw * gsv) / (gbw + gsv)
 
-        return (grad, gbH, gbhr, gw, gv)
+        return (gbH, gbhr, gw, gv)
 
     def calc_rnet(self, pressure, par, tair, tair_k, tleaf_k, vpd):
 
@@ -176,8 +178,7 @@ class PenmanMonteith(object):
         rnet_iso = P.calc_rnet(pressure, par, tair, tair_k, tleaf_k,
                                   vpd)
 
-        (grad, gbh,
-         gbhr, gw, gv) = P.calc_conductances(tair_k, tleaf, tair, pressure,
+        (gbh, gbhr, gw, gv) = P.calc_conductances(tair_k, tleaf, tair, pressure,
                                                 wind, gs, cmolar)
         (et, lambda_et) = P.calc_et(tleaf, tair, gs, vpd, pressure, wind, par,
                                     gbhr, gw, rnet_iso)
@@ -190,7 +191,7 @@ if __name__ == '__main__':
     tair = 20.0
     gs = 0.15
     vpd = 2.0
-    pressure = 101.0
+    pressure = 101.0 # Pa
     wind = 2.0
     leaf_width = 0.02
     leaf_absorptance = 0.86 # leaf absorptance of solar radiation [0,1]
