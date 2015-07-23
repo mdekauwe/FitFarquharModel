@@ -38,15 +38,14 @@ class PenmanMonteith(object):
         self.leaf_width = leaf_width
 
     def calc_et(self, tleaf, tair, gs, vpd, pressure, wind, par, gbhr, gw,
-                esat, esat_inc, rnet_iso):
+                rnet_iso):
 
         # latent heat of water vapour at air temperature (j mol-1)
         lhv = (self.h2olv0 - 2.365e3 * tair) * self.h2omw
 
-        # curve relating sat water vapour pressure to temperature (pa k-1)
-        #slope = (esat_inc - esat) / 0.1
-        slope = self.calc_slope_of_saturation_vapour_pressure_curve(tair)
-        
+        # curve relating sat water vapour pressure to temperature (pa degc-1)
+        slope = ((P.calc_esat(tair + 0.1, pressure) -
+                  P.calc_esat(tair, pressure)) / 0.1)
 
         # psychrometric constant
         gamma = self.cp * self.air_mass * pressure * 1000.0 / lhv
@@ -106,7 +105,7 @@ class PenmanMonteith(object):
 
         return (grad, gbh, gbhr, gw, gv)
 
-    def calc_rnet(self, esat, par, tair_k, tleaf_k, vpd):
+    def calc_rnet(self, pressure, par, tair_k, tleaf_k, vpd):
 
         kpa_2_pa = 1000.0
         umol_m2_s_to_W_m2 = 2.0 / self.umol_to_j
@@ -114,7 +113,7 @@ class PenmanMonteith(object):
         par *= umol_m2_s_to_W_m2
 
         # atmospheric water vapour pressure (Pa)
-        ea = esat - (vpd * kpa_2_pa)
+        ea = self.calc_esat(tair, pressure) - (vpd * kpa_2_pa)
 
         # eqn D4
         emissivity_atm = 0.642 * (ea / tair_k)**(1.0 / 7.0)
@@ -154,32 +153,29 @@ class PenmanMonteith(object):
         T_star = 273.0
         T_dash = 36.0
         es_T_star = 0.611
-        kpa_2_pa = 1000.0
 
         esat = es_T_star * math.exp(A * (Tk - T_star) / (Tk - T_dash))
-        esat *= kpa_2_pa
+        esat *= self.kpa_2_pa
 
         return esat
 
     def main(self, tleaf, tair, gs, vpd, pressure, wind, par):
         tleaf_k = tleaf + DEG_TO_KELVIN
         tair_k = tair + DEG_TO_KELVIN
-        esat = P.calc_esat(tair, pressure)
-        esat_inc = P.calc_esat(tair + 0.1, pressure)
 
         # density of dry air
         air_density = pressure * 1000.0 / (287.058 * tair_k)
         cmolar = pressure * 1000.0 / (RGAS * tair_k)
 
-        rnet_iso = P.calc_rnet(esat, par, tair_k, tleaf_k,
+        rnet_iso = P.calc_rnet(pressure, par, tair_k, tleaf_k,
                                   vpd)
 
         (grad, gbh,
          gbhr, gw, gv) = P.calc_conductances(tair_k, tleaf, tair, pressure,
                                                 wind, gs, cmolar)
         (et, lambda_et) = P.calc_et(tleaf, tair, gs, vpd, pressure, wind, par,
-                                    gbhr, gw, esat, esat_inc, rnet_iso)
-        return (et, lamda_et)
+                                    gbhr, gw, rnet_iso)
+        return (et, lambda_et)
 
 if __name__ == '__main__':
 
@@ -196,4 +192,6 @@ if __name__ == '__main__':
     RGAS = 8.314
 
     P = PenmanMonteith(leaf_width, leaf_absorptance)
-    P.main(tleaf, tair, gs, vpd, pressure, wind, par)
+    (et, lambda_et) = P.main(tleaf, tair, gs, vpd, pressure, wind, par)
+
+    print et, lambda_et
