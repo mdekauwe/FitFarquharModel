@@ -43,8 +43,10 @@ class PenmanMonteith(object):
         # latent heat of water vapour at air temperature (j mol-1)
         lhv = (self.h2olv0 - 2.365e3 * tair) * self.h2omw
 
-        # (pa k-1)
-        slope = (esat_inc - esat) / 0.1
+        # curve relating sat water vapour pressure to temperature (pa k-1)
+        #slope = (esat_inc - esat) / 0.1
+        slope = self.calc_slope_of_saturation_vapour_pressure_curve(tair)
+        
 
         # psychrometric constant
         gamma = self.cp * self.air_mass * pressure * 1000.0 / lhv
@@ -124,6 +126,20 @@ class PenmanMonteith(object):
         # isothermal net radiation
         return (self.leaf_absorptance * par - isothermal_net_lw)
 
+    def calc_slope_of_saturation_vapour_pressure_curve(self, tair):
+        """ Eqn 13 from FAO paper, Allen et al. 1998.
+
+        Returns:
+        --------
+        slope : float
+            slope of saturation vapour pressure curve [kPa degC-1]
+
+        """
+        t = tair + 237.3
+        arg1 = 4098.0 * (0.6108 * math.exp((17.27 * tair) / t))
+        arg2 = t**2
+        return (arg1 / arg2) * self.kpa_2_pa
+
     def calc_esat(self, temp, pressure):
         """
         saturation vapor pressure (kPa)
@@ -145,6 +161,26 @@ class PenmanMonteith(object):
 
         return esat
 
+    def main(self, tleaf, tair, gs, vpd, pressure, wind, par):
+        tleaf_k = tleaf + DEG_TO_KELVIN
+        tair_k = tair + DEG_TO_KELVIN
+        esat = P.calc_esat(tair, pressure)
+        esat_inc = P.calc_esat(tair + 0.1, pressure)
+
+        # density of dry air
+        air_density = pressure * 1000.0 / (287.058 * tair_k)
+        cmolar = pressure * 1000.0 / (RGAS * tair_k)
+
+        rnet_iso = P.calc_rnet(esat, par, tair_k, tleaf_k,
+                                  vpd)
+
+        (grad, gbh,
+         gbhr, gw, gv) = P.calc_conductances(tair_k, tleaf, tair, pressure,
+                                                wind, gs, cmolar)
+        (et, lambda_et) = P.calc_et(tleaf, tair, gs, vpd, pressure, wind, par,
+                                    gbhr, gw, esat, esat_inc, rnet_iso)
+        return (et, lamda_et)
+
 if __name__ == '__main__':
 
     par = 1000.0
@@ -156,7 +192,8 @@ if __name__ == '__main__':
     wind = 2.0
     leaf_width = 0.02
     leaf_absorptance = 0.86 # leaf absorptance of solar radiation [0,1]
+    DEG_TO_KELVIN = 273.15
+    RGAS = 8.314
 
     P = PenmanMonteith(leaf_width, leaf_absorptance)
-    et, le_et = P.main(tleaf, tair, gs, vpd, pressure, wind, par)
-    print et, le_et
+    P.main(tleaf, tair, gs, vpd, pressure, wind, par)

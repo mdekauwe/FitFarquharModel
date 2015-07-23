@@ -47,9 +47,6 @@ class LeafEnergyBalance(object):
 
         tleaf_k = tleaf + self.DEG_TO_KELVIN
         tair_k = tair + self.DEG_TO_KELVIN
-
-        tleaf_k = tleaf + self.DEG_TO_KELVIN
-        tair_k = tair + self.DEG_TO_KELVIN
         esat = self.calc_esat(tair, pressure)
         esat_inc = self.calc_esat(tair + 0.1, pressure)
 
