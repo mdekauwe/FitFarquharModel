@@ -43,7 +43,8 @@ class PenmanMonteith(object):
         # latent heat of water vapour at air temperature (j mol-1)
         lambda_et = (self.h2olv0 - 2.365e3 * tair) * self.h2omw
 
-        # curve relating sat water vapour pressure to temperature (pa degc-1)
+        # curve relating sat water vapour pressure to temperature (pa K-1)
+        # kelvin conversion in func
         slope = ((self.calc_esat(tair + 0.1, pressure) -
                   self.calc_esat(tair, pressure)) / 0.1)
 
@@ -130,7 +131,7 @@ class PenmanMonteith(object):
         rlw_up = self.emissivity_leaf * self.sigma * tleaf_k**4
         isothermal_net_lw = rlw_up - rlw_down
 
-        # isothermal net radiation
+        # isothermal net radiation (W m-2)
         return (self.leaf_absorptance * par - isothermal_net_lw)
 
     def calc_slope_of_saturation_vapour_pressure_curve(self, tair):
@@ -149,7 +150,7 @@ class PenmanMonteith(object):
 
     def calc_esat(self, temp, pressure):
         """
-        saturation vapor pressure (kPa)
+        Saturation vapor pressure (Pa K-1)
 
         Values of saturation vapour pressure from the Tetens formula are
         within 1 Pa of the exact values.
