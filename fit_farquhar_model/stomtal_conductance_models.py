@@ -30,8 +30,8 @@ class StomtalConductance(object):
 
     def medlyn(self, vpd, An, Ci):
         # Note 1.6 is missing as we need gs in conductance to CO2
-        #gs = self.g0 + 1.6 * (1.0 + self.g1 / math.sqrt(vpd)) * An / Ci
-        gs = self.g0 + (1.0 + self.g1 / math.sqrt(vpd)) * An / Ci
+        gs = self.g0 + 1.6 * (1.0 + self.g1 / math.sqrt(vpd)) * An / Ci
+        #gs = self.g0 + (1.0 + self.g1 / math.sqrt(vpd)) * An / Ci
 
         return gs
 
@@ -47,7 +47,7 @@ class StomtalConductance(object):
         gs = self.g0 + arg1 / (arg2 * arg3)
 
         # convert to conductance to CO2
-        gs /= self.GSVGSC
+        #gs /= self.GSVGSC
 
         return gs
 
