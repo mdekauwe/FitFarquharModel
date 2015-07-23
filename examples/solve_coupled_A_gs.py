@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Iteratively solve leaf temp, ci, gs and An.
+Iteratively solve leaf temp, ci, gs and An, following Maetra
 
 That's all folks.
 """
@@ -30,7 +30,7 @@ def main(tair, par, vpd, wind, leaf_width, leaf_absorptance, pressure, g0, g1,
     S = StomtalConductance(g0=g0, g1=g1, D0=D0)
     L = LeafEnergyBalance()
 
-    # initialise guesses
+    # initialise guess
     Ca = 400.0
     Cs = Ca  # start at Ca
     Tleaf = tair
