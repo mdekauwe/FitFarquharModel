@@ -79,6 +79,11 @@ class PenmanMonteith(object):
         Leuning 1995, appendix E
         Medlyn et al. 2007 appendix, for need for cmolar
         """
+        # Ratio of Gbw:Gbh
+        GBVGBH = 1.075
+
+        # Ratio of Gsw:Gsc
+        GSVGSC = 1.57
 
         # radiation conductance (mol m-2 s-1)
         grn = ((4.0 * self.sigma * tair_k**3 * self.emissivity_leaf) /
@@ -104,8 +109,8 @@ class PenmanMonteith(object):
         # total leaf conductance to heat (mol m-2 s-1), two sided see above.
         gh = 2.0 * (gbH + grn)
 
-        gbv = 1.075 * gbH
-        gsv = 1.57 * gs
+        gbv = GBVGBH * gbH
+        gsv = GSVGSC * gs
 
         # total leaf conductance to water vapour (mol m-2 s-1)
         gv = (gbv * gsv) / (gbv + gsv)

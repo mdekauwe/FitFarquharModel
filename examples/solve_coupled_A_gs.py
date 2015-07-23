@@ -21,29 +21,29 @@ from fit_farquhar_model.leaf_energy_balance import LeafEnergyBalance
 
 def main(tair, par, vpd, wind, leaf_width, leaf_absorptance, pressure, g0, g1,
          D0, Vcmax25, Jmax25, Rd25, Eaj, Eav, deltaSj, deltaSv, Hdv, Hdj,
-         Q10):
+         Q10, Ca):
 
-    gbh_to_gbc = 1.32
+    # Ratio of Gbh:Gbc
+    GBHGBC = 1.32
     deg2kelvin = 273.15
 
     F = FarquharC3(peaked_Jmax=True, peaked_Vcmax=True, model_Q10=True)
     S = StomtalConductance(g0=g0, g1=g1, D0=D0)
     L = LeafEnergyBalance(leaf_width, leaf_absorptance)
 
-    # initialise guess
-    Ca = 400.0
+    # set initialise values
     Cs = Ca  # start at Ca
     Tleaf = tair
     Tleaf_K = Tleaf + deg2kelvin
     dleaf = vpd
     iter_max = 100
-    iter = 0
+
 
     print "start"
     print Cs, Tleaf, dleaf
     print
 
-
+    iter = 0
     while True:
 
         (An, Acn, Ajn) = F.calc_photosynthesis(Ci=Cs, Tleaf=Tleaf_K, Par=par,
@@ -59,7 +59,7 @@ def main(tair, par, vpd, wind, leaf_width, leaf_absorptance, pressure, g0, g1,
                                                   pressure, wind)
 
         # update Cs and VPD
-        gbc = gbH / gbh_to_gbc
+        gbc = gbH / GBHGBC
         Cs = Ca - An / gbc
         dleaf = et * pressure / gv
 
@@ -116,6 +116,7 @@ if __name__ == '__main__':
     leaf_width = 0.02
     leaf_absorptance = 0.86 # leaf absorptance of solar radiation [0,1]
     pressure = 101.0
+    Ca = 400.0
     main(tair, par, vpd, wind, leaf_width, leaf_absorptance, pressure, g0, g1,
          D0, Vcmax25, Jmax25, Rd25, Eaj, Eav, deltaSj, deltaSv, Hdv, Hdj,
-         Q10)
+         Q10, Ca)
