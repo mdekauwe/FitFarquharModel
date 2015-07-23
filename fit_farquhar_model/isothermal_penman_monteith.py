@@ -37,8 +37,8 @@ class PenmanMonteith(object):
         self.leaf_absorptance = leaf_absorptance
         self.leaf_width = leaf_width # (m)
 
-    def calc_et(self, tleaf, tair, gs, vpd, pressure, wind, par, gbhr, gw,
-                rnet_iso):
+    def calc_et(self, tleaf, tair, gs, vpd, pressure, wind, par, gh, gv,
+                rnet):
 
         # latent heat of water vapour at air temperature (j mol-1)
         lambda_et = (self.h2olv0 - 2.365e3 * tair) * self.h2omw
@@ -52,9 +52,9 @@ class PenmanMonteith(object):
         gamma = self.cp * self.air_mass * pressure * 1000.0 / lambda_et
 
         # Y cancels in eqn 10
-        arg1 = (slope * rnet_iso + (vpd * self.kpa_2_pa) * gbhr * self.cp *
+        arg1 = (slope * rnet + (vpd * self.kpa_2_pa) * gh * self.cp *
                 self.air_mass)
-        arg2 = slope + gamma * gbhr / gw
+        arg2 = slope + gamma * gh / gv
         et = arg1 / arg2
 
         # latent heat loss
@@ -101,18 +101,16 @@ class PenmanMonteith(object):
         # ... for hypostomatous leaves only gbH should be doubled and the
         # single-sided value used for gbw
 
-        # heat and radiative conductance
-        gbhr = 2.0 * (gbH + grn)
+        # total leaf conductance to heat (mol m-2 s-1), two sided see above.
+        gh = 2.0 * (gbH + grn)
 
-        # boundary layer conductance for water (mol m-2 s-1)
-        gbw = 1.075 * gbH
-        gw = gs * gbw / (gs + gbw)
-
-        # total conductance for water vapour
+        gbv = 1.075 * gbH
         gsv = 1.57 * gs
-        gv = (gbw * gsv) / (gbw + gsv)
 
-        return (grn, gbH, gbhr, gw, gv)
+        # total leaf conductance to water vapour (mol m-2 s-1)
+        gv = (gbv * gsv) / (gbv + gsv)
+
+        return (grn, gh, gbH, gv)
 
     def calc_rnet(self, pressure, par, tair, tair_k, tleaf_k, vpd):
 
@@ -179,11 +177,10 @@ class PenmanMonteith(object):
         rnet_iso = P.calc_rnet(pressure, par, tair, tair_k, tleaf_k,
                                   vpd)
 
-        (grn, gbh,
-         gbhr, gw, gv) = P.calc_conductances(tair_k, tleaf, tair, pressure,
+        (grn, gh, gbH, gv) = P.calc_conductances(tair_k, tleaf, tair, pressure,
                                                 wind, gs, cmolar)
         (et, lambda_et) = P.calc_et(tleaf, tair, gs, vpd, pressure, wind, par,
-                                    gbhr, gw, rnet_iso)
+                                    gh, gv, rnet_iso)
         return (et, lambda_et)
 
 if __name__ == '__main__':
