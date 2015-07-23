@@ -111,7 +111,7 @@ class PenmanMonteith(object):
         gsv = 1.57 * gs
         gv = (gbw * gsv) / (gbw + gsv)
 
-        return (gbH, gbhr, gw, gv)
+        return (grn, gbH, gbhr, gw, gv)
 
     def calc_rnet(self, pressure, par, tair, tair_k, tleaf_k, vpd):
 
@@ -178,7 +178,8 @@ class PenmanMonteith(object):
         rnet_iso = P.calc_rnet(pressure, par, tair, tair_k, tleaf_k,
                                   vpd)
 
-        (gbh, gbhr, gw, gv) = P.calc_conductances(tair_k, tleaf, tair, pressure,
+        (grn, gbh,
+         gbhr, gw, gv) = P.calc_conductances(tair_k, tleaf, tair, pressure,
                                                 wind, gs, cmolar)
         (et, lambda_et) = P.calc_et(tleaf, tair, gs, vpd, pressure, wind, par,
                                     gbhr, gw, rnet_iso)
