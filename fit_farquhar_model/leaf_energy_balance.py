@@ -47,35 +47,16 @@ class LeafEnergyBalance(object):
 
         tleaf_k = tleaf + self.DEG_TO_KELVIN
         tair_k = tair + self.DEG_TO_KELVIN
-        esat = self.calc_esat(tair, pressure)
-        esat_inc = self.calc_esat(tair + 0.1, pressure)
 
-        # density of dry air
         air_density = pressure * 1000.0 / (287.058 * tair_k)
         cmolar = pressure * 1000.0 / (self.RGAS * tair_k)
-
-        rnet_iso = P.calc_rnet(esat, par, tair_k, tleaf_k,
-                                  vpd)
+        rnet_iso = P.calc_rnet(pressure, par, tair, tair_k, tleaf_k, vpd)
 
         (grad, gbh,
          gbhr, gw, gv) = P.calc_conductances(tair_k, tleaf, tair, pressure,
                                                 wind, gs, cmolar)
         (et, lambda_et) = P.calc_et(tleaf, tair, gs, vpd, pressure, wind, par,
-                                    gbhr, gw, esat, esat_inc, rnet_iso)
-
-
-        #rnet_iso = self.calc_rnet(esat, leaf_absorptance, par, tair_k, tleaf_k,
-        #                          vpd)
-
-        # radiation conductance (mol m-2 s-1)
-        #(grad, gbh,
-        # gbhr, gw, gv) = self.calc_conductances(tair_k, tleaf, tair, pressure,
-        #                                    wind, leaf_width, gs, cmolar)
-
-
-        #(et, lambda_et) = self.calc_isothermal_transp(tair, vpd, pressure, esat,
-        #                                                  esat_inc, rnet_iso,
-        #                                              grad, gbh, gbhr, gw)
+                                    gbhr, gw, rnet_iso)
 
         # D6 in Leuning
         Y = 1.0 / (1.0 + grad / gbh)
@@ -89,117 +70,6 @@ class LeafEnergyBalance(object):
                      (self.cp * air_density * (gbh / cmolar)))
 
         return (new_Tleaf, et, gbh, gv)
-
-    def calc_isothermal_transp(self, tair, vpd, pressure, esat, esat_inc,
-                                rnet_iso, grad, gbh, gbhr, gw):
-        """ Isothermal form of the Penman-Monteith equation """
-
-        kpa_2_pa = 1000.
-
-        # latent heat of water vapour at air temperature (j mol-1)
-        lhv = (self.h2olv0 - 2.365e3 * tair) * self.h2omw
-
-        # (pa k-1)
-        slope = (esat_inc - esat) / 0.1
-
-        # psychrometric constant
-        gamma = self.cp * self.air_mass * pressure * 1000.0 / lhv
-
-        # Y cancels in eqn 10
-        arg1 = (slope * rnet_iso + (vpd * kpa_2_pa) * gbh * self.cp *
-                self.air_mass)
-        arg2 = slope + gamma * gbhr / gw
-        et = arg1 / arg2
-
-        # latent heat loss
-        LE_et = et
-
-        # et units = mol m-2 s-1,
-        # multiply by 18 (grams)* 0.001 (grams to kg) * 86400.
-        # to get to kg m2 d-1 or mm d-1
-        return et / lhv, LE_et
-
-    def calc_conductances(self, tair_k, tleaf, tair, pressure, wind, leaf_width,
-                          gs, cmolar):
-        """
-        Leuning 1995, appendix E
-        """
-
-        # radiation conductance (mol m-2 s-1)
-        grad = ((4.0 * self.sigma * tair_k**3 * self.emissivity_leaf) /
-                (self.cp * self.air_mass))
-
-        # boundary layer conductance for 1 side of leaf from forced convection
-        gbhw = 0.003 * math.sqrt(wind / leaf_width) * cmolar
-
-        # grashof number
-        grashof_num = 1.6e8 * math.fabs(tleaf - tair) * leaf_width**3
-
-        # boundary layer conductance for free convection
-        gbhf = 0.5 * self.dheat * (grashof_num**0.25) / leaf_width * cmolar
-
-        # total conductance to heat
-        gbh = 2.0 * (gbhf + gbhw)
-
-        # total conductance to heat for one side of the leaf
-        gbh = gbhw + gbhf
-
-        # ... for hypostomatous leaves only g^H should be doubled and the
-        # single-sided value used for gbw
-
-        # heat and radiative conductance
-        gbhr = 2.0 * (gbh + grad)
-
-        # boundary layer conductance for water (mol m-2 s-1)
-        gbw = 1.075 * gbh
-        gw = gs * gbw / (gs + gbw)
-
-        # total conductance for water vapour
-        gsv = 1.57 * gs
-        gv = (gbw * gsv) / (gbw + gsv)
-
-        return (grad, gbh, gbhr, gw, gv)
-
-    def calc_rnet(self, esat, leaf_absorptance, par, tair_k, tleaf_k, vpd):
-
-        kpa_2_pa = 1000.0
-        umol_m2_s_to_W_m2 = 2.0 / self.umol_to_j
-
-        par *= umol_m2_s_to_W_m2
-
-        # atmospheric water vapour pressure (Pa)
-        ea = esat - (vpd * kpa_2_pa)
-
-        # eqn D4
-        emissivity_atm = 0.642 * (ea / tair_k)**(1.0 / 7.0)
-
-        rlw_down = emissivity_atm * self.sigma * tair_k**4
-        rlw_up = self.emissivity_leaf * self.sigma * tleaf_k**4
-        isothermal_net_lw = rlw_up - rlw_down
-
-        # isothermal net radiation
-        return (leaf_absorptance * par - isothermal_net_lw)
-
-    def calc_esat(self, temp, pressure):
-        """
-        saturation vapor pressure (kPa)
-
-        Values of saturation vapour pressure from the Tetens formula are
-        within 1 Pa of the exact values.
-
-        but see Jones 1992 too.
-        """
-        Tk = temp + self.DEG_TO_KELVIN
-        A = 17.27
-        T_star = 273.0
-        T_dash = 36.0
-        es_T_star = 0.611
-        kpa_2_pa = 1000.0
-
-        esat = es_T_star * math.exp(A * (Tk - T_star) / (Tk - T_dash))
-        esat *= kpa_2_pa
-
-        return esat
 
 
 if __name__ == '__main__':

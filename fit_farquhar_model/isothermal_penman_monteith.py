@@ -44,8 +44,8 @@ class PenmanMonteith(object):
         lhv = (self.h2olv0 - 2.365e3 * tair) * self.h2omw
 
         # curve relating sat water vapour pressure to temperature (pa degc-1)
-        slope = ((P.calc_esat(tair + 0.1, pressure) -
-                  P.calc_esat(tair, pressure)) / 0.1)
+        slope = ((self.calc_esat(tair + 0.1, pressure) -
+                  self.calc_esat(tair, pressure)) / 0.1)
 
         # psychrometric constant
         gamma = self.cp * self.air_mass * pressure * 1000.0 / lhv
@@ -105,7 +105,7 @@ class PenmanMonteith(object):
 
         return (grad, gbh, gbhr, gw, gv)
 
-    def calc_rnet(self, pressure, par, tair_k, tleaf_k, vpd):
+    def calc_rnet(self, pressure, par, tair, tair_k, tleaf_k, vpd):
 
         kpa_2_pa = 1000.0
         umol_m2_s_to_W_m2 = 2.0 / self.umol_to_j
@@ -167,7 +167,7 @@ class PenmanMonteith(object):
         air_density = pressure * 1000.0 / (287.058 * tair_k)
         cmolar = pressure * 1000.0 / (RGAS * tair_k)
 
-        rnet_iso = P.calc_rnet(pressure, par, tair_k, tleaf_k,
+        rnet_iso = P.calc_rnet(pressure, par, tair, tair_k, tleaf_k,
                                   vpd)
 
         (grad, gbh,
