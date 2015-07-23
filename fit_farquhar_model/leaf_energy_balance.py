@@ -40,7 +40,7 @@ class LeafEnergyBalance(object):
             self.stomtal_ratio = 2.0
 
 
-    def calc_balance(self, tleaf=None, tair=None, gs=None, par=None, vpd=None,
+    def main(self, tleaf=None, tair=None, gs=None, par=None, vpd=None,
                     pressure=None, wind=None, leaf_width=None,
                     leaf_absorptance=None):
 
@@ -58,7 +58,7 @@ class LeafEnergyBalance(object):
 
         # radiation conductance (mol m-2 s-1)
         (grad, gbh,
-         gbhr, gw) = self.calc_conductances(tair_k, tleaf, tair, pressure,
+         gbhr, gw, gv) = self.calc_conductances(tair_k, tleaf, tair, pressure,
                                             wind, leaf_width, gs, cmolar)
 
 
@@ -74,10 +74,10 @@ class LeafEnergyBalance(object):
 
         # leaf-air temperature difference recalculated from energy balance.
         # (same equation as above!)
-        tleaf_calculated = (tair + sensible_heat /
-                            (self.cp * air_density * (gbh / cmolar)))
+        new_Tleaf = (tair + sensible_heat /
+                     (self.cp * air_density * (gbh / cmolar)))
 
-        return (tleaf - tleaf_calculated)
+        return (new_Tleaf, et, gbh, gv)
 
     def calc_isothermal_transp(self, tair, vpd, pressure, esat, esat_inc,
                                 rnet_iso, grad, gbh, gbhr, gw):
@@ -103,6 +103,9 @@ class LeafEnergyBalance(object):
         # latent heat loss
         LE_et = et
 
+        # et units = mol m-2 s-1,
+        # multiply by 18 (grams)* 0.001 (grams to kg) * 86400.
+        # to get to kg m2 d-1 or mm d-1
         return et / lhv, LE_et
 
     def calc_conductances(self, tair_k, tleaf, tair, pressure, wind, leaf_width,
@@ -124,17 +127,27 @@ class LeafEnergyBalance(object):
         # boundary layer conductance for free convection
         gbhf = 0.5 * self.dheat * (grashof_num**0.25) / leaf_width * cmolar
 
-        # total conductance to heat (both leaf sides)
+        # total conductance to heat
         gbh = 2.0 * (gbhf + gbhw)
 
+        # total conductance to heat for one side of the leaf
+        gbh = gbhw + gbhf
+
+        # ... for hypostomatous leaves only g^H should be doubled and the
+        # single-sided value used for gbw
+
         # heat and radiative conductance
-        gbhr = gbh + 2.0 * grad
+        gbhr = 2.0 * (gbh + grad)
 
         # boundary layer conductance for water (mol m-2 s-1)
-        gbw = self.stomatal_ratio * 1.075 * gbh
+        gbw = 1.075 * gbh
         gw = gs * gbw / (gs + gbw)
 
-        return (grad, gbh, gbhr, gw)
+        # total conductance for water vapour
+        gsv = 1.57 * gs
+        gv = (gbw * gsv) / (gbw + gsv)
+
+        return (grad, gbh, gbhr, gw, gv)
 
     def calc_rnet(self, esat, leaf_absorptance, par, tair_k, tleaf_k, vpd):
 
@@ -192,7 +205,7 @@ if __name__ == '__main__':
 
 
     L = LeafEnergyBalance()
-    temp_diff = L.calc_balance(tleaf, tair, gs, par, vpd, pressure, wind,
-                               leaf_width, leaf_absorptance)
+    new_Tleaf, et, gbh, gv = L.main(tleaf, tair, gs, par, vpd, pressure,
+                                    wind, leaf_width, leaf_absorptance)
 
-    print temp_diff
+    print new_Tleaf, et, et*18*0.001*86400.
