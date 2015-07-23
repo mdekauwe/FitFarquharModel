@@ -23,7 +23,7 @@ def main(tair, par, vpd, wind, leaf_width, leaf_absorptance, pressure, g0, g1,
          D0, Vcmax25, Jmax25, Rd25, Eaj, Eav, deltaSj, deltaSv, Hdv, Hdj,
          Q10):
 
-    GBHGBC = 1.32
+    gbh_to_gbc = 1.32
     deg2kelvin = 273.15
 
     F = FarquharC3(peaked_Jmax=True, peaked_Vcmax=True, model_Q10=True)
@@ -55,11 +55,11 @@ def main(tair, par, vpd, wind, leaf_width, leaf_absorptance, pressure, g0, g1,
         gs = S.leuning(dleaf, An, Cs)
 
 
-        new_tleaf, et, gbh, gv = L.calc_leaf_temp(Tleaf, tair, gs, par, dleaf,
+        (new_tleaf, et, gbH, gv) = L.calc_leaf_temp(Tleaf, tair, gs, par, dleaf,
                                                   pressure, wind)
 
         # update Cs and VPD
-        gbc = gbh / GBHGBC
+        gbc = gbH / gbh_to_gbc
         Cs = Ca - An / gbc
         dleaf = et * pressure / gv
 
