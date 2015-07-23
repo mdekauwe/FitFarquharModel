@@ -52,14 +52,13 @@ class LeafEnergyBalance(object):
         cmolar = pressure * 1000.0 / (self.RGAS * tair_k)
         rnet_iso = P.calc_rnet(pressure, par, tair, tair_k, tleaf_k, vpd)
 
-        (grn, gbh,
-         gbhr, gw, gv) = P.calc_conductances(tair_k, tleaf, tair, pressure,
+        (grn, gh, gbH, gv) = P.calc_conductances(tair_k, tleaf, tair, pressure,
                                                 wind, gs, cmolar)
         (et, le_et) = P.calc_et(tleaf, tair, gs, vpd, pressure, wind, par,
-                                    gbhr, gw, rnet_iso)
+                                    gh, gv, rnet_iso)
 
         # D6 in Leuning
-        Y = 1.0 / (1.0 + grn / gbh)
+        Y = 1.0 / (1.0 + grn / gbH)
 
         # sensible heat exchanged between leaf and surroundings
         sensible_heat = Y * (rnet_iso - le_et)
@@ -67,9 +66,9 @@ class LeafEnergyBalance(object):
         # leaf-air temperature difference recalculated from energy balance.
         # (same equation as above!)
         new_Tleaf = (tair + sensible_heat /
-                     (self.cp * air_density * (gbh / cmolar)))
+                     (self.cp * air_density * (gbH / cmolar)))
 
-        return (new_Tleaf, et, gbh, gv)
+        return (new_Tleaf, et, gbH, gv)
 
 
 if __name__ == '__main__':
