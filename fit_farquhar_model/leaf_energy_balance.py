@@ -40,8 +40,8 @@ class LeafEnergyBalance(object):
         self.leaf_width = leaf_width
         self.leaf_absorptance = leaf_absorptance
 
-    def main(self, tleaf=None, tair=None, gs=None, par=None, vpd=None,
-                    pressure=None, wind=None, leaf_width=None):
+    def calc_leaf_temp(self, tleaf=None, tair=None, gs=None, par=None, vpd=None,
+                       pressure=None, wind=None, leaf_width=None):
 
         P = PenmanMonteith(self.leaf_width, self.leaf_absorptance)
 
@@ -86,7 +86,7 @@ if __name__ == '__main__':
 
 
     L = LeafEnergyBalance(leaf_width, leaf_absorptance)
-    new_Tleaf, et, gbh, gv = L.main(tleaf, tair, gs, par, vpd, pressure,
+    new_Tleaf, et, gbh, gv = L.calc_leaf_temp(tleaf, tair, gs, par, vpd, pressure,
                                     wind, leaf_width)
 
     print new_Tleaf, et, et*18*0.001*86400.

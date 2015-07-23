@@ -28,7 +28,7 @@ def main(tair, par, vpd, wind, leaf_width, leaf_absorptance, pressure, g0, g1,
 
     F = FarquharC3(peaked_Jmax=True, peaked_Vcmax=True, model_Q10=True)
     S = StomtalConductance(g0=g0, g1=g1, D0=D0)
-    L = LeafEnergyBalance()
+    L = LeafEnergyBalance(leaf_width, leaf_absorptance)
 
     # initialise guess
     Ca = 400.0
@@ -55,9 +55,8 @@ def main(tair, par, vpd, wind, leaf_width, leaf_absorptance, pressure, g0, g1,
         gs = S.leuning(dleaf, An, Cs)
 
 
-        new_tleaf, et, gbh, gv = L.main(Tleaf, tair, gs, par, dleaf,
-                                        pressure, wind, leaf_width,
-                                        leaf_absorptance)
+        new_tleaf, et, gbh, gv = L.calc_leaf_temp(Tleaf, tair, gs, par, dleaf,
+                                                  pressure, wind)
 
         # update Cs and VPD
         gbc = gbh / GBHGBC
