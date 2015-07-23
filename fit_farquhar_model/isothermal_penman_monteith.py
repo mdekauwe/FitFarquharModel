@@ -108,7 +108,7 @@ class PenmanMonteith(object):
         gsv = 1.57 * gs
         gv = (gbw * gsv) / (gbw + gsv)
 
-        return (grad, gbh, gbhr, gw, gv)
+        return (grad, gbH, gbhr, gw, gv)
 
     def calc_rnet(self, pressure, par, tair, tair_k, tleaf_k, vpd):
 
