@@ -41,14 +41,14 @@ class PenmanMonteith(object):
                 rnet_iso):
 
         # latent heat of water vapour at air temperature (j mol-1)
-        lhv = (self.h2olv0 - 2.365e3 * tair) * self.h2omw
+        lambda_et = (self.h2olv0 - 2.365e3 * tair) * self.h2omw
 
         # curve relating sat water vapour pressure to temperature (pa degc-1)
         slope = ((self.calc_esat(tair + 0.1, pressure) -
                   self.calc_esat(tair, pressure)) / 0.1)
 
         # psychrometric constant
-        gamma = self.cp * self.air_mass * pressure * 1000.0 / lhv
+        gamma = self.cp * self.air_mass * pressure * 1000.0 / lambda_et
 
         # Y cancels in eqn 10
         arg1 = (slope * rnet_iso + (vpd * self.kpa_2_pa) * gbhr * self.cp *
@@ -62,7 +62,7 @@ class PenmanMonteith(object):
         # et units = mol m-2 s-1,
         # multiply by 18 (grams)* 0.001 (grams to kg) * 86400.
         # to get to kg m2 d-1 or mm d-1
-        return et / lhv, LE_et
+        return et / lambda_et, LE_et
 
     def calc_conductances(self, tair_k, tleaf, tair, pressure, wind, gs,
                           cmolar):
