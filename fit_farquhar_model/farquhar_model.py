@@ -194,8 +194,12 @@ class FarquharC3(object):
         # Effect of temp on CO2 compensation point 
         if self.mich_menten_model == "Bernacchi":
             gamma_star = self.arrh(self.gamstar25, self.Eag, Tleaf)
+            if self.elev_correction:
+                gamma_star *= Pressure / 100.0 
         elif self.mich_menten_model == "Crous":
             gamma_star = self.arrh(38.892, 20437.0, Tleaf)
+            if self.elev_correction:
+                gamma_star *= Pressure / 100.0 
         elif self.mich_menten_model == "Badger":
             Kc = np.where(Tleaf > 288.15, self.arrh(460.0, 59536.0, Tleaf), 
                                           self.arrh(920.0, 109700.0, Tleaf))
