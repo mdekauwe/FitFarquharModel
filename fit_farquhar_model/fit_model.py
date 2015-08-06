@@ -415,6 +415,8 @@ class FitMe(object):
         ax = fig.add_subplot(211)
         ax2 = fig.add_subplot(212)
 
+        data["Ci"] *= data["Press"] / 100.0
+
         ax.plot(data["Ci"], data["Photo"],
                 ls="", lw=1.5, marker="o", c="black")
         ax.plot(data["Ci"], An_fit, '-', c="black", linewidth=3,
