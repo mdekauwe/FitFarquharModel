@@ -643,7 +643,7 @@ class FitJmaxVcmaxRd(FitMe):
                        "amb_photo", "amb_ci", "amb_ca", "amb_gs", "first", \
                        "press"]
            
-    def main(self, print_to_screen, infname_tag="*.csv"):   
+    def main(self, print_to_screen=True, infname_tag="*.csv"):   
         """ Loop over all our A-Ci measured curves and fit the Farquhar model
         parameters to this data 
         
@@ -652,6 +652,7 @@ class FitJmaxVcmaxRd(FitMe):
         print_to_screen : logical
             print fitting result to screen? Default is no!
         """
+        
         # open files and write header information
         fp = self.open_output_files(self.ofname)
         wr = self.write_file_hdr(fp, self.header)
