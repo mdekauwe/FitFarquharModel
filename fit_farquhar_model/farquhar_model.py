@@ -126,6 +126,11 @@ class FarquharC3(object):
         self.elev_correction = elev_correction
         self.mich_menten_model = mich_menten_model
 
+        if self.elev_correction:
+            self.correct_ci_oi = True
+        else:
+            self.elev_correction = False
+
     def calc_photosynthesis(self, Ci=None, Tleaf=None, Par=None, Jmax=None,
                             Vcmax=None, Jmax25=None, Vcmax25=None, Rd=None,
                             Rd25=None, Q10=None, Eaj=None, Eav=None,
@@ -185,12 +190,12 @@ class FarquharC3(object):
         self.check_supplied_args(Jmax, Vcmax, Rd, Jmax25, Vcmax25, Rd25)
 
 
-        if self.elev_correction:
+        if self.elev_correction and self.correct_ci_oi:
             self.Oi *= np.mean(Pressure) / 100.0
             Ci *= Pressure / 100.0
             # Now set to false, remember python isn't pass by value! So
             # if we don't do this it will keep reducing it!
-            self.elev_correction = False
+            self.correct_ci_oi = False
 
         # calculate temp dependancies of Michaelis–Menten constants for CO2, O2
         Km = self.calc_michaelis_menten_constants(Tleaf)

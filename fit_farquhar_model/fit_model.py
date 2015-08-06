@@ -646,7 +646,8 @@ class FitJmaxVcmaxRd(FitMe):
                        "amb_photo", "amb_ci", "amb_ca", "amb_gs", "first", \
                        "press"]
 
-    def main(self, print_to_screen=True, infname_tag="*.csv"):
+    def main(self, print_to_screen=True, elev_correction=False,
+             infname_tag="*.csv"):
         """ Loop over all our A-Ci measured curves and fit the Farquhar model
         parameters to this data
 
