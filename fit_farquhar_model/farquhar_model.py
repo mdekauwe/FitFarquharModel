@@ -50,12 +50,14 @@ class FarquharC3(object):
       A review of experimental data. Plant, Cell and Enviroment 25, 1167-1179.
     """
     
-    def __init__(self, peaked_Jmax=False, peaked_Vcmax=False, Oi=205.0, 
+    def __init__(self, peaked_Jmax=False, peaked_Vcmax=False, Oi=210.0, 
                  gamstar25=42.75, Kc25=404.9, Ko25=278.4, Ec=79430.0,
                  Eo=36380.0, Eag=37830.0, theta_hyperbol=0.9995, 
                  theta_J=0.7, force_vcmax_fit_pts=None,
                  alpha=None, quantum_yield=0.3, absorptance=0.8,
-                 change_over_pt=None, model_Q10=False):
+                 change_over_pt=None, model_Q10=False,
+                 elev_correction=False,
+                 mich_menten_model="Bernacchi"):
         """
         Parameters
         ----------
@@ -95,8 +97,11 @@ class FarquharC3(object):
             Force Ac fit for first X points
         change_over_pt : None or value of Ci
             Explicitly set the transition point between Aj and Ac. 
-        
+        elev_correction : logical
+            For high elevation sites correct Ci and oxygen partial pressure to 
+            account for the lower partial pressure    
         """
+        
         self.peaked_Jmax = peaked_Jmax
         self.peaked_Vcmax = peaked_Vcmax
         self.deg2kelvin = 273.15
@@ -118,12 +123,14 @@ class FarquharC3(object):
         self.force_vcmax_fit_pts = force_vcmax_fit_pts
         self.change_over_pt = change_over_pt
         self.model_Q10 = model_Q10
+        self.elev_correction = elev_correction
+        self.mich_menten_model = mich_menten_model
         
     def calc_photosynthesis(self, Ci=None, Tleaf=None, Par=None, Jmax=None, 
                             Vcmax=None, Jmax25=None, Vcmax25=None, Rd=None, 
                             Rd25=None, Q10=None, Eaj=None, Eav=None, 
                             deltaSj=None, deltaSv=None, Hdv=200000.0, 
-                            Hdj=200000.0, Ear=None):
+                            Hdj=200000.0, Ear=None, Pressure=None):
         """
         Parameters
         ----------
@@ -176,13 +183,25 @@ class FarquharC3(object):
             Net RuBP-regeneration-limited leaf assimilation rate [umol m-2 s-1]
         """
         self.check_supplied_args(Jmax, Vcmax, Rd, Jmax25, Vcmax25, Rd25)
-        
+    
+        if self.elev_correction:
+            self.Oi *= np.mean(Pressure) / 100.0
+            Ci *= Pressure / 100.0
+            
         # calculate temp dependancies of Michaelis–Menten constants for CO2, O2
         Km = self.calc_michaelis_menten_constants(Tleaf)
         
         # Effect of temp on CO2 compensation point 
-        gamma_star = self.arrh(self.gamstar25, self.Eag, Tleaf)
-        
+        if self.mich_menten_model == "Bernacchi":
+            gamma_star = self.arrh(self.gamstar25, self.Eag, Tleaf)
+        elif self.mich_menten_model == "Crous":
+            gamma_star = self.arrh(38.892, 20437.0, Tleaf)
+        elif self.mich_menten_model == "Badger":
+            Ko = self.arrh(330.0, 35948.0, Tleaf)
+            Km = Kc * (1.0 + self.Oi / Ko)
+            r = 0.21 # r = Vomax / Vcmax
+            gamma_star = (Kc * self.Oi * r) / (2.0 * Ko)
+            
         # Calculations at 25 degrees C or the measurement temperature
         if Rd25 is not None: 
             Rd = self.calc_resp(Tleaf, Q10, Rd25, Ear)
@@ -306,10 +325,20 @@ class FarquharC3(object):
         Km : float
             
         """
-        Kc = self.arrh(self.Kc25, self.Ec, Tleaf)
-        Ko = self.arrh(self.Ko25, self.Eo, Tleaf)
-        
-        Km = Kc * (1.0 + self.Oi / Ko)
+        if (self.mich_menten_model == "Bernacchi" or 
+            self.mich_menten_model == "Crous"):
+            
+            Kc = self.arrh(self.Kc25, self.Ec, Tleaf)
+            Ko = self.arrh(self.Ko25, self.Eo, Tleaf)
+            Km = Kc * (1.0 + self.Oi / Ko)
+        elif self.mich_menten_model == "Badger":
+            
+            if Tleaf > 288.15:
+                Kc = self.arrh(460.0, 59536.0, Tleaf)
+            elif Tleaf < 288.15:
+                Kc = self.arrh(920.0, 109700.0, Tleaf)
+            Ko = self.arrh(330.0, 35948.0, Tleaf)
+            Km = Kc * (1.0 + self.Oi / Ko)
         
         return Km
      

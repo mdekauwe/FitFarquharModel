@@ -33,7 +33,7 @@ class FitMe(object):
     to be subclased.
     """
     def __init__(self, model=None, ofname=None, results_dir=None, 
-                 data_dir=None, plot_dir=None, Niter=500):
+                 data_dir=None, plot_dir=None, RD_FIXED=False, Niter=500):
         """
         Parameters
         ----------
@@ -61,6 +61,7 @@ class FitMe(object):
         self.nfiles = 0
         self.deg2kelvin = 273.15
         self.Niter = Niter
+        self.RD_FIXED = RD_FIXED
         
     def open_output_files(self, ofname):
         """
@@ -143,17 +144,42 @@ class FitMe(object):
         Jmax = params['Jmax'].value
         Vcmax = params['Vcmax'].value
         Rd = params['Rd'].value  
-        
+    
         if hasattr(data, "Par"):
              (An, Anc, Anj) = self.call_model(Ci=data["Ci"], Tleaf=data["Tleaf"],
                                               Par=data["Par"], Jmax=Jmax, 
-                                              Vcmax=Vcmax, Rd=Rd)
+                                              Vcmax=Vcmax, Rd=Rd, 
+                                              Pressure=data["Press"])
         else:
-            
             (An, Anc, Anj) = self.call_model(Ci=data["Ci"], Tleaf=data["Tleaf"], 
-                                             Jmax=Jmax, Vcmax=Vcmax, Rd=Rd)
+                                             Jmax=Jmax, Vcmax=Vcmax, Rd=Rd,
+                                             Pressure=data["Press"])
         return (obs - An)
     
+    def find_co_limited_point(self, result, data):
+
+        Jmax = result.params['Jmax'].value
+        Vcmax = result.params['Vcmax'].value
+        Rd = result.params['Rd'].value
+        Tmean = np.mean(data["Tleaf"])
+        press = np.mean(data["Press"])
+        co_limited_pt = []
+        for i in np.arange(150, 1000, 0.01):
+            (an, anc, anj) = self.call_model(Ci=i, Tleaf=Tmean, Jmax=Jmax, 
+                                             Vcmax=Vcmax, Rd=Rd, Pressure=press)
+                                             
+            if np.absolute(np.mean(anc) - np.mean(anj)) < 0.01:
+                co_limited_pt.append(i)
+        
+        # sometimes we haven't found the Ci point, i.e. the co-limited point is 
+        # way above the searched range, i.e. bad data. Note this with a -9999
+        try:
+            output = co_limited_pt[0]
+        except IndexError:
+            output = -9999
+
+        return output
+
     def report_fits(self, f, result, fname, data, An_fit):
         """ Save fitting results to a file... 
         
@@ -173,10 +199,18 @@ class FitMe(object):
             best model fit using optimised parameters, Net leaf assimilation 
             rate [umol m-2 s-1]
         """
+        
+        # find ci valus where Ac and Aj co-limited
+        ci_colimited = self.find_co_limited_point(result, data)
+        
+        # Need to keep the average pressure to pass to 1-point estimation
+        press = np.mean(data["Press"])
+        
         pearsons_r = stats.pearsonr(data["Photo"], An_fit)[0]
         diff_sq = (data["Photo"]-An_fit)**2
         ssq = np.sum(diff_sq)
         mean_sq_err = np.mean(diff_sq)
+        
         row = []
         for name, par in result.params.items():
             row.append("%s" % (par.value))
@@ -196,25 +230,46 @@ class FitMe(object):
         row.append("%s%s%s" % (str(data["Species"][0]), \
                                str(data["Season"][0]), \
                                str(data["Leaf"][0])))
+        row.append("%s" % (data["Site"][0]))
+        row.append("%s" % (data["Latitude"][0]))
+        row.append("%s" % (data["Longitude"][0]))
+
+        try:
+            row.append("%s" % (np.mean(data["Cond"])))
+            row.append("%s" % (ci_colimited))
+        except ValueError:
+            row.append("%s" % (-9999))
+            row.append("%s" % (ci_colimited))
+        
+        # some curves started from low CO2, so we can't use the ambient Asat 
+        # data so need to exclude these later. This block of data is what
+        # we are keeping
+        if data['CO2S'][0] <= 300 and data['CO2S'][0] <= 400:
+            row.append("%s" % (data["Photo"][0]))
+            row.append("%s" % (data["Ci"][0]))
+            row.append("%s" % (data["CO2S"][0]))
+            row.append("%s" % (data["Cond"][0]))
+            row.append("%s" % ("good")) # starting from ambient CO2
+        else:
+            # we need to filter this afterwards! Bad data.
+            photo = data["Photo"]
+            ci = data["Ci"]
+            ca = data["CO2S"]
+            gs = data["Cond"]
+            amb_pt_photo = photo[(data["CO2S"] >= 300) & (data["CO2S"] <= 400)]
+            amb_pt_ci = ci[(data["CO2S"] >= 300) & (data["CO2S"] <= 400)]
+            amb_pt_ca = ca[(data["CO2S"] >= 300) & (data["CO2S"] <= 400)]
+            amb_pt_gs = gs[(data["CO2S"] >= 300) & (data["CO2S"] <= 400)]
+        
+            row.append("%s" % (amb_pt_photo))
+            row.append("%s" % (amb_pt_ci))
+            row.append("%s" % (amb_pt_ca))
+            row.append("%s" % (amb_pt_gs))
+            row.append("%s" % ("bad"))
+        
+        row.append("%s" % (press))
         f.writerow(row)
         
-        """
-        fname2 = os.path.join(self.results_dir, 
-                                "fitted_conf_int_j_v_rd.txt")
-        f2 = open(fname2, "w")
-        try:
-            ci = conf_interval(result, sigmas=[0.95])
-            
-            print >>f2, "\t\t95%\t\t0.00%\t\t95%"
-            for k, v in ci.iteritems():
-                print >>f2,"%s\t\t%f\t%f\t%f" % (k, round(ci[k][0][1], 3), \
-                                                 round(ci[k][1][1], 3), \
-                                                 round(ci[k][2][1], 3))
-        
-        except ValueError:
-            print >>f2, "Oops!  Some problem fitting confidence intervals..."    
-        f2.close()
-        """
     def forward_run(self, result, data):
         """ Run farquhar model with fitted parameters and return result 
         
@@ -240,10 +295,12 @@ class FitMe(object):
         if hasattr(data, "Par"):
              (An, Anc, Anj) = self.call_model(Ci=data["Ci"], Tleaf=data["Tleaf"],
                                               Par=data["Par"], Jmax=Jmax, 
-                                              Vcmax=Vcmax, Rd=Rd)
+                                              Vcmax=Vcmax, Rd=Rd,
+                                              Pressure=data["Press"])
         else:
             (An, Anc, Anj) = self.call_model(Ci=data["Ci"], Tleaf=data["Tleaf"], 
-                                             Jmax=Jmax, Vcmax=Vcmax, Rd=Rd)
+                                             Jmax=Jmax, Vcmax=Vcmax, Rd=Rd,
+                                             Pressure=data["Press"])
             
         return (An, Anc, Anj)
                 
@@ -283,7 +340,10 @@ class FitMe(object):
             params.add('Jmax', value=jmax_guess, min=0.0)
         if vcmax_guess is not None:
             params.add('Vcmax', value=vcmax_guess, min=0.0)
-        if rd_guess is not None:
+        
+        if self.RD_FIXED:
+            params.add('Rd', expr='Vcmax*0.015')
+        else:
             params.add('Rd', value=rd_guess, min=0.0)
         
         if ea_guess is not None:
@@ -447,7 +507,10 @@ class FitMe(object):
         # Shuffle arrays so that our combination of parameters is random
         Vcmax = np.random.uniform(5.0, 350) 
         Jmax = np.random.uniform(5.0, 550) 
-        Rd = np.random.uniform(0.0, 6.0)
+        if self.RD_FIXED:
+            Rd = Vcmax * 0.015
+        else:
+            Rd = np.random.uniform(0.0, 6.0)
         
         return Vcmax, Jmax, Rd
         
@@ -481,7 +544,10 @@ class FitMe(object):
         # Shuffle arrays so that our combination of parameters is random
         Vcmax = np.linspace(5.0, 350, grid_size) 
         Jmax = np.linspace(5.0, 550, grid_size) 
-        Rd = np.linspace(0.0, 6.0, grid_size)
+        if self.RD_FIXED:
+            Rd = Vcmax * 0.015
+        else:
+            Rd = np.linspace(0.0, 6.0, grid_size)
         
         """
         grid_size = 50
@@ -504,11 +570,13 @@ class FitMe(object):
             (An, Anc, Anj) = self.call_model(Ci=data["Ci"][:,None,None,None], 
                                              Tleaf=data["Tleaf"][:,None,None,None], 
                                              Par=data["Par"][:,None,None,None],
-                                             Jmax=p1, Vcmax=p2, Rd=p3)
+                                             Jmax=p1, Vcmax=p2, Rd=p3,
+                                             Pressure=data["Press"][:,None,None,None])
         else:
             (An, Anc, Anj) = self.call_model(Ci=data["Ci"][:,None,None,None], 
                                              Tleaf=data["Tleaf"][:,None,None,None], 
-                                             Jmax=p1, Vcmax=p2, Rd=p3)
+                                             Jmax=p1, Vcmax=p2, Rd=p3,
+                                             Pressure=data["Press"][:,None,None,None])
         
         rmse = np.sqrt(((data["Photo"][:,None,None,None]- An)**2).mean(0))
         ndx = np.where(rmse.min()== rmse)
@@ -553,7 +621,7 @@ class FitJmaxVcmaxRd(FitMe):
     methods
     """
     def __init__(self, model=None, ofname=None, results_dir=None, 
-                 data_dir=None, plot_dir=None):
+                 data_dir=None, plot_dir=None, RD_FIXED=False):
         """
         Parameters
         ----------
@@ -568,10 +636,13 @@ class FitJmaxVcmaxRd(FitMe):
         plot_dir : string
             directory to save plots of various fitting routines
         """        
-        FitMe.__init__(self, model, ofname, results_dir, data_dir, plot_dir)
+        FitMe.__init__(self, model, ofname, results_dir, data_dir, plot_dir, RD_FIXED)
         self.header = ["Jmax", "JSE", "Vcmax", "VSE", "Rd", "RSE", "Tav", \
-                       "Var", "R2", "SSQ", "MSE", "DOF", "n", "Species", "Season", \
-                       "Leaf", "Curve", "Filename", "id"]
+                       "Var", "R2", "SSQ", "MSE", "DOF", "n", "Species", \
+                       "Season", "Leaf", "Curve", "Filename", "id", "Site",\
+                       "Latitude", "Longitude","gs_mean", "ci_colimited", \
+                       "amb_photo", "amb_ci", "amb_ca", "amb_gs", "first", \
+                       "press"]
            
     def main(self, print_to_screen, infname_tag="*.csv"):   
         """ Loop over all our A-Ci measured curves and fit the Farquhar model
