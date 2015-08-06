@@ -193,7 +193,7 @@ class FarquharC3(object):
         if self.elev_correction and self.correct_ci_oi:
             self.Oi *= np.mean(Pressure) / 100.0
             Ci *= Pressure / 100.0
-            # Now set to false, remember python isn't pass by value! So
+            # Now set to false, remember numpy arrays are immutable
             # if we don't do this it will keep reducing it!
             self.correct_ci_oi = False
 
