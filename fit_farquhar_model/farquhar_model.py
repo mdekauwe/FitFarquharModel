@@ -7,7 +7,7 @@ optimising Jmax25, Vcmax25, Rd, Eaj, Eav, deltaS
 That's all folks.
 """
 __author__ = "Martin De Kauwe"
-__version__ = "1.0 (13.08.2012)"
+__version__ = "1.0 (06.08.2015)"
 __email__ = "mdekauwe@gmail.com"
 
 import sys
