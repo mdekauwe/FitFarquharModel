@@ -153,6 +153,7 @@ class FitMe(object):
         Vcmax = params['Vcmax'].value
         Rd = params['Rd'].value
 
+
         if hasattr(data, "Par"):
              (An, Anc, Anj) = self.call_model(Ci=data["Ci"], Tleaf=data["Tleaf"],
                                               Par=data["Par"], Jmax=Jmax,
@@ -231,6 +232,8 @@ class FitMe(object):
         row.append("%s" % (len(An_fit)-1))
         row.append("%s" % (len(An_fit)))
         row.append("%s" % (data["Species"][0]))
+
+
         row.append("%s" % (data["Season"][0]))
         row.append("%s" % (data["Leaf"][0]))
         row.append("%s" % (data["Curve"][0]))
@@ -415,8 +418,6 @@ class FitMe(object):
         ax = fig.add_subplot(211)
         ax2 = fig.add_subplot(212)
 
-        data["Ci"] *= data["Press"] / 100.0
-
         ax.plot(data["Ci"], data["Photo"],
                 ls="", lw=1.5, marker="o", c="black")
         ax.plot(data["Ci"], An_fit, '-', c="black", linewidth=3,
@@ -427,7 +428,7 @@ class FitMe(object):
                 label="Aj-Rd")
         ax.set_ylabel("A$_n$", weight="bold")
         ax.axes.get_xaxis().set_visible(False)
-        ax.set_xlim(0, 1600)
+        ax.set_xlim(0, 1500)
         ax.legend(numpoints=1, loc="best")
 
         ax2.plot(data["Ci"], residuals, "ko")
