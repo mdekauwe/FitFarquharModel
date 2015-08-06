@@ -261,21 +261,6 @@ class FitMe(object):
             row.append("%s" % ("good")) # starting from ambient CO2
         else:
             # we need to filter this afterwards! Bad data.
-            #photo = data["Photo"]
-            #ci = data["Ci"]
-            #ca = data["CO2S"]
-            #gs = data["Cond"]
-            #amb_pt_photo = photo[(data["CO2S"] >= 300) & (data["CO2S"] <= 400)]
-            #amb_pt_ci = ci[(data["CO2S"] >= 300) & (data["CO2S"] <= 400)]
-            #amb_pt_ca = ca[(data["CO2S"] >= 300) & (data["CO2S"] <= 400)]
-            #amb_pt_gs = gs[(data["CO2S"] >= 300) & (data["CO2S"] <= 400)]
-        
-            #row.append("%s" % (amb_pt_photo))
-            #row.append("%s" % (amb_pt_ci))
-            #row.append("%s" % (amb_pt_ca))
-            #row.append("%s" % (amb_pt_gs))
-            
-            
             row.append("%s" % (-9999))
             row.append("%s" % (-9999))
             row.append("%s" % (-9999))
