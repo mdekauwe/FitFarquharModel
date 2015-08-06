@@ -10,7 +10,8 @@ The steps here are:
     2. Try and fit the parameters 
 
 This code is amended with Yan-Shih Lin's changes:
-- to find the Co-limitation point
+- to find the Co-limitation point, not I've changed the logic here to speed 
+  things up, should be the same result obviously :)
 - the report fits is amended to output a greater number of things
 
 I have also added the pressure correction stuff and this is saved to the outputs
@@ -170,23 +171,21 @@ class FitMe(object):
         Rd = result.params['Rd'].value
         Tmean = np.mean(data["Tleaf"])
         press = np.mean(data["Press"])
-        co_limited_pt = []
-        for i in np.arange(150, 1000, 0.01):
-            (an, anc, anj) = self.call_model(Ci=i, Tleaf=Tmean, Jmax=Jmax, 
-                                             Vcmax=Vcmax, Rd=Rd, Pressure=press)
-            
-            # shouldn't need this remove.
-            #if np.absolute(np.mean(anc) - np.mean(anj)) < 0.01:                                 
-            if np.absolute(anc - anj) < 0.01:
-                co_limited_pt.append(i)
+        
+        
+        Ci = np.arange(150, 1000, 0.01)
+        (an, anc, anj) = self.call_model(Ci=Ci, Tleaf=Tmean, Jmax=Jmax, 
+                                         Vcmax=Vcmax, Rd=Rd, Pressure=press)
+        
+        co_limited_pt = Ci[np.where(np.absolute(anc - anj) < 0.01)]
         
         # sometimes we haven't found the Ci point, i.e. the co-limited point is 
         # way above the searched range, i.e. bad data. Note this with a -9999
-        try:
+        if co_limited_pt.size == 1:
             output = co_limited_pt[0]
-        except IndexError:
-            output = -9999
-
+        else:
+            output = -9999     
+        
         return output
 
     def report_fits(self, f, result, fname, data, An_fit):

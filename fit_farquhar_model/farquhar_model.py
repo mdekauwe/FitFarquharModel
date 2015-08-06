@@ -197,6 +197,8 @@ class FarquharC3(object):
         elif self.mich_menten_model == "Crous":
             gamma_star = self.arrh(38.892, 20437.0, Tleaf)
         elif self.mich_menten_model == "Badger":
+            Kc = np.where(Tleaf > 288.15, self.arrh(460.0, 59536.0, Tleaf), 
+                                          self.arrh(920.0, 109700.0, Tleaf))
             Ko = self.arrh(330.0, 35948.0, Tleaf)
             Km = Kc * (1.0 + self.Oi / Ko)
             r = 0.21 # r = Vomax / Vcmax
@@ -332,11 +334,12 @@ class FarquharC3(object):
             Ko = self.arrh(self.Ko25, self.Eo, Tleaf)
             Km = Kc * (1.0 + self.Oi / Ko)
         elif self.mich_menten_model == "Badger":
-            
-            if Tleaf > 288.15:
-                Kc = self.arrh(460.0, 59536.0, Tleaf)
-            elif Tleaf < 288.15:
-                Kc = self.arrh(920.0, 109700.0, Tleaf)
+            Kc = np.where(Tleaf > 288.15, self.arrh(460.0, 59536.0, Tleaf), 
+                                          self.arrh(920.0, 109700.0, Tleaf))
+            #if Tleaf > 288.15:
+            #    Kc = self.arrh(460.0, 59536.0, Tleaf)
+            #elif Tleaf < 288.15:
+            #    Kc = self.arrh(920.0, 109700.0, Tleaf)
             Ko = self.arrh(330.0, 35948.0, Tleaf)
             Km = Kc * (1.0 + self.Oi / Ko)
         
