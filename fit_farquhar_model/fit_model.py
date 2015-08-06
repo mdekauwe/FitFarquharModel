@@ -8,7 +8,14 @@ The steps here are:
     1. Define a search grid to pick the starting point of the minimiser, in an
        attempt to avoid issues relating to falling into a local minima. 
     2. Try and fit the parameters 
-    
+
+This code is amended with Yan-Shih Lin's changes:
+- to find the Co-limitation point
+- the report fits is amended to output a greater number of things
+
+I have also added the pressure correction stuff and this is saved to the outputs
+too.
+
 That's all folks.
 """
 
@@ -167,8 +174,10 @@ class FitMe(object):
         for i in np.arange(150, 1000, 0.01):
             (an, anc, anj) = self.call_model(Ci=i, Tleaf=Tmean, Jmax=Jmax, 
                                              Vcmax=Vcmax, Rd=Rd, Pressure=press)
-                                             
-            if np.absolute(np.mean(anc) - np.mean(anj)) < 0.01:
+            
+            # shouldn't need this remove.
+            #if np.absolute(np.mean(anc) - np.mean(anj)) < 0.01:                                 
+            if np.absolute(anc - anj) < 0.01:
                 co_limited_pt.append(i)
         
         # sometimes we haven't found the Ci point, i.e. the co-limited point is 
