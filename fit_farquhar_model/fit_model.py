@@ -443,8 +443,8 @@ class FitMe(object):
         ax2.set_ylim(10,-10)
 
 
-        plt.show()
-        sys.exit()
+        #plt.show()
+        #sys.exit()
 
         fig.savefig(ofname)
         plt.close(fig)
