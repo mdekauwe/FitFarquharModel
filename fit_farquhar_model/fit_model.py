@@ -418,6 +418,10 @@ class FitMe(object):
         ax = fig.add_subplot(211)
         ax2 = fig.add_subplot(212)
 
+
+
+
+
         ax.plot(data["Ci"], data["Photo"],
                 ls="", lw=1.5, marker="o", c="black")
         ax.plot(data["Ci"], An_fit, '-', c="black", linewidth=3,
@@ -437,6 +441,10 @@ class FitMe(object):
         ax2.set_ylabel("Residuals (Obs$-$Fit)", weight="bold")
         ax2.set_xlim(0, 1500)
         ax2.set_ylim(10,-10)
+
+
+        plt.show()
+        sys.exit()
 
         fig.savefig(ofname)
         plt.close(fig)
@@ -667,6 +675,10 @@ class FitJmaxVcmaxRd(FitMe):
             data["Tleaf"] += self.deg2kelvin
             for curve_num in np.unique(data["Curve"]):
                 curve_data = data[np.where(data["Curve"]==curve_num)]
+
+                # Sort data to make plots looks better
+                curve_data = curve_data[np.argsort(curve_data["Ci"])]
+
                 (vcmax_guess, jmax_guess,
                     rd_guess) = self.pick_starting_point(curve_data)
                 params = self.setup_model_params(jmax_guess=jmax_guess,
