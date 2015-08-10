@@ -255,7 +255,7 @@ class FitMe(object):
         # some curves started from low CO2, so we can't use the ambient Asat
         # data so need to exclude these later. This block of data is what
         # we are keeping
-        print data['CO2S'][0]
+        
         if data['CO2S'][0] >= 300 and data['CO2S'][0] <= 400:
             row.append("%s" % (data["Photo"][0]))
             row.append("%s" % (data["Ci"][0]))
