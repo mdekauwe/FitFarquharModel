@@ -255,6 +255,7 @@ class FitMe(object):
         # some curves started from low CO2, so we can't use the ambient Asat
         # data so need to exclude these later. This block of data is what
         # we are keeping
+        print data['CO2S'][0]
         if data['CO2S'][0] >= 300 and data['CO2S'][0] <= 400:
             row.append("%s" % (data["Photo"][0]))
             row.append("%s" % (data["Ci"][0]))
@@ -677,7 +678,9 @@ class FitJmaxVcmaxRd(FitMe):
                 curve_data = data[np.where(data["Curve"]==curve_num)]
 
                 # Sort data to make plots looks better
-                curve_data = curve_data[np.argsort(curve_data["Ci"])]
+                # Won't work if search for co-limitation point as it
+                # messes up order for finding first point
+                #curve_data = curve_data[np.argsort(curve_data["Ci"])]
 
                 (vcmax_guess, jmax_guess,
                     rd_guess) = self.pick_starting_point(curve_data)
