@@ -133,7 +133,11 @@ class FarquharC3(object):
         self.pascal_to_ubar = 10.0
 
         if self.elev_correction:
-            standard_pressure = 101.325 # kPa
+            # using pressure roughly at elevation of Uni. of illionois
+            # i.e. glasshouse of Bernacchi measurements
+            # 227m from google earth
+            standard_pressure = 98.62757 # kPa
+            #standard_pressure = 101.325 # kPa
             # ubar
             self.Ko25 *= (self.mmol_2_mole * standard_pressure *
                           self.pascal_to_ubar)
