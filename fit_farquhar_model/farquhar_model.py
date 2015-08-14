@@ -225,9 +225,18 @@ class FarquharC3(object):
             if self.elev_correction:
                 gamma_star *= Pressure / 100.0
         elif self.mich_menten_model == "Badger":
-            Kc = np.where(Tleaf > 288.15, self.arrh(460.0, 59536.0, Tleaf),
-                                          self.arrh(920.0, 109700.0, Tleaf))
-            Ko = self.arrh(330.0, 35948.0, Tleaf)
+            if self.elev_correction:
+                Kc25_1 = 460.0 * np.mean(Pressure) * self.pascal_to_mbar
+                Kc25_2 = 920.0 * np.mean(Pressure) * self.pascal_to_mbar
+                Ko25 = (330.0 * self.mmol_2_mole * np.mean(Pressure) *
+                        self.pascal_to_ubar)
+            else:
+                Kc25_1 = 460.0
+                Kc25_2 = 920.0
+                Ko25 = 330.0
+            Kc = np.where(Tleaf > 288.15, self.arrh(Kc25_1, 59536.0, Tleaf),
+                                          self.arrh(Kc25_2, 109700.0, Tleaf))
+            Ko = self.arrh(Ko25, 35948.0, Tleaf)
             Km = Kc * (1.0 + Oi / Ko)
             r = 0.21 # r = Vomax / Vcmax
             gamma_star = (Kc * Oi * r) / (2.0 * Ko)
