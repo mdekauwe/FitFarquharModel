@@ -51,7 +51,8 @@ class FarquharC3(object):
     """
 
     def __init__(self, peaked_Jmax=False, peaked_Vcmax=False, Oi=210.0,
-                 gamstar25=42.75, Kc25=404.9, Ko25=278.4, Ec=79430.0,
+                 gamstar25=42.75, Kc25=404.9, Ko25=278.4,
+                 Kc25_1=None, Kc25_2=None, Ec=79430.0,
                  Eo=36380.0, Eag=37830.0, theta_hyperbol=0.9995,
                  theta_J=0.7, force_vcmax_fit_pts=None,
                  alpha=None, quantum_yield=0.3, absorptance=0.8,
@@ -109,6 +110,8 @@ class FarquharC3(object):
         self.Oi = Oi
         self.gamstar25 = gamstar25
         self.Kc25 = Kc25
+        self.Kc25_1 = Kc25_1
+        self.Kc25_2 = Kc25_2
         self.Ko25 = Ko25
         self.Ec = Ec
         self.Eo = Eo
@@ -128,6 +131,19 @@ class FarquharC3(object):
         self.mmol_2_mole = 0.001
         self.pascal_to_mbar = 0.01
         self.pascal_to_ubar = 10.0
+
+        if self.elev_correction:
+            standard_pressure = 101.325 # kPa
+            # ubar
+            self.Ko25 *= (self.mmol_2_mole * standard_pressure *
+                          self.pascal_to_ubar)
+
+            # mbar
+            self.Kc25 *= standard_pressure * self.pascal_to_mbar
+            if Kc25_1 is not None:
+                self.Kc25_1 *= standard_pressure * self.pascal_to_mbar
+            if Kc25_2 is not None:
+                self.Kc25_2 *= standard_pressure * self.pascal_to_mbar
 
     def calc_photosynthesis(self, Ci=None, Tleaf=None, Par=None, Jmax=None,
                             Vcmax=None, Jmax25=None, Vcmax25=None, Rd=None,
@@ -195,24 +211,18 @@ class FarquharC3(object):
             # ubar
             Oi = (self.Oi * self.mmol_2_mole * np.mean(Pressure) *
                   self.pascal_to_ubar)
-            Ko25 = (self.Ko25 * self.mmol_2_mole * np.mean(Pressure) *
-                    self.pascal_to_ubar)
 
             # mbar
             Ci_x = Ci * Pressure * self.pascal_to_mbar
-            Kc25 = self.Kc25 * np.mean(Pressure) * self.pascal_to_mbar
         else:
-            Ci_x = Ci
-            Kc25 = self.Kc25
-            Ko25 = self.Ko25
             Oi = self.Oi
+            Ci_x = Ci
 
         # calculate temp dependancies of Michaelis–Menten constants for CO2, O2
         if (self.mich_menten_model == "Bernacchi" or
             self.mich_menten_model == "Crous"):
-
-            Kc = self.arrh(Kc25, self.Ec, Tleaf)
-            Ko = self.arrh(Ko25, self.Eo, Tleaf)
+            Kc = self.arrh(self.Kc25, self.Ec, Tleaf)
+            Ko = self.arrh(self.Ko25, self.Eo, Tleaf)
             Km = Kc * (1.0 + Oi / Ko)
 
         # Effect of temp on CO2 compensation point
@@ -225,18 +235,10 @@ class FarquharC3(object):
             if self.elev_correction:
                 gamma_star *= Pressure / 100.0
         elif self.mich_menten_model == "Badger":
-            if self.elev_correction:
-                Kc25_1 = 460.0 * np.mean(Pressure) * self.pascal_to_mbar
-                Kc25_2 = 920.0 * np.mean(Pressure) * self.pascal_to_mbar
-                Ko25 = (330.0 * self.mmol_2_mole * np.mean(Pressure) *
-                        self.pascal_to_ubar)
-            else:
-                Kc25_1 = 460.0
-                Kc25_2 = 920.0
-                Ko25 = 330.0
-            Kc = np.where(Tleaf > 288.15, self.arrh(Kc25_1, 59536.0, Tleaf),
-                                          self.arrh(Kc25_2, 109700.0, Tleaf))
-            Ko = self.arrh(Ko25, 35948.0, Tleaf)
+
+            Kc = np.where(Tleaf > 288.15, self.arrh(self.Kc25_1, 59536.0, Tleaf),
+                                          self.arrh(self.Kc25_2, 109700.0, Tleaf))
+            Ko = self.arrh(self.Ko25, 35948.0, Tleaf)
             Km = Kc * (1.0 + Oi / Ko)
             r = 0.21 # r = Vomax / Vcmax
             gamma_star = (Kc * Oi * r) / (2.0 * Ko)
