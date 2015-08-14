@@ -125,11 +125,9 @@ class FarquharC3(object):
         self.model_Q10 = model_Q10
         self.elev_correction = elev_correction
         self.mich_menten_model = mich_menten_model
-
-        if self.elev_correction:
-            self.correct_ci_oi = True
-        else:
-            self.elev_correction = False
+        self.mmol_2_mole = 0.001
+        self.pascal_to_mbar = 0.01
+        self.pascal_to_ubar = 10.0
 
     def calc_photosynthesis(self, Ci=None, Tleaf=None, Par=None, Jmax=None,
                             Vcmax=None, Jmax25=None, Vcmax25=None, Rd=None,
@@ -189,16 +187,33 @@ class FarquharC3(object):
         """
         self.check_supplied_args(Jmax, Vcmax, Rd, Jmax25, Vcmax25, Rd25)
 
+        if self.elev_correction:
+            # Remember numpy arrays are immutable so  need to be careful with
+            # the correction, otherwise we'd keep reducing Ci, so don't work
+            # on raw Ci
 
-        if self.elev_correction and self.correct_ci_oi:
-            self.Oi *= np.mean(Pressure) / 100.0
-            Ci *= Pressure / 100.0
-            # Now set to false, remember numpy arrays are immutable
-            # if we don't do this it will keep reducing it!
-            self.correct_ci_oi = False
+            # ubar
+            Oi = (self.Oi * self.mmol_2_mole * np.mean(Pressure) *
+                  self.pascal_to_ubar)
+            Ko25 = (self.Ko25 * self.mmol_2_mole * np.mean(Pressure) *
+                    self.pascal_to_ubar)
+
+            # mbar
+            Ci_x = Ci * Pressure * self.pascal_to_mbar
+            Kc25 = self.Kc25 * np.mean(Pressure) * self.pascal_to_mbar
+        else:
+            Ci_x = Ci
+            Kc25 = self.Kc25
+            Ko25 = self.Ko25
+            Oi = self.Oi
 
         # calculate temp dependancies of Michaelis–Menten constants for CO2, O2
-        Km = self.calc_michaelis_menten_constants(Tleaf)
+        if (self.mich_menten_model == "Bernacchi" or
+            self.mich_menten_model == "Crous"):
+
+            Kc = self.arrh(Kc25, self.Ec, Tleaf)
+            Ko = self.arrh(Ko25, self.Eo, Tleaf)
+            Km = Kc * (1.0 + Oi / Ko)
 
         # Effect of temp on CO2 compensation point
         if self.mich_menten_model == "Bernacchi":
@@ -213,9 +228,9 @@ class FarquharC3(object):
             Kc = np.where(Tleaf > 288.15, self.arrh(460.0, 59536.0, Tleaf),
                                           self.arrh(920.0, 109700.0, Tleaf))
             Ko = self.arrh(330.0, 35948.0, Tleaf)
-            Km = Kc * (1.0 + self.Oi / Ko)
+            Km = Kc * (1.0 + Oi / Ko)
             r = 0.21 # r = Vomax / Vcmax
-            gamma_star = (Kc * self.Oi * r) / (2.0 * Ko)
+            gamma_star = (Kc * Oi * r) / (2.0 * Ko)
 
         # Calculations at 25 degrees C or the measurement temperature
         if Rd25 is not None:
@@ -244,14 +259,14 @@ class FarquharC3(object):
             J = Jmax
 
         # Rubisco carboxylation limited rate of photosynthesis
-        Ac = self.assim(Ci, gamma_star, a1=Vcmax, a2=Km)
+        Ac = self.assim(Ci_x, gamma_star, a1=Vcmax, a2=Km)
 
         # Light-limited rate of photosynthesis allowed by RuBP regeneration
-        Aj = self.assim(Ci, gamma_star, a1=J/4.0, a2=2.0*gamma_star)
+        Aj = self.assim(Ci_x, gamma_star, a1=J/4.0, a2=2.0*gamma_star)
 
         # option for the user to specify the transition point
         if self.change_over_pt is not None:
-            A = np.where(Ci<self.change_over_pt, Ac, Aj)
+            A = np.where(Ci_x<self.change_over_pt, Ac, Aj)
         else:
             # Photosynthesis estimated using hyperbolic minimum of Ac and Aj to
             # effectively smooth over discontinuity when moving from light/electron
@@ -262,11 +277,11 @@ class FarquharC3(object):
                   (2.0 * self.theta_hyperbol))
 
             # By default we assume a everything under Ci<150 is Ac limited
-            A = np.where(Ci < 150.0, Ac, arg)
+            A = np.where(Ci_x < 150.0, Ac, arg)
 
             # Force the fit through at least the final point-ish
             if self.force_vcmax_fit_pts is None:
-                A = np.where(Ci > np.max(Ci) - 10.0, Aj, A)
+                A = np.where(Ci_x > np.max(Ci_x) - 10.0, Aj, A)
             else:
                 err_msg = "error fitting, are you suppling the correct args?"
                 raise AttributeError, err_msg
@@ -321,7 +336,7 @@ class FarquharC3(object):
             err_msg = "Supplied arguments are a mess!"
             raise AttributeError, err_msg
 
-    def calc_michaelis_menten_constants(self, Tleaf):
+    def calc_michaelis_menten_constants(self, Tleaf, Kc25, Ko25, Oi):
         """ Michaelis-Menten constant for O2/CO2, Arrhenius temp dependancy
         Parameters:
         ----------
@@ -335,9 +350,9 @@ class FarquharC3(object):
         if (self.mich_menten_model == "Bernacchi" or
             self.mich_menten_model == "Crous"):
 
-            Kc = self.arrh(self.Kc25, self.Ec, Tleaf)
-            Ko = self.arrh(self.Ko25, self.Eo, Tleaf)
-            Km = Kc * (1.0 + self.Oi / Ko)
+            Kc = self.arrh(Kc25, self.Ec, Tleaf)
+            Ko = self.arrh(Ko25, self.Eo, Tleaf)
+            Km = Kc * (1.0 + Oi / Ko)
         elif self.mich_menten_model == "Badger":
             Kc = np.where(Tleaf > 288.15, self.arrh(460.0, 59536.0, Tleaf),
                                           self.arrh(920.0, 109700.0, Tleaf))

@@ -41,7 +41,8 @@ class FitMe(object):
     to be subclased.
     """
     def __init__(self, model=None, ofname=None, results_dir=None,
-                 data_dir=None, plot_dir=None, RD_FIXED=False, Niter=500):
+                 data_dir=None, plot_dir=None, elev_correction=False,
+                 RD_FIXED=False, Niter=500):
         """
         Parameters
         ----------
@@ -70,6 +71,7 @@ class FitMe(object):
         self.deg2kelvin = 273.15
         self.Niter = Niter
         self.RD_FIXED = RD_FIXED
+        self.elev_correction = elev_correction
 
     def open_output_files(self, ofname):
         """
@@ -173,7 +175,6 @@ class FitMe(object):
         Tmean = np.mean(data["Tleaf"])
         press = np.mean(data["Press"])
 
-
         Ci = np.arange(150, 1000, 0.01)
         (an, anc, anj) = self.call_model(Ci=Ci, Tleaf=Tmean, Jmax=Jmax,
                                          Vcmax=Vcmax, Rd=Rd, Pressure=press)
@@ -255,9 +256,15 @@ class FitMe(object):
         # some curves started from low CO2, so we can't use the ambient Asat
         # data so need to exclude these later. This block of data is what
         # we are keeping
-        
+
         if data['CO2S'][0] >= 300 and data['CO2S'][0] <= 400:
             row.append("%s" % (data["Photo"][0]))
+
+            if self.elev_correction:
+                ci = data["Ci"][0] * press / 100.
+            else:
+                ci = data["Ci"][0]
+
             row.append("%s" % (data["Ci"][0]))
             row.append("%s" % (data["CO2S"][0]))
             row.append("%s" % (data["Cond"][0]))
@@ -632,7 +639,8 @@ class FitJmaxVcmaxRd(FitMe):
     methods
     """
     def __init__(self, model=None, ofname=None, results_dir=None,
-                 data_dir=None, plot_dir=None, RD_FIXED=False):
+                 data_dir=None, plot_dir=None, elev_correction=False,
+                 RD_FIXED=False):
         """
         Parameters
         ----------
@@ -647,7 +655,8 @@ class FitJmaxVcmaxRd(FitMe):
         plot_dir : string
             directory to save plots of various fitting routines
         """
-        FitMe.__init__(self, model, ofname, results_dir, data_dir, plot_dir, RD_FIXED)
+        FitMe.__init__(self, model, ofname, results_dir, data_dir, plot_dir,
+                       elev_correction, RD_FIXED)
         self.header = ["Jmax", "JSE", "Vcmax", "VSE", "Rd", "RSE", "Tav", \
                        "Var", "R2", "SSQ", "MSE", "DOF", "n", "Species", \
                        "Season", "Leaf", "Curve", "Filename", "id", "Site",\
@@ -656,7 +665,7 @@ class FitJmaxVcmaxRd(FitMe):
                        "press"]
 
     def main(self, print_to_screen=True, elev_correction=False,
-             infname_tag="*.csv"):
+            infname_tag="*.csv"):
         """ Loop over all our A-Ci measured curves and fit the Farquhar model
         parameters to this data
 
@@ -674,8 +683,14 @@ class FitJmaxVcmaxRd(FitMe):
         for fname in glob.glob(os.path.join(self.data_dir, infname_tag)):
             data = self.read_data(fname, infile_type="aci")
             data["Tleaf"] += self.deg2kelvin
+
             for curve_num in np.unique(data["Curve"]):
                 curve_data = data[np.where(data["Curve"]==curve_num)]
+
+                # Remember numpy arrays are immutable so need to be careful with
+                # any elevation corrections, make sure the data isn't being
+                # changed
+                curve_data.setflags(write=False)
 
                 # Sort data to make plots looks better
                 # Won't work if search for co-limitation point as it
