@@ -139,7 +139,8 @@ class FarquharC3(object):
                           self.pascal_to_ubar)
 
             # mbar
-            self.Kc25 *= standard_pressure * self.pascal_to_mbar
+            if Kc25 is not None:
+                self.Kc25 *= standard_pressure * self.pascal_to_mbar
             if Kc25_1 is not None:
                 self.Kc25_1 *= standard_pressure * self.pascal_to_mbar
             if Kc25_2 is not None:
