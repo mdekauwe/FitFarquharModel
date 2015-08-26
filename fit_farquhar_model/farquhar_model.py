@@ -133,15 +133,19 @@ class FarquharC3(object):
         self.pascal_to_ubar = 10.0
 
         if self.elev_correction:
-            # using pressure roughly at elevation of Uni. of illionois
-            # i.e. glasshouse of Bernacchi measurements
-            # 227m from google earth
-            standard_pressure = 98.62757 # kPa
-            #standard_pressure = 101.325 # kPa
+            # assuming an average atmospheric pressure of 987 mbar in Urbana
+            # Illinois. pressure vaue is from:
+            # von Caemmerer S, Farquhar GD, Berry JA (2009) Biochemical model
+            # of C3 photosynthesis. In: Laisk A, Nedbal L, Govindjee (eds)
+            # Photosynthesis in silico: understanding complexity from molecules
+            # to ecosystems. Springer Science ? Business Media B.V.,
+            # Dordrecht, pp 209–230
+            standard_pressure = 98.7 # kPa
+
             # ubar
             self.Ko25 *= (self.mmol_2_mole * standard_pressure *
                           self.pascal_to_ubar)
-
+            
             # mbar
             if Kc25 is not None:
                 self.Kc25 *= standard_pressure * self.pascal_to_mbar
@@ -149,6 +153,8 @@ class FarquharC3(object):
                 self.Kc25_1 *= standard_pressure * self.pascal_to_mbar
             if Kc25_2 is not None:
                 self.Kc25_2 *= standard_pressure * self.pascal_to_mbar
+
+
 
     def calc_photosynthesis(self, Ci=None, Tleaf=None, Par=None, Jmax=None,
                             Vcmax=None, Jmax25=None, Vcmax25=None, Rd=None,
