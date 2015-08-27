@@ -51,7 +51,7 @@ class FarquharC3(object):
     """
 
     def __init__(self, peaked_Jmax=False, peaked_Vcmax=False, Oi=210.0,
-                 gamstar25=42.75, Kc25=404.9, Ko25=278.4,
+                 gamstar25=42.75, Kc25=404.9, Ko25=278.4, Ko25_1=None,
                  Kc25_1=None, Kc25_2=None, Ec=79430.0,
                  Eo=36380.0, Eag=37830.0, theta_hyperbol=0.9995,
                  theta_J=0.7, force_vcmax_fit_pts=None,
@@ -131,6 +131,16 @@ class FarquharC3(object):
         self.mmol_2_mole = 0.001
         self.pascal_to_mbar = 0.01
         self.pascal_to_ubar = 10.0
+        self.ubar_to_mbar = 0.001
+
+        # von Caemmerer S, Farquhar GD, Berry JA (2009) Biochemical model
+        # of C3 photosynthesis. In: Laisk A, Nedbal L, Govindjee (eds)
+        # Photosynthesis in silico: understanding complexity from molecules
+        # to ecosystems. Springer Science ? Business Media B.V.,
+        # Dordrecht, pp 209–230
+        self.solubilities_for_co2 = 0.0334 # mol (L bar)-1
+        self.solubilities_for_o2 = 0.00126 # mol (L bar)-1
+
 
         if self.elev_correction:
             # assuming an average atmospheric pressure of 987 mbar in Urbana
@@ -140,21 +150,37 @@ class FarquharC3(object):
             # Photosynthesis in silico: understanding complexity from molecules
             # to ecosystems. Springer Science ? Business Media B.V.,
             # Dordrecht, pp 209–230
-            standard_pressure = 98.7 # kPa
+            illinois_pressure = 98.7 # kPa
+            standard_pressure = 101.325 # kPa
 
             # ubar
-            self.Ko25 *= (self.mmol_2_mole * standard_pressure *
-                          self.pascal_to_ubar)
-            
+
+
+            # Badger & Collatz
+            if Ko25_1 is not None:
+                #self.Ko25 = (Ko25_1 / self.solubilities_for_o2 *
+                #             self.ubar_to_mbar)
+                self.Ko25 = (Ko25_1 * self.mmol_2_mole * standard_pressure *
+                             self.pascal_to_ubar)
+            else:
+                self.Ko25 *= (self.mmol_2_mole * illinois_pressure *
+                              self.pascal_to_ubar)
             # mbar
             if Kc25 is not None:
-                self.Kc25 *= standard_pressure * self.pascal_to_mbar
+                self.Kc25 *= illinois_pressure * self.pascal_to_mbar
+
+            # Badger & Collatz
             if Kc25_1 is not None:
+                #self.Kc25_1 /= self.solubilities_for_co2
                 self.Kc25_1 *= standard_pressure * self.pascal_to_mbar
             if Kc25_2 is not None:
+                #self.Kc25_2 /= self.solubilities_for_co2
                 self.Kc25_2 *= standard_pressure * self.pascal_to_mbar
 
-
+            #print
+            #print "Ko25, Kc25_1, Kc25_2"
+            #print self.Ko25, self.Kc25_1, self.Kc25_2
+            #sys.exit()
 
     def calc_photosynthesis(self, Ci=None, Tleaf=None, Par=None, Jmax=None,
                             Vcmax=None, Jmax25=None, Vcmax25=None, Rd=None,
@@ -251,7 +277,9 @@ class FarquharC3(object):
                                           self.arrh(self.Kc25_2, 109700.0, Tleaf))
             Ko = self.arrh(self.Ko25, 35948.0, Tleaf)
             Km = Kc * (1.0 + Oi / Ko)
-            r = 0.21 # r = Vomax / Vcmax
+            # r = Vomax / Vcmax, independent of temperature -
+            # Badger & Andrews (1974), see Medlyn 2002, eqn 13
+            r = 0.21
             gamma_star = (Kc * Oi * r) / (2.0 * Ko)
 
         # Calculations at 25 degrees C or the measurement temperature
