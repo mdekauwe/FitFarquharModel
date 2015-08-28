@@ -151,29 +151,35 @@ class FarquharC3(object):
             # to ecosystems. Springer Science ? Business Media B.V.,
             # Dordrecht, pp 209–230
             illinois_pressure = 98.7 # kPa
+
+            # Assuming B&C took measurements at Carnegie Institution of
+            # Washington which is roughly at an elevation of 70m, so assuming a
+            # standrd pressure
             standard_pressure = 101.325 # kPa
 
             # ubar
-
-
-            # Badger & Collatz
             if Ko25_1 is not None:
+                # Badger & Collatz
                 #self.Ko25 = (Ko25_1 / self.solubilities_for_o2 *
                 #             self.ubar_to_mbar)
                 self.Ko25 = (Ko25_1 * self.mmol_2_mole * standard_pressure *
                              self.pascal_to_ubar)
             else:
+                # Bernacchi / Crous
                 self.Ko25 *= (self.mmol_2_mole * illinois_pressure *
                               self.pascal_to_ubar)
             # mbar
             if Kc25 is not None:
+                # Bernacchi / Crous
                 self.Kc25 *= illinois_pressure * self.pascal_to_mbar
 
             # Badger & Collatz
             if Kc25_1 is not None:
+                # Badger & Collatz
                 #self.Kc25_1 /= self.solubilities_for_co2
                 self.Kc25_1 *= standard_pressure * self.pascal_to_mbar
             if Kc25_2 is not None:
+                # Badger & Collatz
                 #self.Kc25_2 /= self.solubilities_for_co2
                 self.Kc25_2 *= standard_pressure * self.pascal_to_mbar
 
