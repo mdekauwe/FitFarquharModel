@@ -182,11 +182,13 @@ class FarquharC3(object):
                 # Badger & Collatz
                 #self.Kc25_2 /= self.solubilities_for_co2
                 self.Kc25_2 *= standard_pressure * self.pascal_to_mbar
+        else:
+            if Ko25_1 is not None:
+                # Badger & Collatz
+                self.Ko25 = Ko25_1
 
-            #print
-            #print "Ko25, Kc25_1, Kc25_2"
-            #print self.Ko25, self.Kc25_1, self.Kc25_2
-            #sys.exit()
+
+
 
     def calc_photosynthesis(self, Ci=None, Tleaf=None, Par=None, Jmax=None,
                             Vcmax=None, Jmax25=None, Vcmax25=None, Rd=None,
