@@ -266,12 +266,6 @@ class FitMe(object):
 
         if data['CO2S'][0] >= 300 and data['CO2S'][0] <= 400:
             row.append("%s" % (data["Photo"][0]))
-
-            #if self.elev_correction:
-            #    ci = data["Ci"][0] * press / 100.
-            #else:
-            #    ci = data["Ci"][0]
-
             row.append("%s" % (data["Ci"][0]))
             row.append("%s" % (data["CO2S"][0]))
             row.append("%s" % (data["Cond"][0]))
