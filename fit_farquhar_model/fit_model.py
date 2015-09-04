@@ -24,6 +24,11 @@ __author__ = "Martin De Kauwe"
 __version__ = "1.0 (06.08.2015)"
 __email__ = "mdekauwe@gmail.com"
 
+# stop interactive window opening
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+
 import os
 import sys
 import glob
@@ -31,7 +36,9 @@ import numpy as np
 import csv
 from lmfit import minimize, Parameters, printfuncs, conf_interval, conf_interval2d
 from scipy import stats
-import matplotlib.pyplot as plt
+
+
+
 
 
 class FitMe(object):
@@ -426,10 +433,6 @@ class FitMe(object):
         ax = fig.add_subplot(211)
         ax2 = fig.add_subplot(212)
 
-
-
-
-
         ax.plot(data["Ci"], data["Photo"],
                 ls="", lw=1.5, marker="o", c="black")
         ax.plot(data["Ci"], An_fit, '-', c="black", linewidth=3,
@@ -746,11 +749,21 @@ class FitJmaxVcmaxRd(FitMe):
 
                 # Need to run the Farquhar model with the fitted params for
                 # plotting...
+
+
                 (An, Anc, Anj) = self.forward_run(result, curve_data)
                 self.report_fits(wr, result, os.path.basename(fname),
                                  curve_data, An)
 
-                self.make_plot(curve_data, curve_num, An, Anc, Anj, result)
+                # Sort data to make plots looks better
+                # Won't work if search for co-limitation point as it
+                # messes up order for finding first point, so need to recall
+                # forward_run
+                curve_data_sorted = curve_data[np.argsort(curve_data["Ci"])]
+                (An, Anc, Anj) = self.forward_run(result, curve_data_sorted)
+
+                self.make_plot(curve_data_sorted, curve_num, An, Anc, Anj,
+                               result)
                 self.nfiles += 1
         self.tidy_up(fp)
 
