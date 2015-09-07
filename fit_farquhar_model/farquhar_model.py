@@ -307,7 +307,7 @@ class FarquharC3(object):
                 Jmax = self.peaked_arrh(Jmax25, Eaj, Tleaf, deltaSj, Hdj)
             else:
                 Jmax = self.arrh(Jmax25, Eaj, Tleaf)
-        
+
         # actual rate of electron transport, a function of absorbed PAR
         if Par is not None:
             J = self.quadratic(a=self.theta_J, b=-(self.alpha * Par + Jmax),
