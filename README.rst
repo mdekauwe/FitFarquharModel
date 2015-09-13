@@ -2,9 +2,6 @@
 FitFarquharModel
 ====================
 
-.. image:: https://zenodo.org/badge/doi/10.5281/zenodo.30952.svg
-   :target: http://dx.doi.org/10.5281/zenodo.30952
-
 Fitting routine for the Farquhar model parameters to a series of, or single measured A-Ci curve(s).
 
 Currently we have implemented two different fitting approaches. We now favour fitting all the A-Ci curves in a single step with associated temperature dependancies, whereas previously we fit each A-Ci curve separately (see below and Lin *et al*. 2013).
