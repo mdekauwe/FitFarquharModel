@@ -2,7 +2,10 @@
 FitFarquharModel
 ====================
 
-Fitting routine for the Farquhar model parameters to a series of, or single measured A-Ci curve(s). 
+.. image:: https://zenodo.org/badge/15813/mdekauwe/FitFarquharModel.svg
+   :target: https://zenodo.org/badge/latestdoi/15813/mdekauwe/FitFarquharModel
+
+Fitting routine for the Farquhar model parameters to a series of, or single measured A-Ci curve(s).
 
 Currently we have implemented two different fitting approaches. We now favour fitting all the A-Ci curves in a single step with associated temperature dependancies, whereas previously we fit each A-Ci curve separately (see below and Lin *et al*. 2013).
 
@@ -10,14 +13,14 @@ Our preferred fitting approach involves the assumption that the Vcmax, Rdfac and
 
 Our previous approach (Lin *et al*. 2013), split the fitting approach down into a series of steps:
 
-1. fitting Jmax, Vcmax and Rd at the measurement temperature, 
+1. fitting Jmax, Vcmax and Rd at the measurement temperature,
 2. normalising the data to 25 degrees,
 3. a series of stats tests to explore differences in the data (not part of the package - but we can help you out if you email one of us), e.g. differences between season, species etc.
 4. finally, based on these stats tests, fit the model parameters Eaj, Eav, deltaSj and deltaSv.
 
 In all cases the `Levenberg-Marquardt minimization algorithm <http://en.wikipedia.org/wiki/Levenberg%E2%80%93Marquardt_algorithm>`_ is used to fit the non-linear A-Ci curve data, using the lmfit package (see below).
 
-The model is coded entirely in `Python 
+The model is coded entirely in `Python
 <http://www.python.org/>`_ and we have some example `R <http://www.r-project.org/>`_ scripts for any stats analysis (just ask).
 
 We have extensive tested the robustness of the fitting approach to retrieving model parameters under a series of scenarios where different levels of noise are added to synthetic datasets and results obtained using a bayesian approach. The code for the later I could probably dig out and I may add it to this package if I remember.
@@ -27,10 +30,10 @@ Installation
 
 They code has been written such that it has very few dependancies to ease personal set up. It depends on a series of standard python packages which install easily on all systems and a single fitting package which has installed with a single command on windows, macs and linux machines. The dependancies are:
 
-* `numpy <http://numpy.scipy.org/>`_ 
-* `scipy <http://www.scipy.org/>`_ 
-* `matplotlib <http://matplotlib.sourceforge.net/>`_ 
-* `lmfit <http://newville.github.com/lmfit-py/>`_  
+* `numpy <http://numpy.scipy.org/>`_
+* `scipy <http://www.scipy.org/>`_
+* `matplotlib <http://matplotlib.sourceforge.net/>`_
+* `lmfit <http://newville.github.com/lmfit-py/>`_
 
 All of these packages are widely used scientific packages which build easily on multiple platforms. For window or mac users the `Enthought <http://www.enthought.com/>`_ or `Anaconda <http://continuum.io/downloads>`_ python packages are perhaps your simplest avenue. I think from memory all of these packages except lmfit are installed by default if you follow either of these routes. On a Linux machine it is simply as case of using whatever your default package manager is, e.g. sudo apt-get install python2.7. If you are on a mac and don't want to use `Enthought <http://www.enthought.com/>`_ or `Anaconda <http://continuum.io/downloads>`_ then python comes as standard with your system. However, in my personal experience I've found that it is easier to set up your own separate working copy using a package manager such as `Macports <http://www.macports.org/>`_ or `Homebrew <http://brew.sh/>`_. I read that all the cool kids are now using the later, but personally I've had no issues with Macports. Python, numpy, scipy and matplotlib should all install via your package manager described above. You may need to install lmfit yourself (not sure). But regardless it is simple, there are instructions on the webpage listed above or just download the code, extract it and type ::
 
@@ -63,13 +66,13 @@ Running the code
 The examples directory contains a series of self contained example scripts. Names should be obvious, but the typical order of running them would be... ::
 
     create_example_data.py
-    
+
 If fitting everything in a single step then ::
 
     fit_all_curves_together.py
 
-If using the two step fitting approach then ::    
-    
+If using the two step fitting approach then ::
+
     fit_jmax_vcmax_rd.py
     normalise_data.py
     fit_ea_dels.py
@@ -95,9 +98,9 @@ It should be apparent that to translate these example scripts to your own worksp
     model = FarquharC3(peaked_Jmax=True, peaked_Vcmax=True, model_Q10=False)
 
     F = FitMe(model, ofname, results_dir, data_dir, plot_dir)
-    F.main(print_to_screen=False)     
+    F.main(print_to_screen=False)
 
-    
+
 Documentation
 =============
 Each class/method/function is typical documented and I have built html documentation pages which will outline usage, parameters etc. If you open any of the html files in your web browser you should be able to se these.
@@ -114,7 +117,7 @@ Key References
 
 3. Lin, Y-S., Medlyn, B. E., De Kauwe, M. G., and Ellsworth D. E. (2013) Biochemical photosynthetic responses to temperature: how do interspecific differences compare with seasonal shifts? *Tree Physiology*, **33**, 793-806.
 
-     
+
 Contacts
 ========
 * `Martin De Kauwe <http://mdekauwe.github.io/>`_  (mdekauwe at gmail.com)
