@@ -2,8 +2,10 @@
 FitFarquharModel
 ====================
 
-.. image:: https://zenodo.org/badge/15813/mdekauwe/FitFarquharModel.svg
+image:: https://zenodo.org/badge/15813/mdekauwe/FitFarquharModel.svg
    :target: https://zenodo.org/badge/latestdoi/15813/mdekauwe/FitFarquharModel
+
+[![DOI](https://zenodo.org/badge/15813/mdekauwe/FitFarquharModel.svg)](https://zenodo.org/badge/latestdoi/15813/mdekauwe/FitFarquharModel)
 
 Fitting routine for the Farquhar model parameters to a series of, or single measured A-Ci curve(s).
 
