@@ -182,7 +182,7 @@ class FitMe(object):
         Tmean = np.mean(data["Tleaf"])
         press = np.mean(data["Press"])
 
-        Ci = np.arange(150, 1000, 0.01)
+        Ci = np.arange(150, 1500, 0.01)
         (an, anc, anj) = self.call_model(Ci=Ci, Tleaf=Tmean, Jmax=Jmax,
                                          Vcmax=Vcmax, Rd=Rd, Pressure=press)
 
