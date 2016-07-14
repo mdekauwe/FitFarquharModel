@@ -20,7 +20,9 @@ In all cases the `Levenberg-Marquardt minimization algorithm <http://en.wikipedi
 The model is coded entirely in `Python
 <http://www.python.org/>`_ and we have some example `R <http://www.r-project.org/>`_ scripts for any stats analysis (just ask).
 
-We have extensive tested the robustness of the fitting approach to retrieving model parameters under a series of scenarios where different levels of noise are added to synthetic datasets and results obtained using a bayesian approach. The code for the later I could probably dig out and I may add it to this package if I remember.
+We have extensive tested the robustness of the fitting approach to retrieving model parameters under a series of scenarios where different levels of noise are added to synthetic datasets and results obtained using a bayesian approach.
+
+I have stuck a simplified MCMC version of the fitting in the package directory. It doesn't have all the nice wrappers and will only work off a single file. I may integrate it in one day ... 
 
 Installation
 =============
