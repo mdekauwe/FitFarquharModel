@@ -116,7 +116,7 @@ Key References
 
 3. Lin, Y-S., Medlyn, B. E., De Kauwe, M. G., and Ellsworth D. E. (2013) Biochemical photosynthetic responses to temperature: how do interspecific differences compare with seasonal shifts? *Tree Physiology*, **33**, 793-806.
 
-4. De Kauwe, M. G., Lin, Y.-S., Wright, I. J., Medlyn, B. E., Crous, K. Y., Ellsworth, D. S., Maire, V., Prentice, I. C., Atkin, O. K., Rogers, A., Niinemets, U., Serbin, S., Meir, P., Uddling, J., Togashi, H. F., Tarvainen, L., Weerasinghe, L. K., Evans, B. J., Ishida, F. Y. and Domingues, T. F. (2016) A test of the “one-point method” for estimating maximum carboxylation capacity from field-measured, light-saturated photosynthesis. New Phytologist, DOI: 10.1111/nph.13815.
+4. De Kauwe, M. G., Lin, Y.-S., Wright, I. J., Medlyn, B. E., Crous, K. Y., Ellsworth, D. S., Maire, V., Prentice, I. C., Atkin, O. K., Rogers, A., Niinemets, U., Serbin, S., Meir, P., Uddling, J., Togashi, H. F., Tarvainen, L., Weerasinghe, L. K., Evans, B. J., Ishida, F. Y. and Domingues, T. F. (2016) A test of the “one-point method” for estimating maximum carboxylation capacity from field-measured, light-saturated photosynthesis. New Phytologist, **210**, 1130–1144.
 
 Contacts
 ========
