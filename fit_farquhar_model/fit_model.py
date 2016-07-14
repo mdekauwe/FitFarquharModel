@@ -215,6 +215,7 @@ class FitMe(object):
             print >>f2, "Oops!  Some problem fitting confidence intervals..."
         f2.close()
         """
+
     def forward_run(self, result, data):
         """ Run farquhar model with fitted parameters and return result
 
@@ -237,6 +238,9 @@ class FitMe(object):
         Jmax = result.params['Jmax'].value
         Vcmax = result.params['Vcmax'].value
         Rd = result.params['Rd'].value
+
+        data.sort(order="Ci")
+
         if hasattr(data, "Par"):
              (An, Anc, Anj) = self.call_model(Ci=data["Ci"], Tleaf=data["Tleaf"],
                                               Par=data["Par"], Jmax=Jmax,
@@ -335,7 +339,7 @@ class FitMe(object):
         season = data["Season"][0]
         season = "all"
         leaf = data["Leaf"][0]
-        ofname = "%s/%s_%s_%s_%s_fit_and_residual.png" % \
+        ofname = "%s/%s_%s_%s_%s_fit_and_residual.pdf" % \
                  (self.plot_dir, species, season, leaf, curve_num)
         residuals = data["Photo"] - An_fit
 
@@ -343,15 +347,20 @@ class FitMe(object):
                      'darkmagenta', 'cyan', 'indigo', 'palegreen', 'salmon',\
                      'pink', 'darkgreen', 'darkblue']
 
-        plt.rcParams['figure.subplot.hspace'] = 0.05
+        golden_mean = 0.6180339887498949
+        width = 9
+        height = width * golden_mean
+        plt.rcParams['figure.subplot.hspace'] = 0.1
         plt.rcParams['figure.subplot.wspace'] = 0.05
-        plt.rcParams['font.size'] = 10
-        plt.rcParams['legend.fontsize'] = 10
-        plt.rcParams['xtick.labelsize'] = 10.0
-        plt.rcParams['ytick.labelsize'] = 10.0
-        plt.rcParams['axes.labelsize'] = 10.0
-
-        fig = plt.figure()
+        plt.rcParams['axes.labelsize'] = 14
+        plt.rcParams['font.size'] = 12
+        plt.rcParams['legend.fontsize'] = 12
+        plt.rcParams['xtick.labelsize'] = 12
+        plt.rcParams['ytick.labelsize'] = 12
+        plt.rcParams['text.usetex'] = False
+        plt.rcParams['font.family'] = "sans-serif"
+        plt.rcParams['font.sans-serif'] = "Helvetica"
+        fig = plt.figure(figsize=(width, height))
 
         ax = fig.add_subplot(211)
         ax2 = fig.add_subplot(212)
@@ -359,21 +368,21 @@ class FitMe(object):
         ax.plot(data["Ci"], data["Photo"],
                 ls="", lw=1.5, marker="o", c="black")
         ax.plot(data["Ci"], An_fit, '-', c="black", linewidth=3,
-                label="An-Rd")
+                label="$A_{\mathrm{n}}$")
         ax.plot(data["Ci"], Anc_fit, '-', c="red", linewidth=1,
-                label="Ac-Rd")
+                label="$A_{\mathrm{cn}}$")
         ax.plot(data["Ci"], Anj_fit, '-', c="blue", linewidth=1,
-                label="Aj-Rd")
-        ax.set_ylabel("A$_n$", weight="bold")
+                label="$A_{\mathrm{jn}}$")
+        ax.set_ylabel("$A_{\mathrm{n}}$", weight="bold")
         ax.axes.get_xaxis().set_visible(False)
-        ax.set_xlim(0, 1600)
+        ax.set_xlim(0, np.max(data["Ci"])+50)
         ax.legend(numpoints=1, loc="best")
 
         ax2.plot(data["Ci"], residuals, "ko")
         ax2.axhline(y=0.0, ls="--", color='black')
-        ax2.set_xlabel('Ci', weight="bold")
-        ax2.set_ylabel("Residuals (Obs$-$Fit)", weight="bold")
-        ax2.set_xlim(0, 1500)
+        ax2.set_xlabel('$C_{\mathrm{i}}$')
+        ax2.set_ylabel("Residuals (Obs$-$Fit)")
+        ax2.set_xlim(0, np.max(data["Ci"])+50)
         ax2.set_ylim(10,-10)
 
         fig.savefig(ofname)
