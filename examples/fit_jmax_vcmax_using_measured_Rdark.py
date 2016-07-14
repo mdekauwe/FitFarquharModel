@@ -30,7 +30,13 @@ def main():
     F = FitJmaxVcmaxRd(model, ofname, results_dir, data_dir, plot_dir)
     F.main(print_to_screen=True)
 
-    # Using Rdark measurement, assuming Rd = Rdark * 0.6
+    # Using Rdark measurement, assuming Rd = Rdark * 0.6; assuming Q10
+    ofname = "fitting_results_%s.csv" % ("Mercado_Rdark")
+    model = FarquharC3(peaked_Jmax=True, peaked_Vcmax=True, model_Q10=True)
+    F = FitJmaxVcmaxKnownRdark(model, ofname, results_dir, data_dir, plot_dir)
+    F.main(print_to_screen=True)
+
+    # Using Rdark measurement, assuming Rd = Rdark * 0.6; assuming no Tdependancy
     ofname = "fitting_results_%s.csv" % ("Mercado_Rdark")
     model = FarquharC3(peaked_Jmax=True, peaked_Vcmax=True, measured_Rd=True)
     F = FitJmaxVcmaxKnownRdark(model, ofname, results_dir, data_dir, plot_dir)
