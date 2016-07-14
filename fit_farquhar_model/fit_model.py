@@ -249,6 +249,9 @@ class FitMe(object):
             (An, Anc, Anj) = self.call_model(Ci=data["Ci"], Tleaf=data["Tleaf"],
                                              Jmax=Jmax, Vcmax=Vcmax, Rd=Rd)
 
+        rmse = np.sqrt(((data["Photo"] - An)**2).mean(0))
+        #print rmse
+
         return (An, Anc, Anj)
 
     def setup_model_params(self, jmax_guess=None, vcmax_guess=None,
@@ -347,9 +350,9 @@ class FitMe(object):
                      'darkmagenta', 'cyan', 'indigo', 'palegreen', 'salmon',\
                      'pink', 'darkgreen', 'darkblue']
 
-        golden_mean = 0.6180339887498949
-        width = 9
-        height = width * golden_mean
+        #golden_mean = 0.6180339887498949*2
+        #width = 9
+        #height = width * golden_mean
         plt.rcParams['figure.subplot.hspace'] = 0.1
         plt.rcParams['figure.subplot.wspace'] = 0.05
         plt.rcParams['axes.labelsize'] = 14
@@ -360,7 +363,7 @@ class FitMe(object):
         plt.rcParams['text.usetex'] = False
         plt.rcParams['font.family'] = "sans-serif"
         plt.rcParams['font.sans-serif'] = "Helvetica"
-        fig = plt.figure(figsize=(width, height))
+        fig = plt.figure(figsize=(9, 10))
 
         ax = fig.add_subplot(211)
         ax2 = fig.add_subplot(212)
