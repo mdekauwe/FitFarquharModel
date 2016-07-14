@@ -16,6 +16,7 @@ import os
 import sys
 import glob
 import pymc
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -51,16 +52,23 @@ def farquhar_wrapper(df=df, Vcmax=Vcmax, Jmax=Jmax, Rd=Rd):
 y = pymc.Normal('y', mu=farquhar_wrapper, tau=1.0/obs_sigma**2,
                 value=obs, observed=True)
 
-N = 10000
+N = 100000
 model = pymc.Model([y, df, Vcmax, Jmax, Rd])
 M = pymc.MCMC(model)
 M.sample(iter=N, burn=N*0.1, thin=10)
+
+Vcmax = M.stats()["Vcmax"]['mean']
+Jmax = M.stats()["Jmax"]['mean']
+Rd = M.stats()["Rd"]['mean']
+(An, Anc, Anj) = F.calc_photosynthesis(Ci=df["Ci"], Tleaf=df["Tleaf"],
+                                       Jmax=Jmax, Vcmax=Vcmax, Rd=Rd)
+rmse = np.sqrt(((obs - An)**2).mean(0))
+print "RMSE: %.4f" % (rmse)
 
 # Get the fits
 Vcmax = M.trace('Vcmax').gettrace()
 Jmax = M.trace('Jmax').gettrace()
 Rd = M.trace('Rd').gettrace()
-
 for v in ["Vcmax", "Jmax", "Rd"]:
     print "%s: %.4f +/- %.4f" % \
         (v, M.stats()[v]['mean'], M.stats()[v]['standard deviation'])
