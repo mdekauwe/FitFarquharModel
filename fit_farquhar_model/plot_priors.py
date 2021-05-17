@@ -16,31 +16,31 @@ import pymc
 N = 10000
 Vcmax = [pymc.TruncatedNormal('Vcmax25', \
           mu=100.0, tau=1.0/61.25**2, a=0.0, b=650.0).value \
-          for i in xrange(N)]
+          for i in range(N)]
 
 Jfac = [pymc.TruncatedNormal('Jfac', mu=1.8, tau=1.0/0.5**2, \
-        a=0.0, b=5.0).value for i in xrange(N)]
-        
-        
-Rdfac = [pymc.Uniform('Rdfac', lower=0.005, upper=0.05).value \
-         for i in xrange(N)]
-        
-Eaj = [pymc.TruncatedNormal('Eaj', mu=40000.0, tau=1.0/10000.0**2, a=0.0, 
-       b=199999.9).value for i in xrange(N)]
-        
-Eav = [pymc.TruncatedNormal('Eav', mu=60000.0, tau=1.0/10000.0**2, a=0.0, 
-       b=199999.9).value for i in xrange(N)]
-        
+        a=0.0, b=5.0).value for i in range(N)]
 
-Ear = [pymc.TruncatedNormal('Ear', mu=34000.0, tau=1.0/10000.0**2, a=0.0, 
-       b=199999.9).value for i in xrange(N)]
-       
-           
+
+Rdfac = [pymc.Uniform('Rdfac', lower=0.005, upper=0.05).value \
+         for i in range(N)]
+
+Eaj = [pymc.TruncatedNormal('Eaj', mu=40000.0, tau=1.0/10000.0**2, a=0.0,
+       b=199999.9).value for i in range(N)]
+
+Eav = [pymc.TruncatedNormal('Eav', mu=60000.0, tau=1.0/10000.0**2, a=0.0,
+       b=199999.9).value for i in range(N)]
+
+
+Ear = [pymc.TruncatedNormal('Ear', mu=34000.0, tau=1.0/10000.0**2, a=0.0,
+       b=199999.9).value for i in range(N)]
+
+
 delSj = [pymc.TruncatedNormal('delSj', mu=640.0, tau=1.0/10.0**2, a=300.0,
-         b=800.0).value for i in xrange(N)]
-        
-delSv = [pymc.TruncatedNormal('delSv', mu=640.0, tau=1.0/10.0**2, 
-         a=300.0, b=800.0).value for i in xrange(N)]          
+         b=800.0).value for i in range(N)]
+
+delSv = [pymc.TruncatedNormal('delSv', mu=640.0, tau=1.0/10.0**2,
+         a=300.0, b=800.0).value for i in range(N)]
 
 plt.rcParams['figure.subplot.hspace'] = 0.3
 plt.rcParams['figure.subplot.wspace'] = 0.3
@@ -59,7 +59,7 @@ fig = plt.figure(figsize=(10,10))
 bins = 50
 
 for index, var in enumerate(var_names):
-    
+
     ax = fig.add_subplot(4,2,(index+1))
     ax.set_title(var_names[index])
     ax.hist(vars[index], bins=bins)

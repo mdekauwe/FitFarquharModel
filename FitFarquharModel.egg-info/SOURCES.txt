@@ -29,11 +29,11 @@ examples/plots/.nothing
 examples/results/ea_results.csv
 examples/results/fitting_results.csv
 examples/results/normalised_results.csv
-examples/results/residuals.csv
 examples/results/values_at_Tnorm.csv
 examples/results_pymc/.DS_Store
 fit_farquhar_model/__init__.py
 fit_farquhar_model/farquhar_model.py
+fit_farquhar_model/fit_MCMC.py
 fit_farquhar_model/fit_dummy_version_ear_const.py
 fit_farquhar_model/fit_model.py
 fit_farquhar_model/fit_model_measured_rdark.py

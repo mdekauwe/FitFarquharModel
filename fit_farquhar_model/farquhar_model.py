@@ -243,7 +243,7 @@ class FarquharC3(object):
                 A = np.where(Ci > np.max(Ci) - 10.0, Aj, A)
             else:
                 err_msg = "error fitting, are you suppling the correct args?"
-                raise AttributeError, err_msg
+                raise AttributeError(err_msg)
 
         # net assimilation rates.
         An = A - Rd
@@ -293,7 +293,7 @@ class FarquharC3(object):
 
         except AttributeError:
             err_msg = "Supplied arguments are a mess!"
-            raise AttributeError, err_msg
+            raise AttributeError(err_msg)
 
     def calc_michaelis_menten_constants(self, Tleaf):
         """ Michaelis-Menten constant for O2/CO2, Arrhenius temp dependancy

@@ -80,7 +80,7 @@ class FitMe(object):
             os.remove(ofname)
 
         try:
-            fp = open(ofname, 'wb')
+            fp = open(ofname, 'w')
         except IOError:
             raise IOError("Can't open %s file for write" % ofname)
 
@@ -311,8 +311,8 @@ class FitMe(object):
             fitting result, param, std. error etc.
         """
         for name, par in result.params.items():
-            print '%s = %.8f +/- %.8f ' % (name, par.value, par.stderr)
-        print
+            print('%s = %.8f +/- %.8f ' % (name, par.value, par.stderr))
+        print("\n")
 
     def make_plot(self, data, curve_num, An_fit, Anc_fit, Anj_fit, result):
         """ Make some plots to show how good our fitted model is to the data
@@ -438,7 +438,7 @@ class FitMe(object):
             file pointer
         """
         total_fits = float(self.succes_count) / self.nfiles * 100.0
-        print "\nOverall fitted %.1f%% of the data\n" % (total_fits)
+        print("\nOverall fitted %.1f%% of the data\n" % (total_fits))
         fp.close()
 
     def pick_random_starting_point(self):
@@ -505,7 +505,7 @@ class FitMe(object):
                                                 data["Tleaf"],
                                                 Jmax=j, Vcmax=v, Rd=r)
                     rmse = np.sqrt(np.mean((data["Photo"]- An)**2))
-                    for k in xrange(len(An)):
+                    for k in range(len(An)):
 
 
                         print v, j, r, An[k], data["Ci"][k], rmse
@@ -634,7 +634,7 @@ class FitJmaxVcmaxRd(FitMe):
 
                     # Failed errobar fitting, going to try and mess with
                     # starting poisition...
-                    for i in xrange(self.Niter):
+                    for i in range(self.Niter):
                         (vcmax_guess, jmax_guess,
                          rd_guess) = self.pick_random_starting_point()
 
@@ -648,7 +648,7 @@ class FitJmaxVcmaxRd(FitMe):
                             break
 
                 if print_to_screen:
-                    print fname, curve_num
+                    print(fname, curve_num)
                     self.print_fit_to_screen(result)
 
                 # Need to run the Farquhar model with the fitted params for
@@ -772,7 +772,7 @@ class FitEaDels(FitMe):
         else:
             # Failed errobar fitting, going to try and mess with
             # starting poisition...
-            for i in xrange(self.Niter):
+            for i in range(self.Niter):
                 # Fit Jmax vs T first
                 params = self.setup_model_params(data, obs=obs,
                                                  grid_search=False)
@@ -1062,7 +1062,7 @@ class FitJmaxVcmaxKnownRdark(FitMe):
 
                     # Failed errobar fitting, going to try and mess with
                     # starting poisition...
-                    for i in xrange(self.Niter):
+                    for i in range(self.Niter):
                         (vcmax_guess, jmax_guess) = self.pick_random_starting_point()
 
                         params = self.setup_model_params(jmax_guess=jmax_guess,
@@ -1076,7 +1076,7 @@ class FitJmaxVcmaxKnownRdark(FitMe):
                             break
 
                 if print_to_screen:
-                    print fname, curve_num
+                    print(fname, curve_num)
                     self.print_fit_to_screen(result)
 
                 # Need to run the Farquhar model with the fitted params for

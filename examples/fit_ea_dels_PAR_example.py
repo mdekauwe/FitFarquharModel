@@ -34,12 +34,12 @@ model = FarquharC3()
 # Need to add the groupby column...(JUST FOR THE EXAMPLE!)
 # REMOVE THIS SECTION IF RUNNING FOR REAL
 def read_data(fname, delimiter=","):
-    """ Read the A-Ci data. 
-    
+    """ Read the A-Ci data.
+
     Expects a format of:
     -> Curve, Tleaf, Ci, Photo, Species, Season, Leaf
     """
-    data = np.recfromcsv(fname, delimiter=delimiter, names=True, 
+    data = np.recfromcsv(fname, delimiter=delimiter, names=True,
                          case_sensitive=True)
     return data
 
@@ -49,7 +49,7 @@ header = ["Jmax", "Vcmax", "Jnorm", "Vnorm", "Rd", "Tav", \
           "Filename", "fitgroup"]
 if os.path.isfile(infname):
     os.remove(infname)
-fp = open(infname, 'wb')            
+fp = open(infname, 'w')            
 wr = csv.writer(fp, delimiter=',', quoting=csv.QUOTE_NONE, escapechar=' ')
 wr.writerow(header)
 for row in data:
@@ -59,7 +59,7 @@ for row in data:
     new_row.append(1)
     wr.writerow(new_row)
 fp.close()
-# REMOVE DOWN TO HERE 
+# REMOVE DOWN TO HERE
 
 
 F2 = FitEaDels(model, infname, ofname, results_dir, data_dir)

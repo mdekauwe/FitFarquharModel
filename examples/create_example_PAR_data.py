@@ -21,7 +21,7 @@ import csv
 from fit_farquhar_model.farquhar_model import FarquharC3
 
 fname = "data2/example2.csv"
-fp = open(fname, "wb")
+fp = open(fname, "w")
 wr = csv.writer(fp, delimiter=',', quoting=csv.QUOTE_NONE,  escapechar=' ')
 wr.writerow(["Curve", "Tleaf", "Ci", "Photo", "Par", "Species", "Season", "Leaf"])
 deg2kelvin = 273.15
@@ -43,31 +43,31 @@ for Tleaf in np.arange(15.0, 40.0, 5.0):
     Hdj = 200000.0
     Q10 = 1.5
     add_noise = False
-    
-    
+
+
     Rd = model.resp(Tleaf, Q10, r25, Tref=25.0)
-    (An, Acn, Ajn) = model.calc_photosynthesis(Ci, Tleaf, Par=Par, Jmax25=Jmax25, 
-                                           Vcmax25=Vcmax25, Eaj=Eaj, Eav=Eav, 
-                                           deltaSj=deltaSj, deltaSv=deltaSv, 
+    (An, Acn, Ajn) = model.calc_photosynthesis(Ci, Tleaf, Par=Par, Jmax25=Jmax25,
+                                           Vcmax25=Vcmax25, Eaj=Eaj, Eav=Eav,
+                                           deltaSj=deltaSj, deltaSv=deltaSv,
                                            r25=r25, Q10=Q10, Hdv=Hdv, Hdj=Hdj)
-    
-    for i in xrange(len(An)):
+
+    for i in range(len(An)):
         if add_noise:
             noise = np.random.normal(0.0, 1.0)
         else:
             noise = 0.0
         row = [curve, Tleaf-deg2kelvin, Ci[i], \
                An[i] + Rd + noise, Par[i], "Potatoes","Summer", 1]
-        wr.writerow(row) 
-    curve += 1    
-    
-    for i in xrange(len(An)):
+        wr.writerow(row)
+    curve += 1
+
+    for i in range(len(An)):
         if add_noise:
             noise = np.random.normal(0.0, 1.0)
         else:
             noise = 0.0
         row = [curve, Tleaf-deg2kelvin, Ci[i], \
                An[i] + Rd + noise, Par[i], "Potatoes", "Summer", 2]
-        wr.writerow(row) 
-    curve += 1     
+        wr.writerow(row)
+    curve += 1
 fp.close()

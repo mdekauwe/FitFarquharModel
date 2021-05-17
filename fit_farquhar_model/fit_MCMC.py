@@ -63,15 +63,15 @@ Rd = M.stats()["Rd"]['mean']
 (An, Anc, Anj) = F.calc_photosynthesis(Ci=df["Ci"], Tleaf=df["Tleaf"],
                                        Jmax=Jmax, Vcmax=Vcmax, Rd=Rd)
 rmse = np.sqrt(((obs - An)**2).mean(0))
-print "RMSE: %.4f" % (rmse)
+print("RMSE: %.4f" % (rmse))
 
 # Get the fits
 Vcmax = M.trace('Vcmax').gettrace()
 Jmax = M.trace('Jmax').gettrace()
 Rd = M.trace('Rd').gettrace()
 for v in ["Vcmax", "Jmax", "Rd"]:
-    print "%s: %.4f +/- %.4f" % \
-        (v, M.stats()[v]['mean'], M.stats()[v]['standard deviation'])
+    print("%s: %.4f +/- %.4f" % \
+        (v, M.stats()[v]['mean'], M.stats()[v]['standard deviation']))
 
 fig = plt.figure(figsize=(10,10))
 fig.subplots_adjust(hspace=0.5)
