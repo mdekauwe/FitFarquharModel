@@ -35,7 +35,8 @@ def assign_repeat_number(header_row, in_file, tmp_file):
         Press = row['Patm']
         Season = "whatever" # could be anything
         Leaf = 1
-        fitgroup = 1
+        fitgroup = row['Location']
+
         # Need to identify unique curves, they've used a bogus low PAR to
         # seperate
         if PARin > 100:
@@ -114,7 +115,7 @@ def get_avg_reading(header_row, tmp_file, out_file):
 
             row_list = [Curve, Tleaf, Ci, Photo, Species, \
                         Site, Cond, Trmmol, VPD, CO2S, \
-                        PARin, Press, Datacontrib, Season, Leaf, fitgroup]
+                        PARin, Press, Season, Datacontrib, Leaf, fitgroup]
 
             write2.writerow(row_list)
         else:
@@ -126,7 +127,7 @@ def get_avg_reading(header_row, tmp_file, out_file):
 
 header_row = ['Curve', 'Tleaf', 'Ci', 'Photo', 'Species',
               'Site', 'Cond', 'Trmmol', 'VPD', 'CO2S',
-              'PARin', 'Press', 'Datacontrib', 'Season', 'Leaf', 'fitgroup']
+              'PARin', 'Press', 'Season', 'Datacontrib', 'Leaf', 'fitgroup']
 in_file = "raw_data/WUEdatabase_Martin-StPaul_FPB_2012_OK2.csv"
 tmp_file = "data/Martin-StPaul_temp.csv"
 out_file = "data/Martin-StPaul_cleaned.csv"
