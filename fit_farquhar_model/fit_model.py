@@ -105,6 +105,8 @@ class FitMe(object):
         """
         data = np.recfromcsv(fname, delimiter=delimiter, names=True,
                              case_sensitive=True)
+
+
         if infile_type == "norm":
             # using normalised temp data
             data["Tav"] = data["Tav"] + self.deg2kelvin
@@ -338,7 +340,8 @@ class FitMe(object):
         result : object
             fitting result, param, std. error etc.
         """
-        species = data["Species"][0]
+        #species = data["Species"][0]
+        species = data['Species'][0].decode("utf-8")
         season = data["Season"][0]
         season = "all"
         leaf = data["Leaf"][0]
