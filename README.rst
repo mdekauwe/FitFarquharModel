@@ -6,7 +6,7 @@ Fitting routine for the Farquhar model parameters to a series of, or single meas
 
 Currently we have implemented two different fitting approaches. We now favour fitting all the A-Ci curves in a single step with associated temperature dependancies, whereas previously we fit each A-Ci curve separately (see below and Lin *et al*. 2013).
 
-Our preferred fitting approach involves the assumption that the Vcmax, Rdfac and Jfac vary between leaves of a single species, however the temperature dependancies (Eav, Eaj, delSv and delSj) of these leaves do not. In addition we are fixing Hdv, Hdj and Ear.
+Our preferred fitting approach involves the assumption that the Vcmax, Rdfac and Jfac vary between leaves of a single species, however the temperature dependancies (Eav, Eaj, delSv and delSj) of these leaves do not. In addition, we are fixing Hdv, Hdj and Ear.
 
 Our previous approach (Lin *et al*. 2013), split the fitting approach down into a series of steps:
 
@@ -20,14 +20,14 @@ In all cases the `Levenberg-Marquardt minimization algorithm <http://en.wikipedi
 The model is coded entirely in `Python
 <http://www.python.org/>`_ and we have some example `R <http://www.r-project.org/>`_ scripts for any stats analysis (just ask).
 
-We have extensive tested the robustness of the fitting approach to retrieving model parameters under a series of scenarios where different levels of noise are added to synthetic datasets and results obtained using a bayesian approach.
+We have extensively tested the robustness of the fitting approach to retrieving model parameters under a series of scenarios where different levels of noise are added to synthetic datasets and results obtained using a bayesian approach.
 
 I have stuck a simplified MCMC version of the fitting in the package directory. It doesn't have all the nice wrappers and will only work off a single file. I may integrate it in one day ...
 
 Installation
 =============
 
-They code has been written such that it has very few dependancies to ease personal set up. It depends on a series of standard python packages which install easily on all systems and a single fitting package which has installed with a single command on windows, macs and linux machines. The dependancies are:
+The code has been written such that it has very few dependencies to ease personal set up. It depends on a series of standard python packages which install easily on all systems and a single fitting package which has installed with a single command on windows, macs and linux machines. The dependancies are:
 
 * `numpy <http://numpy.scipy.org/>`_
 * `scipy <http://www.scipy.org/>`_
@@ -76,7 +76,7 @@ If using the two step fitting approach then ::
     normalise_data.py
     fit_ea_dels.py
 
-Of course with real data a series of stats test should be carried out before
+Of course, with real data a series of stats test should be carried out before
 fitting the final Eav, Eaj, deltaSv and deltaSj parameters. This is left up to the individual user.
 
 Massive disclaimer, I made these example files a (long) while again! I (certainly) probably haven't made a great deal of effort to maintain them, but email me if they don't work!
